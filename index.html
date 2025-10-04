@@ -11,7 +11,7 @@
       --line:#e5e7eb;--primary:#2563eb;
     }
     *{box-sizing:border-box}
-    html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue","Noto Sans",Arial;}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue","Noto Sans",Arial}
     h1{font-size:clamp(20px,3vw,28px);margin:0}
     h2{font-size:18px;margin:0 0 .6rem 0}
     .container{max-width:1200px;margin:0 auto;padding:16px}
@@ -54,7 +54,7 @@
     <div class="no-print" style="display:flex;gap:8px;flex-wrap:wrap">
       <button id="importCsvBtn" class="btn">Importer CSV terrains</button>
       <input id="csvInput" type="file" accept=".csv" class="hidden" />
-      <button id="btnMetar" class="btn">Charger METAR (ICAO)</button>
+      <button id="btnMetar" class="btn">Charger METAR (NOAA)</button>
       <button class="btn primary" onclick="window.print()">Imprimer</button>
     </div>
   </div>
@@ -196,9 +196,7 @@
 </div>
 
 <script>
-  // ---------------- Tables (1979) — Décollage ----------------
-  // Pour chaque altitude: températures (Std-20 / ISA / Std+20) et valeurs
-  // Surface: hard/grass ; kg700/kg900 ; {roll:[...], pass:[...]}
+  /*=================== Tables 1979 — Décollage ===================*/
   const TO_TABLE = {
     0: {
       temps:{minus20:-20, isa:15, plus20:35},
@@ -223,8 +221,7 @@
     }
   };
 
-  // ---------------- Tables (1979) — Atterrissage ----------------
-  // Modes: moderate (freinage modéré dur/herbe) et nobrake_grass (sans frein sur herbe)
+  /*=================== Tables 1979 — Atterrissage ===================*/
   const LDG_TABLE = {
     0: {
       temps:{minus20:-20, isa:0, plus20:20},
@@ -249,7 +246,7 @@
     }
   };
 
-  // ---------------- Utilitaires ----------------
+  /*=================== Utils ===================*/
   const $ = s => document.querySelector(s);
   const clamp = (v,min,max)=>Math.max(min,Math.min(max,v));
   const lerp = (x0,y0,x1,y1,x)=> y0 + (y1-y0)*((x-x0)/(x1-x0||1));
@@ -261,7 +258,7 @@
     if(oat<=xs[1]) return lerp(xs[0],ys[0],xs[1],ys[1],oat);
     return lerp(xs[1],ys[1],xs[2],ys[2],oat);
   }
-  function interpTO(altFt,oat,massKg,surface,kind){ // kind: 'roll'|'pass'
+  function interpTO(altFt,oat,massKg,surface,kind){ // 'roll'|'pass'
     const low = altFt<=0?0:altFt>=8000?8000:(altFt<=4000?0:4000);
     const high= altFt<=0?0:altFt>=8000?8000:(altFt<=4000?4000:8000);
     const alpha = clamp((massKg-700)/(900-700),0,1);
@@ -288,7 +285,7 @@
     return lerp(low,valAt(low),high,valAt(high),altFt);
   }
   function windComponents(qfu, windDir, windKt){
-    const diff = ((windDir - qfu + 540) % 360) - 180; // [-180,180]
+    const diff = ((windDir - qfu + 540) % 360) - 180;
     const rad = diff * Math.PI/180;
     return { headwind: windKt*Math.cos(rad), crosswind: windKt*Math.sin(rad) };
   }
@@ -309,7 +306,7 @@
     return 'bad';
   }
 
-  // ---------------- État & UI ----------------
+  /*=================== État & UI ===================*/
   let surface='hard';
   let landingMode='moderate';
 
@@ -374,10 +371,10 @@
     const item = Array.isArray(data) ? data[0] : data;
     const raw = item?.raw || item?.METAR || item?.text || '';
     if(!raw) throw new Error('Aucun METAR');
-    return { raw, time: item?.time || item?.obsTime || item?.obsTimeUtc || '' };
+    return { raw };
   }
   function parseWindFromMetar(raw){
-    const m = raw.match(/\b(VRB|\\d{3})(\\d{2})(G(\\d{2}))?KT\\b/);
+    const m = raw.match(/\b(VRB|\d{3})(\d{2})(G(\d{2}))?KT\b/);
     if(!m) return null;
     const dir = m[1]==='VRB' ? null : Number(m[1]);
     const spd = Number(m[2]);
@@ -418,7 +415,7 @@
     const ldw   = Number($('#ldw').value||900);
     const noSpats = $('#noSpats').checked;
 
-    // ISA text
+    // ISA
     $('#isaText').textContent = isaAt(alt).toFixed(1);
 
     // Vent + composantes
@@ -443,7 +440,7 @@
     // Interpolations (on affiche roll + pass mais on CALCULE avec pass)
     const baseTO_pass  = interpTO(alt, oat, tow, surface, 'pass');
     const baseTO_roll  = interpTO(alt, oat, tow, surface, 'roll');
-    const baseLDG_pass = interpLDG(alt, oat, ldw, landingMode, 'pass');
+    const baseLDG_pass = interpLDG(alt, oat, ldw, 'moderate'===landingMode?'moderate':'nobrake_grass', 'pass');
     const baseLDG_roll = interpLDG(alt, oat, ldw, landingMode, 'roll');
 
     const windF = headwindFactor(hw);
