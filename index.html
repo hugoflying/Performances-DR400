@@ -37,13 +37,8 @@
     .field.strong .v{font-weight:800;font-size:18px}
     .header{display:flex;gap:12px;align-items:center;justify-content:space-between}
     .muted{color:var(--muted)}
-    .badge{padding:6px 10px;border-radius:999px;border:1px solid var(--line);font-size:12px}
-    .switch{display:flex;gap:8px}
-    .switch .btn{padding:8px 10px}
     .footer{font-size:12px;color:var(--muted);margin-top:18px}
-    .chips{display:flex;gap:8px;flex-wrap:wrap}
     .hidden{display:none}
-    /* Impr. */
     @media print{
       .no-print{display:none !important}
       body{background:#fff}
@@ -56,9 +51,10 @@
 <div class="container">
   <div class="header">
     <h1>DR400-120 · Calculateur de performances</h1>
-    <div class="chips no-print">
+    <div class="no-print" style="display:flex;gap:8px;flex-wrap:wrap">
       <button id="importCsvBtn" class="btn">Importer CSV terrains</button>
       <input id="csvInput" type="file" accept=".csv" class="hidden" />
+      <button id="btnMetar" class="btn">Charger METAR (ICAO)</button>
       <button class="btn primary" onclick="window.print()">Imprimer</button>
     </div>
   </div>
@@ -87,12 +83,13 @@
         </label>
         <div class="grid1">
           <label>Surface piste</label>
-          <div class="switch">
+          <div style="display:flex;gap:8px">
             <button id="surfHard" class="btn toggle on">Dur</button>
             <button id="surfGrass" class="btn toggle">Herbe</button>
           </div>
         </div>
       </div>
+      <div id="metarInfo" class="muted" style="margin-top:6px"></div>
     </section>
 
     <!-- Conditions -->
@@ -132,6 +129,7 @@
           <input id="noSpats" type="checkbox"/> Sans carénages de roues (TO +3%)
         </label>
       </div>
+      <div class="muted" style="margin-top:10px">ISA terrain estimée : <span id="isaText">15.0</span>°C</div>
     </section>
 
     <!-- Masses -->
@@ -145,14 +143,13 @@
           <input id="ldw" type="number" value="900"/>
         </label>
       </div>
-      <div class="grid1" style="margin-top:10px">
+      <div style="margin-top:10px">
         <label>Atterrissage — mode</label>
-        <div class="switch">
+        <div style="display:flex;gap:8px;margin-top:6px">
           <button id="ldgModerate" class="btn toggle on">Freinage modéré (dur/herbe)</button>
           <button id="ldgNoBrake" class="btn toggle">Sans frein sur herbe</button>
         </div>
       </div>
-      <div class="muted" style="margin-top:10px">ISA terrain estimée : <span id="isaText">15.0</span>°C</div>
     </section>
   </div>
 
@@ -164,7 +161,8 @@
         <span id="toBadge" class="pill">—</span>
       </div>
       <div class="grid2" style="margin-top:8px">
-        <div class="field"><div class="k">Base (manuel)</div><div id="toBase" class="v">—</div></div>
+        <div class="field"><div class="k">Base (passage 15 m)</div><div id="toBasePass" class="v">—</div></div>
+        <div class="field"><div class="k">Roulement (info)</div><div id="toBaseRoll" class="v">—</div></div>
         <div class="field"><div class="k">Facteur vent</div><div id="toWindF" class="v">—</div></div>
         <div class="field"><div class="k">Carénages</div><div id="toSpat" class="v">—</div></div>
         <div class="field"><div class="k">Facteur supplémentaire</div><div id="toExtra" class="v">—</div></div>
@@ -181,7 +179,8 @@
         <span id="ldgBadge" class="pill">—</span>
       </div>
       <div class="grid2" style="margin-top:8px">
-        <div class="field"><div class="k">Base (manuel)</div><div id="ldgBase" class="v">—</div></div>
+        <div class="field"><div class="k">Base (passage 15 m)</div><div id="ldgBasePass" class="v">—</div></div>
+        <div class="field"><div class="k">Roulement (info)</div><div id="ldgBaseRoll" class="v">—</div></div>
         <div class="field"><div class="k">Facteur vent</div><div id="ldgWindF" class="v">—</div></div>
         <div class="field"><div class="k">Facteur supplémentaire</div><div id="ldgExtra" class="v">—</div></div>
         <div class="field highlight"><div class="k">Résultat</div><div id="ldgRes" class="v">—</div></div>
@@ -192,21 +191,62 @@
   </section>
 
   <div class="footer">
-    Sources : Manuel de vol DR400-120 (perf. décollage/atterrissage, vent nul) · Facteurs vent du manuel (0/10/20/30 kt). Bulletin ROBIN « Vol sans carénages de roues » : +3 % sur distance décollage (seulement).
+    Sources : Manuel de vol DR400-120 (édition 1979) – tableaux décollage/atterrissage « roulement » et « passage 15 m ». Facteurs vent du manuel (0/10/20/30 kt). Bulletin ROBIN « Vol sans carénages de roues » : +3 % sur distance de décollage (15 m). METAR : <b>NOAA Aviation Weather Center API</b> (aviationweather.gov).
   </div>
 </div>
 
 <script>
-  // ---------------- Données des tableaux (ignorer valeurs entre parenthèses) ----------------
+  // ---------------- Tables (1979) — Décollage ----------------
+  // Pour chaque altitude: températures (Std-20 / ISA / Std+20) et valeurs
+  // Surface: hard/grass ; kg700/kg900 ; {roll:[...], pass:[...]}
   const TO_TABLE = {
-    0:   { temps:{minus20:-20, isa:15,  plus20:35},  hard:{kg700:[285,315,345], kg900:[480,535,590]}, grass:{kg700:[320,355,395], kg900:[570,640,715]} },
-    4000:{ temps:{minus20:-13, isa:7,   plus20:27},  hard:{kg700:[375,415,460], kg900:[645,720,800]}, grass:{kg700:[430,485,540], kg900:[800,905,1025]} },
-    8000:{ temps:{minus20:-21, isa:-1,  plus20:19},  hard:{kg700:[500,560,620], kg900:[890,1000,1125]},grass:{kg700:[595,675,760],kg900:[1165,1350,1550]} }
+    0: {
+      temps:{minus20:-20, isa:15, plus20:35},
+      hard:{ kg700:{roll:[130,145,165], pass:[285,315,345]},
+             kg900:{roll:[225,235,285], pass:[480,535,590]} },
+      grass:{kg700:{roll:[165,185,215], pass:[320,355,395]},
+             kg900:{roll:[315,360,410], pass:[570,640,715]} }
+    },
+    4000: {
+      temps:{minus20:-20, isa:7, plus20:27},
+      hard:{ kg700:{roll:[175,195,220], pass:[375,415,460]},
+             kg900:{roll:[305,345,390], pass:[645,720,800]} },
+      grass:{kg700:{roll:[230,265,300], pass:[430,485,540]},
+             kg900:{roll:[460,530,615], pass:[800,905,1025]} }
+    },
+    8000: {
+      temps:{minus20:-20, isa:-1, plus20:19},
+      hard:{ kg700:{roll:[235,265,300], pass:[500,560,620]},
+             kg900:{roll:[425,475,535], pass:[890,1000,1125]} },
+      grass:{kg700:{roll:[330,380,440], pass:[595,675,760]},
+             kg900:{roll:[700,820,960], pass:[1165,1350,1550]} }
+    }
   };
+
+  // ---------------- Tables (1979) — Atterrissage ----------------
+  // Modes: moderate (freinage modéré dur/herbe) et nobrake_grass (sans frein sur herbe)
   const LDG_TABLE = {
-    0:   { temps:{minus20:-20, isa:15,  plus20:35},  moderate:{kg700:[365,385,400], kg900:[435,460,485]}, nobrake_grass:{kg700:[435,460,485], kg900:[530,560,590]} },
-    4000:{ temps:{minus20:-13, isa:7,   plus20:27},  moderate:{kg700:[395,420,440], kg900:[475,505,535]}, nobrake_grass:{kg700:[475,505,530], kg900:[580,615,655]} },
-    8000:{ temps:{minus20:-21, isa:-1,  plus20:19},  moderate:{kg700:[430,460,485], kg900:[525,555,590]}, nobrake_grass:{kg700:[525,555,590], kg900:[640,680,725]} }
+    0: {
+      temps:{minus20:-20, isa:0, plus20:20},
+      moderate:{ kg700:{roll:[145,155,165], pass:[365,385,400]},
+                 kg900:{roll:[185,200,210], pass:[435,460,485]} },
+      nobrake_grass:{ kg700:{roll:[215,230,250], pass:[435,460,485]},
+                       kg900:{roll:[280,300,325], pass:[530,560,590]} }
+    },
+    4000: {
+      temps:{minus20:-20, isa:7, plus20:27},
+      moderate:{ kg700:{roll:[160,175,185], pass:[395,420,440]},
+                 kg900:{roll:[205,225,240], pass:[475,505,535]} },
+      nobrake_grass:{ kg700:{roll:[240,260,285], pass:[475,505,530]},
+                       kg900:{roll:[310,335,360], pass:[580,615,655]} }
+    },
+    8000: {
+      temps:{minus20:-20, isa:-1, plus20:19},
+      moderate:{ kg700:{roll:[180,195,210], pass:[430,460,485]},
+                 kg900:{roll:[235,250,270], pass:[525,555,590]} },
+      nobrake_grass:{ kg700:{roll:[275,290,315], pass:[525,555,590]},
+                       kg900:{roll:[350,375,405], pass:[640,680,725]} }
+    }
   };
 
   // ---------------- Utilitaires ----------------
@@ -214,35 +254,34 @@
   const clamp = (v,min,max)=>Math.max(min,Math.min(max,v));
   const lerp = (x0,y0,x1,y1,x)=> y0 + (y1-y0)*((x-x0)/(x1-x0||1));
   const isaAt = altFt => 15 - 2*(altFt/1000);
-
-  function interpTempForAltitude(rowTemps, arr, oat){
+  function interpTemp(rowTemps, arr, oat){
     const xs=[rowTemps.minus20,rowTemps.isa,rowTemps.plus20], ys=arr;
     if(oat<=xs[0]) return ys[0];
     if(oat>=xs[2]) return ys[2];
     if(oat<=xs[1]) return lerp(xs[0],ys[0],xs[1],ys[1],oat);
     return lerp(xs[1],ys[1],xs[2],ys[2],oat);
   }
-  function interpTO(altFt,oat,massKg,surface){
+  function interpTO(altFt,oat,massKg,surface,kind){ // kind: 'roll'|'pass'
     const low = altFt<=0?0:altFt>=8000?8000:(altFt<=4000?0:4000);
     const high= altFt<=0?0:altFt>=8000?8000:(altFt<=4000?4000:8000);
     const alpha = clamp((massKg-700)/(900-700),0,1);
     const valAt = (alt)=>{
       const t=TO_TABLE[alt];
-      const v700 = interpTempForAltitude(t.temps, t[surface].kg700, oat);
-      const v900 = interpTempForAltitude(t.temps, t[surface].kg900, oat);
+      const v700 = interpTemp(t.temps, t[surface].kg700[kind], oat);
+      const v900 = interpTemp(t.temps, t[surface].kg900[kind], oat);
       return lerp(0,v700,1,v900,alpha);
     };
     if(low===high) return valAt(low);
     return lerp(low,valAt(low),high,valAt(high),altFt);
   }
-  function interpLDG(altFt,oat,massKg,mode){
+  function interpLDG(altFt,oat,massKg,mode,kind){
     const low = altFt<=0?0:altFt>=8000?8000:(altFt<=4000?0:4000);
     const high= altFt<=0?0:altFt>=8000?8000:(altFt<=4000?4000:8000);
     const alpha = clamp((massKg-700)/(900-700),0,1);
     const valAt = (alt)=>{
       const t=LDG_TABLE[alt];
-      const v700 = interpTempForAltitude(t.temps, t[mode].kg700, oat);
-      const v900 = interpTempForAltitude(t.temps, t[mode].kg900, oat);
+      const v700 = interpTemp(t.temps, t[mode].kg700[kind], oat);
+      const v900 = interpTemp(t.temps, t[mode].kg900[kind], oat);
       return lerp(0,v700,1,v900,alpha);
     };
     if(low===high) return valAt(low);
@@ -274,16 +313,9 @@
   let surface='hard';
   let landingMode='moderate';
 
-  const inputs = [
-    'qfu','toda','lda','alt','oat','windDir','windKt',
-    'extraTO','extraLDG','safety','tow','ldw','noSpats','icao'
-  ];
-  inputs.forEach(id=>{
-    const el = $('#'+id);
-    el.addEventListener(id==='noSpats'?'change':'input', compute);
-  });
+  ['qfu','toda','lda','alt','oat','windDir','windKt','extraTO','extraLDG','safety','tow','ldw','noSpats','icao']
+    .forEach(id=>$('#'+id).addEventListener(id==='noSpats'?'change':'input', compute));
 
-  // Toggles
   $('#surfHard').onclick=()=>{surface='hard';$('#surfHard').classList.add('on');$('#surfGrass').classList.remove('on');compute()};
   $('#surfGrass').onclick=()=>{surface='grass';$('#surfGrass').classList.add('on');$('#surfHard').classList.remove('on');compute()};
   $('#ldgModerate').onclick=()=>{landingMode='moderate';$('#ldgModerate').classList.add('on');$('#ldgNoBrake').classList.remove('on');compute()};
@@ -333,6 +365,36 @@
     });
   }
 
+  // METAR NOAA / AWC
+  async function fetchMetarAWC(icao){
+    const url = `https://aviationweather.gov/api/data/metar?ids=${encodeURIComponent(icao)}&format=json`;
+    const r = await fetch(url);
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const data = await r.json();
+    const item = Array.isArray(data) ? data[0] : data;
+    const raw = item?.raw || item?.METAR || item?.text || '';
+    if(!raw) throw new Error('Aucun METAR');
+    return { raw, time: item?.time || item?.obsTime || item?.obsTimeUtc || '' };
+  }
+  function parseWindFromMetar(raw){
+    const m = raw.match(/\b(VRB|\\d{3})(\\d{2})(G(\\d{2}))?KT\\b/);
+    if(!m) return null;
+    const dir = m[1]==='VRB' ? null : Number(m[1]);
+    const spd = Number(m[2]);
+    return { dir, spd, gust: m[4]?Number(m[4]):null };
+  }
+  $('#btnMetar').onclick = async ()=>{
+    const icao = ($('#icao').value||'').trim().toUpperCase();
+    if(!icao){ alert('Renseigne un ICAO'); return; }
+    $('#metarInfo').textContent = 'METAR: chargement...';
+    try{
+      const {raw} = await fetchMetarAWC(icao);
+      const w = parseWindFromMetar(raw);
+      if(w){ if(w.dir!==null) $('#windDir').value=w.dir; $('#windKt').value=w.gust||w.spd; compute(); }
+      $('#metarInfo').textContent = `METAR ${icao}: ${raw}`;
+    }catch(e){ $('#metarInfo').textContent = 'METAR indisponible'; }
+  };
+
   function setBadge(el, state){
     el.className='pill';
     if(state==='ok') el.classList.add('ok');
@@ -359,7 +421,7 @@
     // ISA text
     $('#isaText').textContent = isaAt(alt).toFixed(1);
 
-    // Vent
+    // Vent + composantes
     const comp = windComponents(qfu,wdir,wkt);
     const hw = Math.max(0, comp.headwind);
     const xw = Math.abs(comp.crosswind);
@@ -368,21 +430,34 @@
     $('#tailWarn').textContent = comp.headwind < 0 ? '(vent arrière détecté)' : '';
     $('#tailMsg').textContent = comp.headwind < 0 ? 'Vent arrière : le manuel ne fournit pas de facteur → résultat décollage non valide.' : '';
 
-    // Interpolations
-    const baseTO  = interpTO(alt, oat, tow, surface);
-    const baseLDG = interpLDG(alt, oat, ldw, landingMode);
+    // Limite travers 22 kt
+    const crossLimit = 22;
+    const vEl = $('#xwText').parentElement.parentElement.querySelector('.v');
+    const old = vEl.querySelector('#xwlimit'); if(old) old.remove();
+    if(xw > crossLimit){
+      const warn = document.createElement('span');
+      warn.id='xwlimit'; warn.style.color='#dc2626'; warn.textContent = ` · ⚠️ ${xw.toFixed(0)} kt > ${crossLimit} kt (limite DR400)`;
+      vEl.appendChild(warn);
+    }
+
+    // Interpolations (on affiche roll + pass mais on CALCULE avec pass)
+    const baseTO_pass  = interpTO(alt, oat, tow, surface, 'pass');
+    const baseTO_roll  = interpTO(alt, oat, tow, surface, 'roll');
+    const baseLDG_pass = interpLDG(alt, oat, ldw, landingMode, 'pass');
+    const baseLDG_roll = interpLDG(alt, oat, ldw, landingMode, 'roll');
 
     const windF = headwindFactor(hw);
     const spatF = noSpats ? 1.03 : 1.00;
 
-    const toCalc = Math.round(baseTO * windF * extraTO * spatF);
-    const ldgCalc = Math.round(baseLDG * windF * extraLDG);
+    const toCalc = Math.round(baseTO_pass * windF * extraTO * spatF);
+    const ldgCalc = Math.round(baseLDG_pass * windF * extraLDG);
 
     const toMargin  = Math.round(toCalc  * (1 + safety/100));
     const ldgMargin = Math.round(ldgCalc * (1 + safety/100));
 
     // UI
-    $('#toBase').textContent = Math.round(baseTO)+' m';
+    $('#toBasePass').textContent = Math.round(baseTO_pass)+' m';
+    $('#toBaseRoll').textContent = Math.round(baseTO_roll)+' m';
     $('#toWindF').textContent = windF.toFixed(2)+'×';
     $('#toSpat').textContent = (spatF.toFixed(2)+'×') + (noSpats?' (sans carénages)':' (carénages présents)');
     $('#toExtra').textContent = extraTO.toFixed(2)+'×';
@@ -390,7 +465,8 @@
     $('#toResM').textContent = toMargin+' m';
     $('#todaShow').textContent = toda? (toda+' m') : '—';
 
-    $('#ldgBase').textContent = Math.round(baseLDG)+' m';
+    $('#ldgBasePass').textContent = Math.round(baseLDG_pass)+' m';
+    $('#ldgBaseRoll').textContent = Math.round(baseLDG_roll)+' m';
     $('#ldgWindF').textContent = windF.toFixed(2)+'×';
     $('#ldgExtra').textContent = extraLDG.toFixed(2)+'×';
     $('#ldgRes').textContent = ldgCalc+' m';
