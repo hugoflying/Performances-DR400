@@ -7,7 +7,7 @@
   <style>
     :root{
       --bg:#f6f7fb;--card:#fff;--ink:#0f172a;
-      --muted:#6b7280;--ok:#16a34a;--warn:#f59e0b;--bad:#dc2626;
+      --muted:#6b7280;--ok:#16a34a;--bad:#dc2626;
       --line:#e5e7eb;--primary:#2563eb;
     }
     *{box-sizing:border-box}
@@ -21,15 +21,10 @@
     .btn{border:1px solid var(--line);background:#fff;padding:9px 12px;border-radius:12px;cursor:pointer}
     .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
     .btn.toggle.on{background:var(--primary);color:#fff;border-color:var(--primary)}
-    .btn:disabled{opacity:.6;cursor:not-allowed}
     label{display:block;font-size:12px;color:var(--muted)}
     input,select{width:100%;margin-top:6px;padding:10px;border-radius:12px;border:1px solid var(--line);background:#fff}
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     .grid1{display:grid;grid-template-columns:1fr;gap:12px}
-    .pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:12px}
-    .pill.ok{background:#dcfce7;border-color:#86efac;color:#14532d}
-    .pill.warn{background:#fef3c7;border-color:#fcd34d;color:#7c2d12}
-    .pill.bad{background:#fee2e2;border-color:#fca5a5;color:#7f1d1d}
     .field{border:1px solid var(--line);border-radius:12px;background:#f8fafc;padding:10px}
     .field .k{font-size:12px;color:var(--muted)}
     .field .v{margin-top:4px;font-weight:600}
@@ -39,6 +34,13 @@
     .muted{color:var(--muted)}
     .footer{font-size:12px;color:var(--muted);margin-top:18px}
     .hidden{display:none}
+    .pill{display:inline-block;padding:5px 10px;border-radius:999px;border:1px solid var(--line);font-weight:700}
+    .pill.ok{background:#dcfce7;color:#14532d;border-color:#86efac}
+    .pill.bad{background:#fee2e2;color:#7f1d1d;border-color:#fca5a5}
+    .pill.neutral{background:#f3f4f6;color:#374151;border-color:#e5e7eb}
+    .banner{margin-top:10px;padding:14px;border-radius:14px;font-size:18px;font-weight:800}
+    .banner.ok{background:#dcfce7;color:#14532d;border:1px solid #86efac}
+    .banner.bad{background:#fee2e2;color:#7f1d1d;border:1px solid #fca5a5}
     @media print{
       .no-print{display:none !important}
       body{background:#fff}
@@ -158,15 +160,19 @@
     <div class="card">
       <div class="header">
         <h2>Décollage (15 m)</h2>
-        <span id="toBadge" class="pill">—</span>
+        <span id="toBadge" class="pill neutral">—</span>
       </div>
+
+      <!-- Bannière résultat -->
+      <div id="toBanner" class="banner neutral" style="display:none"></div>
+
       <div class="grid2" style="margin-top:8px">
         <div class="field"><div class="k">Base (passage 15 m)</div><div id="toBasePass" class="v">—</div></div>
         <div class="field"><div class="k">Roulement (info)</div><div id="toBaseRoll" class="v">—</div></div>
         <div class="field"><div class="k">Facteur vent</div><div id="toWindF" class="v">—</div></div>
         <div class="field"><div class="k">Carénages</div><div id="toSpat" class="v">—</div></div>
         <div class="field"><div class="k">Facteur supplémentaire</div><div id="toExtra" class="v">—</div></div>
-        <div class="field highlight"><div class="k">Résultat</div><div id="toRes" class="v">—</div></div>
+        <div class="field highlight"><div class="k">Résultat (sans marge)</div><div id="toRes" class="v">—</div></div>
         <div class="field strong"><div class="k">+ Marge</div><div id="toResM" class="v">—</div></div>
         <div class="field"><div class="k">TODA dispo</div><div id="todaShow" class="v">—</div></div>
       </div>
@@ -176,14 +182,18 @@
     <div class="card">
       <div class="header">
         <h2>Atterrissage (15 m → arrêt)</h2>
-        <span id="ldgBadge" class="pill">—</span>
+        <span id="ldgBadge" class="pill neutral">—</span>
       </div>
+
+      <!-- Bannière résultat -->
+      <div id="ldgBanner" class="banner neutral" style="display:none"></div>
+
       <div class="grid2" style="margin-top:8px">
         <div class="field"><div class="k">Base (passage 15 m)</div><div id="ldgBasePass" class="v">—</div></div>
         <div class="field"><div class="k">Roulement (info)</div><div id="ldgBaseRoll" class="v">—</div></div>
         <div class="field"><div class="k">Facteur vent</div><div id="ldgWindF" class="v">—</div></div>
         <div class="field"><div class="k">Facteur supplémentaire</div><div id="ldgExtra" class="v">—</div></div>
-        <div class="field highlight"><div class="k">Résultat</div><div id="ldgRes" class="v">—</div></div>
+        <div class="field highlight"><div class="k">Résultat (sans marge)</div><div id="ldgRes" class="v">—</div></div>
         <div class="field strong"><div class="k">+ Marge</div><div id="ldgResM" class="v">—</div></div>
         <div class="field"><div class="k">LDA dispo</div><div id="ldaShow" class="v">—</div></div>
       </div>
@@ -199,21 +209,21 @@
   /*=================== Tables 1979 — Décollage ===================*/
   const TO_TABLE = {
     0: {
-      temps:{minus20:-20, isa:15, plus20:35},
+      temps:{minus20:-5, isa:15, plus20:35},            // CORRIGÉ
       hard:{ kg700:{roll:[130,145,165], pass:[285,315,345]},
              kg900:{roll:[225,235,285], pass:[480,535,590]} },
       grass:{kg700:{roll:[165,185,215], pass:[320,355,395]},
              kg900:{roll:[315,360,410], pass:[570,640,715]} }
     },
     4000: {
-      temps:{minus20:-20, isa:7, plus20:27},
+      temps:{minus20:-13, isa:7, plus20:27},            // CORRIGÉ
       hard:{ kg700:{roll:[175,195,220], pass:[375,415,460]},
              kg900:{roll:[305,345,390], pass:[645,720,800]} },
       grass:{kg700:{roll:[230,265,300], pass:[430,485,540]},
              kg900:{roll:[460,530,615], pass:[800,905,1025]} }
     },
     8000: {
-      temps:{minus20:-20, isa:-1, plus20:19},
+      temps:{minus20:-21, isa:-1, plus20:19},           // CORRIGÉ
       hard:{ kg700:{roll:[235,265,300], pass:[500,560,620]},
              kg900:{roll:[425,475,535], pass:[890,1000,1125]} },
       grass:{kg700:{roll:[330,380,440], pass:[595,675,760]},
@@ -224,21 +234,21 @@
   /*=================== Tables 1979 — Atterrissage ===================*/
   const LDG_TABLE = {
     0: {
-      temps:{minus20:-20, isa:0, plus20:20},
+      temps:{minus20:-5, isa:15, plus20:35},            // CORRIGÉ
       moderate:{ kg700:{roll:[145,155,165], pass:[365,385,400]},
                  kg900:{roll:[185,200,210], pass:[435,460,485]} },
       nobrake_grass:{ kg700:{roll:[215,230,250], pass:[435,460,485]},
                        kg900:{roll:[280,300,325], pass:[530,560,590]} }
     },
     4000: {
-      temps:{minus20:-20, isa:7, plus20:27},
+      temps:{minus20:-13, isa:7, plus20:27},            // CORRIGÉ
       moderate:{ kg700:{roll:[160,175,185], pass:[395,420,440]},
                  kg900:{roll:[205,225,240], pass:[475,505,535]} },
       nobrake_grass:{ kg700:{roll:[240,260,285], pass:[475,505,530]},
                        kg900:{roll:[310,335,360], pass:[580,615,655]} }
     },
     8000: {
-      temps:{minus20:-20, isa:-1, plus20:19},
+      temps:{minus20:-21, isa:-1, plus20:19},           // CORRIGÉ
       moderate:{ kg700:{roll:[180,195,210], pass:[430,460,485]},
                  kg900:{roll:[235,250,270], pass:[525,555,590]} },
       nobrake_grass:{ kg700:{roll:[275,290,315], pass:[525,555,590]},
@@ -298,12 +308,6 @@
       if(x>=p0.x && x<=p1.x) return lerp(p0.x,p0.y,p1.x,p1.y,x);
     }
     return pts.at(-1).y;
-  }
-  function status(val,limit){
-    if(!limit) return 'neutral';
-    if(val<=limit) return 'ok';
-    if(val<=limit*1.1) return 'warn';
-    return 'bad';
   }
 
   /*=================== État & UI ===================*/
@@ -392,12 +396,18 @@
     }catch(e){ $('#metarInfo').textContent = 'METAR indisponible'; }
   };
 
-  function setBadge(el, state){
-    el.className='pill';
-    if(state==='ok') el.classList.add('ok');
-    else if(state==='warn') el.classList.add('warn');
-    else if(state==='bad') el.classList.add('bad');
-    el.textContent = state==='ok'?'OK':state==='warn'?'LIMITE':state==='bad'?'KO':'—';
+  function badge(el, state){
+    el.className='pill ' + (state==='ok'?'ok':state==='bad'?'bad':'neutral');
+    el.textContent = state==='ok'?'OK':state==='bad'?'KO':'—';
+  }
+  function banner(el, state, text){
+    el.style.display = state==='neutral'?'none':'block';
+    el.className = 'banner ' + (state==='ok'?'ok':'bad');
+    el.textContent = text;
+  }
+  function status(val,limit){
+    if(!limit) return 'neutral';
+    return val<=limit ? 'ok' : 'bad';
   }
 
   function compute(){
@@ -427,7 +437,7 @@
     $('#tailWarn').textContent = comp.headwind < 0 ? '(vent arrière détecté)' : '';
     $('#tailMsg').textContent = comp.headwind < 0 ? 'Vent arrière : le manuel ne fournit pas de facteur → résultat décollage non valide.' : '';
 
-    // Limite travers 22 kt
+    // Limite travers 22 kt (affiche juste un message rouge après les composantes)
     const crossLimit = 22;
     const vEl = $('#xwText').parentElement.parentElement.querySelector('.v');
     const old = vEl.querySelector('#xwlimit'); if(old) old.remove();
@@ -437,10 +447,10 @@
       vEl.appendChild(warn);
     }
 
-    // Interpolations (on affiche roll + pass mais on CALCULE avec pass)
+    // Interpolations (affiche roll + pass ; calcule avec pass)
     const baseTO_pass  = interpTO(alt, oat, tow, surface, 'pass');
     const baseTO_roll  = interpTO(alt, oat, tow, surface, 'roll');
-    const baseLDG_pass = interpLDG(alt, oat, ldw, 'moderate'===landingMode?'moderate':'nobrake_grass', 'pass');
+    const baseLDG_pass = interpLDG(alt, oat, ldw, landingMode, 'pass');
     const baseLDG_roll = interpLDG(alt, oat, ldw, landingMode, 'roll');
 
     const windF = headwindFactor(hw);
@@ -452,7 +462,7 @@
     const toMargin  = Math.round(toCalc  * (1 + safety/100));
     const ldgMargin = Math.round(ldgCalc * (1 + safety/100));
 
-    // UI
+    // UI détails
     $('#toBasePass').textContent = Math.round(baseTO_pass)+' m';
     $('#toBaseRoll').textContent = Math.round(baseTO_roll)+' m';
     $('#toWindF').textContent = windF.toFixed(2)+'×';
@@ -470,8 +480,27 @@
     $('#ldgResM').textContent = ldgMargin+' m';
     $('#ldaShow').textContent = lda? (lda+' m') : '—';
 
-    setBadge($('#toBadge'), status(toMargin, toda));
-    setBadge($('#ldgBadge'), status(ldgMargin, lda));
+    // Verdicts binaires + bannières visibles
+    const stTO = status(toMargin, toda);
+    const stLDG = status(ldgMargin, lda);
+    badge(document.getElementById('toBadge'), stTO);
+    badge(document.getElementById('ldgBadge'), stLDG);
+
+    const toDelta = toda? (toda - toMargin) : null;
+    const ldgDelta = lda? (lda - ldgMargin) : null;
+
+    banner(
+      document.getElementById('toBanner'),
+      stTO,
+      toda ? `Décollage requis (marge incluse) : ${toMargin} m — TODA ${toda} m — Δ ${toDelta>=0?'+':''}${toDelta} m` :
+             `Décollage requis (marge incluse) : ${toMargin} m`
+    );
+    banner(
+      document.getElementById('ldgBanner'),
+      stLDG,
+      lda ? `Atterrissage requis (marge incluse) : ${ldgMargin} m — LDA ${lda} m — Δ ${ldgDelta>=0?'+':''}${ldgDelta} m` :
+            `Atterrissage requis (marge incluse) : ${ldgMargin} m`
+    );
   }
 
   // Initial compute
