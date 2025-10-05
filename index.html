@@ -6,9 +6,8 @@
   <title>DR400-120 – Calculateur de performances</title>
   <style>
     :root{
-      --bg:#f6f7fb;--card:#fff;--ink:#0f172a;
-      --muted:#6b7280;--ok:#16a34a;--bad:#dc2626;
-      --line:#e5e7eb;--primary:#2563eb;
+      --bg:#f6f7fb;--card:#fff;--ink:#0f172a;--muted:#6b7280;
+      --ok:#16a34a;--bad:#dc2626;--line:#e5e7eb;--primary:#2563eb;
     }
     *{box-sizing:border-box}
     html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue","Noto Sans",Arial}
@@ -24,18 +23,17 @@
     label{display:block;font-size:12px;color:var(--muted)}
     input,select{width:100%;margin-top:6px;padding:10px;border-radius:12px;border:1px solid var(--line);background:#fff}
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
     .grid1{display:grid;grid-template-columns:1fr;gap:12px}
     .field{border:1px solid var(--line);border-radius:12px;background:#f8fafc;padding:10px}
     .field .k{font-size:12px;color:var(--muted)}
     .field .v{margin-top:4px;font-weight:600}
-    .field.highlight{background:#fff7ed}
-    .field.strong .v{font-weight:800;font-size:18px}
     .header{display:flex;gap:12px;align-items:center;justify-content:space-between}
     .muted{color:var(--muted)}
     .footer{font-size:12px;color:var(--muted);margin-top:18px}
     .hidden{display:none}
 
-    /* KPI moderne (binaire OK/KO) */
+    /* KPI binaire OK/KO */
     .kpi{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin:8px 0}
     .kpi .left{display:flex;flex-direction:column}
     .kpi .title{font-size:12px;color:var(--muted);letter-spacing:.02em}
@@ -48,9 +46,12 @@
     .chip.bad{background:#fee2e2;color:#7f1d1d;border-color:#fca5a5}
     .chip.neutral{background:#f3f4f6;color:#374151;border-color:#e5e7eb}
 
-    /* Ligne checkbox carénages bien alignée et responsive */
+    /* Checkbox carénages propre */
     .checkrow{grid-column:1/-1;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:6px}
     .checkrow span{white-space:normal}
+
+    .chips{display:flex;gap:8px;flex-wrap:wrap}
+    .chipbtn{padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:12px}
 
     @media print{
       .no-print{display:none !important}
@@ -67,7 +68,6 @@
     <div class="no-print" style="display:flex;gap:8px;flex-wrap:wrap">
       <button id="importCsvBtn" class="btn">Importer CSV terrains</button>
       <input id="csvInput" type="file" accept=".csv" class="hidden" />
-      <button id="btnMetar" class="btn">Charger METAR (NOAA)</button>
       <button class="btn primary" onclick="window.print()">Imprimer</button>
     </div>
   </div>
@@ -76,12 +76,27 @@
     <!-- Terrain / Piste -->
     <section class="card">
       <h2>Terrain / Piste</h2>
-      <div id="csvSelectWrap" class="grid1" style="margin-bottom:8px; display:none">
-        <label>Fiche de terrain importée
-          <select id="csvSelect"></select>
+
+      <!-- Sélecteurs FR (OurAirports) -->
+      <div class="grid3">
+        <label>Aérodrome [FR]
+          <select id="frAirport"></select>
+        </label>
+        <label>Piste
+          <select id="frRunway"></select>
+        </label>
+        <label>Intersection (m depuis seuil)
+          <input id="intersection" type="number" value="0"/>
         </label>
       </div>
-      <div class="grid2">
+      <div class="chips" style="margin-top:8px">
+        <button class="chipbtn" data-x="0">Seuil</button>
+        <button class="chipbtn" data-x="25">25%</button>
+        <button class="chipbtn" data-x="50">50%</button>
+        <button class="chipbtn" data-x="75">75%</button>
+      </div>
+
+      <div class="grid2" style="margin-top:10px">
         <label>ICAO
           <input id="icao" />
         </label>
@@ -102,7 +117,7 @@
           </div>
         </div>
       </div>
-      <div id="metarInfo" class="muted" style="margin-top:6px"></div>
+      <div class="muted" id="frInfo" style="margin-top:6px">Chargement des terrains FR…</div>
     </section>
 
     <!-- Conditions -->
@@ -125,7 +140,7 @@
         </div>
         <div class="field" style="grid-column:1/-1">
           <div class="k">Composantes vent</div>
-          <div class="v"><span id="hwText">0</span> kt face · <span id="xwText">0</span> kt travers · <span id="tailWarn" class="muted"></span></div>
+          <div class="v"><span id="hwText">0</span> kt face · <span id="xwText">0</span> kt travers · <span id="tailNote" class="muted"></span></div>
         </div>
       </div>
       <div class="grid2" style="margin-top:10px">
@@ -174,8 +189,6 @@
         <h2>Décollage (15 m)</h2>
         <span id="toChip" class="chip neutral">—</span>
       </div>
-
-      <!-- KPI clair et coloré -->
       <div id="toKpi" class="kpi">
         <div class="left">
           <span class="title">Requis (marge incluse)</span>
@@ -183,7 +196,6 @@
           <span class="sub">TODA dispo : <span id="todaMini">—</span></span>
         </div>
       </div>
-
       <div class="grid2" style="margin-top:8px">
         <div class="field"><div class="k">Base (passage 15 m)</div><div id="toBasePass" class="v">—</div></div>
         <div class="field"><div class="k">Roulement (info)</div><div id="toBaseRoll" class="v">—</div></div>
@@ -193,7 +205,6 @@
         <div class="field"><div class="k">Résultat (sans marge)</div><div id="toRes" class="v">—</div></div>
         <div class="field"><div class="k">+ Marge</div><div id="toResM" class="v">—</div></div>
       </div>
-      <div id="tailMsg" class="muted" style="margin-top:8px"></div>
     </div>
 
     <div class="card">
@@ -201,8 +212,6 @@
         <h2>Atterrissage (15 m → arrêt)</h2>
         <span id="ldgChip" class="chip neutral">—</span>
       </div>
-
-      <!-- KPI clair et coloré -->
       <div id="ldgKpi" class="kpi">
         <div class="left">
           <span class="title">Requis (marge incluse)</span>
@@ -210,7 +219,6 @@
           <span class="sub">LDA dispo : <span id="ldaMini">—</span></span>
         </div>
       </div>
-
       <div class="grid2" style="margin-top:8px">
         <div class="field"><div class="k">Base (passage 15 m)</div><div id="ldgBasePass" class="v">—</div></div>
         <div class="field"><div class="k">Roulement (info)</div><div id="ldgBaseRoll" class="v">—</div></div>
@@ -223,7 +231,7 @@
   </section>
 
   <div class="footer">
-    Sources : Manuel de vol DR400-120 (édition 1979) – tableaux décollage/atterrissage « roulement » et « passage 15 m ». Facteurs vent du manuel (0/10/20/30 kt). Bulletin ROBIN « Vol sans carénages de roues » : +3 % sur distance de décollage (15 m). METAR : <b>NOAA Aviation Weather Center API</b> (aviationweather.gov).
+    Sources : Manuel de vol DR400-120 (édition 1979) – tableaux décollage/atterrissage « roulement » et « passage 15 m ». Facteurs vent du manuel (10/20/30 kt face) & vent arrière (+10% par 2 kt). Bulletin ROBIN « Vol sans carénages de roues » : +3 % sur distance de décollage (15 m). Données terrains : OurAirports (airports.csv, runways.csv) — filtré France.
   </div>
 </div>
 
@@ -283,6 +291,7 @@
   const clamp = (v,min,max)=>Math.max(min,Math.min(max,v));
   const lerp = (x0,y0,x1,y1,x)=> y0 + (y1-y0)*((x-x0)/(x1-x0||1));
   const isaAt = altFt => 15 - 2*(altFt/1000);
+
   function interpTemp(rowTemps, arr, oat){
     const xs=[rowTemps.minus20,rowTemps.isa,rowTemps.plus20], ys=arr;
     if(oat<=xs[0]) return ys[0];
@@ -321,7 +330,8 @@
     const rad = diff * Math.PI/180;
     return { headwind: windKt*Math.cos(rad), crosswind: windKt*Math.sin(rad) };
   }
-  function headwindFactor(hw){
+  // Facteur distance dû au vent (manuel) : face 10→0.78, 20→0.63, 30→0.52 ; arrière +10% / 2 kt
+  function headwindFactorFace(hw){
     const pts=[{x:0,y:1.00},{x:10,y:0.78},{x:20,y:0.63},{x:30,y:0.52}];
     const x=clamp(hw,0,30);
     if(x===0) return 1;
@@ -330,6 +340,12 @@
       if(x>=p0.x && x<=p1.x) return lerp(p0.x,p0.y,p1.x,p1.y,x);
     }
     return pts.at(-1).y;
+  }
+  function windDistanceFactor(headwind){
+    if(headwind>=0) return headwindFactorFace(headwind);
+    const tw = Math.abs(headwind);
+    const steps = Math.ceil(tw/2); // tranche de 2 kt
+    return 1 + 0.10*steps;
   }
   function setChip(el, state){
     el.className='chip '+(state==='ok'?'ok':state==='bad'?'bad':'neutral');
@@ -347,7 +363,10 @@
   let surface='hard';
   let landingMode='moderate';
 
-  ['qfu','toda','lda','alt','oat','windDir','windKt','extraTO','extraLDG','safety','tow','ldw','noSpats','icao']
+  // Distances auto depuis OurAirports (si pas de TODA/LDA saisis)
+  let autoTODA = 0, autoLDA = 0, selLenM=0; // longueur piste pour % intersection
+
+  ['qfu','toda','lda','alt','oat','windDir','windKt','extraTO','extraLDG','safety','tow','ldw','noSpats','icao','intersection']
     .forEach(id=>$('#'+id).addEventListener(id==='noSpats'?'change':'input', compute));
 
   $('#surfHard').onclick=()=>{surface='hard';$('#surfHard').classList.add('on');$('#surfGrass').classList.remove('on');compute()};
@@ -355,8 +374,18 @@
   $('#ldgModerate').onclick=()=>{landingMode='moderate';$('#ldgModerate').classList.add('on');$('#ldgNoBrake').classList.remove('on');compute()};
   $('#ldgNoBrake').onclick=()=>{landingMode='nobrake_grass';$('#ldgNoBrake').classList.add('on');$('#ldgModerate').classList.remove('on');compute()};
 
-  // CSV import
-  const csvBtn = $('#importCsvBtn'), csvInput=$('#csvInput'), csvSelect=$('#csvSelect'), csvWrap=$('#csvSelectWrap');
+  // Chips intersection
+  document.querySelectorAll('.chipbtn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const pct = Number(btn.getAttribute('data-x'))||0;
+      const offset = Math.round(selLenM * (pct/100));
+      $('#intersection').value = String(offset);
+      compute();
+    });
+  });
+
+  // Import CSV manuel
+  const csvBtn = $('#importCsvBtn'), csvInput=$('#csvInput');
   let csvRows=[];
   csvBtn.onclick = ()=>csvInput.click();
   csvInput.onchange = e=>{
@@ -365,30 +394,13 @@
     r.onload=()=>{
       try{
         const rows=parseCSV(String(r.result));
-        csvRows=rows; csvSelect.innerHTML='';
-        rows.forEach((r,i)=>{
-          const opt=document.createElement('option');
-          opt.value=i;
-          opt.textContent=`${r.ICAO||r.icao||'?'} · ${r.Piste||r.piste||r.runway||'?'} · QFU ${r.QFU||r.qfu||'?'} · TODA ${r.TODA||r.toda||'?'} · LDA ${r.LDA||r.lda||'?'}`
-          csvSelect.appendChild(opt);
-        });
-        csvWrap.style.display='grid';
-        csvSelect.onchange=applyCsvRow;
-        csvSelect.value='0'; applyCsvRow();
+        csvRows=rows;
+        alert('CSV chargé. Utilise les champs ICAO/QFU/TODA/LDA ci-dessous.');
       }catch(err){ alert('CSV invalide'); }
     };
     r.readAsText(f);
   };
-  function applyCsvRow(){
-    const r = csvRows[Number(csvSelect.value)]||{};
-    $('#icao').value = (r.ICAO||r.icao||'').toUpperCase();
-    $('#qfu').value  = Number(r.QFU||r.qfu||0);
-    $('#toda').value = Number(r.TODA||r.toda||0);
-    $('#lda').value  = Number(r.LDA||r.lda||0);
-    const s = String(r.type||r.TYPE||r.Surface||'').toLowerCase();
-    if(s.includes('herbe')||s.includes('grass')) $('#surfGrass').click(); else $('#surfHard').click();
-    compute();
-  }
+
   function parseCSV(text){
     const sep = text.includes(';') ? ';' : ',';
     const [header,...lines]=text.split(/\r?\n/).filter(Boolean);
@@ -399,40 +411,133 @@
     });
   }
 
-  // METAR NOAA / AWC
-  async function fetchMetarAWC(icao){
-    const url = `https://aviationweather.gov/api/data/metar?ids=${encodeURIComponent(icao)}&format=json`;
-    const r = await fetch(url);
-    if(!r.ok) throw new Error('HTTP '+r.status);
-    const data = await r.json();
-    const item = Array.isArray(data) ? data[0] : data;
-    const raw = item?.raw || item?.METAR || item?.text || '';
-    if(!raw) throw new Error('Aucun METAR');
-    return { raw };
-  }
-  function parseWindFromMetar(raw){
-    const m = raw.match(/\b(VRB|\d{3})(\d{2})(G(\d{2}))?KT\b/);
-    if(!m) return null;
-    const dir = m[1]==='VRB' ? null : Number(m[1]);
-    const spd = Number(m[2]);
-    return { dir, spd, gust: m[4]?Number(m[4]):null };
-  }
-  $('#btnMetar').onclick = async ()=>{
-    const icao = ($('#icao').value||'').trim().toUpperCase();
-    if(!icao){ alert('Renseigne un ICAO'); return; }
-    $('#metarInfo').textContent = 'METAR: chargement...';
-    try{
-      const {raw} = await fetchMetarAWC(icao);
-      const w = parseWindFromMetar(raw);
-      if(w){ if(w.dir!==null) $('#windDir').value=w.dir; $('#windKt').value=w.gust||w.spd; compute(); }
-      $('#metarInfo').textContent = `METAR ${icao}: ${raw}`;
-    }catch(e){ $('#metarInfo').textContent = 'METAR indisponible'; }
-  };
+  /*=================== OurAirports [FR] ===================*/
+  const frAirportSel = $('#frAirport');
+  const frRunwaySel = $('#frRunway');
+  const frInfo = $('#frInfo');
 
+  let OA = { airports:[], runways:[] };
+  let byIcao = new Map(); // ICAO -> {name, runways:[{end, qfu, surface, len_m, disp_m, side:'le'|'he'}]}
+
+  async function loadOurAirportsFR(){
+    try{
+      const [aTxt, rTxt] = await Promise.all([
+        fetch('https://ourairports.com/data/airports.csv').then(r=>r.text()),
+        fetch('https://ourairports.com/data/runways.csv').then(r=>r.text()),
+      ]);
+      const A = parseCSV(aTxt);
+      const R = parseCSV(rTxt);
+      OA.airports = A.filter(x=>x.iso_country==='FR' && ['small_airport','medium_airport','large_airport'].includes(x.type));
+      OA.runways = R;
+
+      // Build index
+      byIcao.clear();
+      OA.airports.forEach(ap=>{
+        const icao = ap.ident;
+        if(!icao || icao.length!==4) return;
+        const name = ap.name;
+        const rws = OA.runways.filter(r=>r.airport_ident===icao);
+        const ends = [];
+        rws.forEach(r=>{
+          const len_m = Math.round((Number(r.length_ft)||0)*0.3048);
+          // LE end
+          if(r.le_ident){
+            ends.push({
+              end: String(r.le_ident),
+              qfu: Number(r.le_heading_degT)|| (parseInt(r.le_ident,10)*10 || 0),
+              surface: String(r.surface||'').toUpperCase(),
+              len_m,
+              disp_m: Math.round((Number(r.le_displaced_threshold_ft)||0)*0.3048),
+              side:'le'
+            });
+          }
+          // HE end
+          if(r.he_ident){
+            ends.push({
+              end: String(r.he_ident),
+              qfu: Number(r.he_heading_degT)|| (parseInt(r.he_ident,10)*10 || 0),
+              surface: String(r.surface||'').toUpperCase(),
+              len_m,
+              disp_m: Math.round((Number(r.he_displaced_threshold_ft)||0)*0.3048),
+              side:'he'
+            });
+          }
+        });
+        if(ends.length) byIcao.set(icao, {name, ends});
+      });
+
+      // Populate airport select
+      frAirportSel.innerHTML='';
+      const list = [...byIcao.entries()].sort((a,b)=> a[0].localeCompare(b[0]));
+      list.forEach(([icao,info])=>{
+        const opt=document.createElement('option');
+        opt.value=icao; opt.textContent = `${icao} — ${info.name}`;
+        frAirportSel.appendChild(opt);
+      });
+      frInfo.textContent = `Bases FR chargées (${list.length} terrains).`;
+
+      // default select
+      if(list.length){ frAirportSel.value=list[0][0]; onSelectAirport(); }
+    }catch(e){
+      frInfo.textContent = 'Chargement OurAirports échoué. Tu peux saisir/CSV manu.';
+    }
+  }
+
+  function onSelectAirport(){
+    const icao = frAirportSel.value;
+    const info = byIcao.get(icao);
+    frRunwaySel.innerHTML='';
+    if(!info){ compute(); return; }
+    info.ends.forEach((rw,idx)=>{
+      const surf = rw.surface.includes('GRASS')?'Herbe':'Dur';
+      const opt=document.createElement('option');
+      opt.value=String(idx);
+      opt.textContent = `${rw.end} · QFU ${rw.qfu}° · ${surf} · ${rw.len_m} m`;
+      frRunwaySel.appendChild(opt);
+    });
+    frRunwaySel.value='0';
+    onSelectRunway();
+  }
+
+  function onSelectRunway(){
+    const icao = frAirportSel.value;
+    const info = byIcao.get(icao);
+    const rw = info?.ends[Number(frRunwaySel.value)];
+    if(!rw){ compute(); return; }
+    $('#icao').value = icao;
+    $('#qfu').value = rw.qfu;
+    selLenM = rw.len_m;
+
+    // Surface toggle
+    if(rw.surface.includes('GRASS')) $('#surfGrass').click(); else $('#surfHard').click();
+
+    // Intersection
+    const inter = Number($('#intersection').value||0);
+    const interClamped = Math.max(0, Math.min(inter, rw.len_m));
+    if(inter !== interClamped){ $('#intersection').value = String(interClamped); }
+
+    // TODA/LDA approximées si pas de données déclarées: TODA≈longueur - intersection ; LDA≈(longueur - seuil déplacé) - intersection
+    autoTODA = Math.max(0, rw.len_m - interClamped); // approximation (TORA)
+    autoLDA  = Math.max(0, (rw.len_m - rw.disp_m) - interClamped);
+
+    // Préremplir champs si vides
+    const tVal = Number($('#toda').value||0);
+    const lVal = Number($('#lda').value||0);
+    if(!tVal) $('#toda').value = String(autoTODA);
+    if(!lVal) $('#lda').value  = String(autoLDA);
+
+    compute();
+  }
+
+  frAirportSel.addEventListener('change', onSelectAirport);
+  frRunwaySel.addEventListener('change', onSelectRunway);
+  $('#intersection').addEventListener('input', onSelectRunway);
+
+  /*=================== Calculs ===================*/
   function compute(){
     const qfu = Number($('#qfu').value||0);
-    const toda = Number($('#toda').value||0);
-    const lda  = Number($('#lda').value||0);
+    const toda = Number($('#toda').value||0) || autoTODA;
+    const lda  = Number($('#lda').value||0)  || autoLDA;
     const alt  = Number($('#alt').value||0);
     const oat  = Number($('#oat').value||0);
     const wdir = Number($('#windDir').value||0);
@@ -449,12 +554,12 @@
 
     // Vent + composantes
     const comp = windComponents(qfu,wdir,wkt);
-    const hw = Math.max(0, comp.headwind);
+    const hw = comp.headwind; // peut être négatif (vent arrière)
     const xw = Math.abs(comp.crosswind);
-    $('#hwText').textContent = hw.toFixed(0);
+    const hwFace = Math.max(0, hw);
+    $('#hwText').textContent = (hwFace||0).toFixed(0);
     $('#xwText').textContent = xw.toFixed(0);
-    $('#tailWarn').textContent = comp.headwind < 0 ? '(vent arrière détecté)' : '';
-    $('#tailMsg').textContent = comp.headwind < 0 ? 'Vent arrière : le manuel ne fournit pas de facteur → résultat décollage non valide.' : '';
+    $('#tailNote').textContent = hw<0 ? '(vent arrière appliqué)' : '';
 
     // Limite travers 22 kt
     const crossLimit = 22;
@@ -472,7 +577,7 @@
     const baseLDG_pass = interpLDG(alt, oat, ldw, landingMode, 'pass');
     const baseLDG_roll = interpLDG(alt, oat, ldw, landingMode, 'roll');
 
-    const windF = headwindFactor(hw);
+    const windF = windDistanceFactor(hw);
     const spatF = noSpats ? 1.03 : 1.00;
 
     const toCalc = Math.round(baseTO_pass * windF * extraTO * spatF);
@@ -514,49 +619,9 @@
     document.getElementById('ldgKpiVal').textContent = ldgMargin+' m';
   }
 
-  // CSV helpers
-  function parseCSV(text){
-    const sep = text.includes(';') ? ';' : ',';
-    const [header,...lines]=text.split(/\r?\n/).filter(Boolean);
-    const cols=header.split(sep).map(s=>s.trim());
-    return lines.map(l=>{
-      const vals=l.split(sep).map(s=>s.trim());
-      const obj={}; cols.forEach((c,i)=>obj[c]=vals[i]); return obj;
-    });
-  }
+  // Charge OurAirports FR au chargement
+  loadOurAirportsFR().then(()=>compute());
 
-  // METAR NOAA / AWC
-  async function fetchMetarAWC(icao){
-    const url = `https://aviationweather.gov/api/data/metar?ids=${encodeURIComponent(icao)}&format=json`;
-    const r = await fetch(url);
-    if(!r.ok) throw new Error('HTTP '+r.status);
-    const data = await r.json();
-    const item = Array.isArray(data) ? data[0] : data;
-    const raw = item?.raw || item?.METAR || item?.text || '';
-    if(!raw) throw new Error('Aucun METAR');
-    return { raw };
-  }
-  function parseWindFromMetar(raw){
-    const m = raw.match(/\b(VRB|\d{3})(\d{2})(G(\d{2}))?KT\b/);
-    if(!m) return null;
-    const dir = m[1]==='VRB' ? null : Number(m[1]);
-    const spd = Number(m[2]);
-    return { dir, spd, gust: m[4]?Number(m[4]):null };
-  }
-  $('#btnMetar').onclick = async ()=>{
-    const icao = ($('#icao').value||'').trim().toUpperCase();
-    if(!icao){ alert('Renseigne un ICAO'); return; }
-    $('#metarInfo').textContent = 'METAR: chargement...';
-    try{
-      const {raw} = await fetchMetarAWC(icao);
-      const w = parseWindFromMetar(raw);
-      if(w){ if(w.dir!==null) $('#windDir').value=w.dir; $('#windKt').value=w.gust||w.spd; compute(); }
-      $('#metarInfo').textContent = `METAR ${icao}: ${raw}`;
-    }catch(e){ $('#metarInfo').textContent = 'METAR indisponible'; }
-  };
-
-  // Initial compute
-  compute();
 </script>
 </body>
 </html>
