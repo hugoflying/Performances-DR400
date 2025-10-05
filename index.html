@@ -60,6 +60,7 @@
     <h1>CALCULCATEUR DE PERFORMANCES</h1>
   </div>
 
+  <!-- Paramètres généraux -->
   <section class="card" style="margin-top:4px">
     <h2>Paramètres généraux</h2>
     <div class="grid2">
@@ -89,7 +90,9 @@
     </div>
   </section>
 
+  <!-- Départ / Arrivée -->
   <div class="row" style="margin-top:12px">
+    <!-- Départ -->
     <section class="card">
       <h2 class="center">Terrain de départ</h2>
       <div class="grid2">
@@ -110,6 +113,7 @@
           </div>
         </div>
       </div>
+
       <div class="grid2" style="margin-top:10px">
         <label>Élévation (ft)
           <input id="depAlt" type="number" value="0"/>
@@ -117,19 +121,21 @@
         <label>OAT (°C)
           <input id="depOat" type="number" value="15"/>
         </label>
-        <label>Vent — Direction (° 001→360)
-          <input id="depWindDir" type="number" min="1" max="360" step="1" value="1"/>
+        <label>Vent — Direction (°)
+          <input id="depWindDir" type="number" min="0" max="350" step="10" value="0"/>
         </label>
-        <label>Vent — Vitesse (kt ≥ 0)
+        <label>Vent — Vitesse (kt)
           <input id="depWindKt" type="number" min="0" step="1" value="0"/>
         </label>
       </div>
+
       <div class="grid3" style="margin-top:10px">
         <div class="field"><div class="k">Vent de face</div><div class="v"><span id="depHwFace">0</span> kt</div></div>
         <div class="field"><div class="k">Vent de travers</div><div class="v"><span id="depXw">0</span> kt</div></div>
         <div class="field"><div class="k">Vent arrière</div><div class="v"><span id="depTw">0</span> kt</div></div>
       </div>
       <div class="muted" id="depXwWarn" style="margin-top:6px"></div>
+
       <div class="grid2" style="margin-top:10px">
         <label>Facteur suppl. décollage
           <input id="depExtraTO" type="number" step="0.01" value="1.00"/>
@@ -140,6 +146,7 @@
       </div>
     </section>
 
+    <!-- Arrivée -->
     <section class="card">
       <h2 class="center">Terrain d'arrivée</h2>
       <div class="grid2">
@@ -160,6 +167,7 @@
           </div>
         </div>
       </div>
+
       <div class="grid2" style="margin-top:10px">
         <label>Élévation (ft)
           <input id="arrAlt" type="number" value="0"/>
@@ -167,19 +175,21 @@
         <label>OAT (°C)
           <input id="arrOat" type="number" value="15"/>
         </label>
-        <label>Vent — Direction (° 001→360)
-          <input id="arrWindDir" type="number" min="1" max="360" step="1" value="1"/>
+        <label>Vent — Direction (°)
+          <input id="arrWindDir" type="number" min="0" max="350" step="10" value="0"/>
         </label>
-        <label>Vent — Vitesse (kt ≥ 0)
+        <label>Vent — Vitesse (kt)
           <input id="arrWindKt" type="number" min="0" step="1" value="0"/>
         </label>
       </div>
+
       <div class="grid3" style="margin-top:10px">
         <div class="field"><div class="k">Vent de face</div><div class="v"><span id="arrHwFace">0</span> kt</div></div>
         <div class="field"><div class="k">Vent de travers</div><div class="v"><span id="arrXw">0</span> kt</div></div>
         <div class="field"><div class="k">Vent arrière</div><div class="v"><span id="arrTw">0</span> kt</div></div>
       </div>
       <div class="muted" id="arrXwWarn" style="margin-top:6px"></div>
+
       <div class="grid2" style="margin-top:10px">
         <label>Facteur suppl. atterrissage
           <input id="arrExtraLDG" type="number" step="0.01" value="1.00"/>
@@ -188,6 +198,7 @@
           <input id="arrLdw" type="number" value="900"/>
         </label>
       </div>
+
       <div style="margin-top:10px">
         <label>Atterrissage — mode</label>
         <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap">
@@ -198,6 +209,7 @@
     </section>
   </div>
 
+  <!-- Résultats -->
   <div class="row" style="margin-top:16px">
     <div class="card">
       <div class="header">
@@ -248,6 +260,7 @@
   <div class="footer">Source : Manuel de vol - Aéroclub de Beauvais-Tillé</div>
 </div>
 
+<!-- Impression brute -->
 <section id="printRaw"><pre id="rawPre"></pre></section>
 
 <script>
@@ -319,7 +332,6 @@
   let depSurface='hard',arrSurface='hard',landingMode='moderate',withSpats=true;
 
   function sanitizeIcao(el){el.value=(el.value||'').toUpperCase().replace(/[^A-Z]/g,'').slice(0,4)}
-
   ['depIcao','arrIcao'].forEach(id=>{
     const el=$('#'+id);
     el.addEventListener('input',()=>{sanitizeIcao(el);compute()});
@@ -351,14 +363,16 @@
   $('#spatsWith').onclick=()=>{withSpats=true;$('#spatsWith').classList.add('on');$('#spatsWithout').classList.remove('on');compute()};
   $('#spatsWithout').onclick=()=>{withSpats=false;$('#spatsWithout').classList.add('on');$('#spatsWith').classList.remove('on');compute()};
 
-  // Bind vents: direction wrap 001↔360, vitesse entière ≥0
+  // Bind vents: direction 000↔350 par pas de 10, vitesse entière ≥ 0
   function bindDir(id){
     const el=$('#'+id);
     const normalize=()=>{
       let v=parseInt(el.value,10);
-      if(isNaN(v)) v=1;
-      if(v<1) v=360;
-      if(v>360) v=1;
+      if(isNaN(v)) v=0;
+      // arrondi au 10 le plus proche
+      v = Math.round(v/10)*10;
+      if(v<0) v=0;
+      if(v>350) v=350;
       el.value=String(v);
     };
     el.addEventListener('change',()=>{normalize();compute()});
@@ -366,10 +380,10 @@
     el.addEventListener('keydown',(e)=>{
       if(e.key==='ArrowDown'||e.key==='ArrowUp'){
         e.preventDefault();
-        let v=parseInt(el.value||'1',10); if(isNaN(v)) v=1;
-        v += (e.key==='ArrowDown'?-1:+1);
-        if(v<1) v=360;
-        if(v>360) v=1;
+        let v=parseInt(el.value||'0',10); if(isNaN(v)) v=0;
+        v += (e.key==='ArrowDown'?-10:+10);
+        if(v<0) v=350;
+        if(v>350) v=0;
         el.value=String(v);
         compute();
       }
@@ -402,12 +416,12 @@
   function compute(){
     const depQfu=+($('#depQfu').value||0), depToda=+($('#depToda').value||0),
           depAlt=+($('#depAlt').value||0), depOat=+($('#depOat').value||0),
-          depWdir=+($('#depWindDir').value||1), depWkt=+($('#depWindKt').value||0),
+          depWdir=+($('#depWindDir').value||0), depWkt=+($('#depWindKt').value||0),
           depExtra=+($('#depExtraTO').value||1), depTow=+($('#depTow').value||900);
 
     const arrQfu=+($('#arrQfu').value||0), arrLda=+($('#arrLda').value||0),
           arrAlt=+($('#arrAlt').value||0), arrOat=+($('#arrOat').value||0),
-          arrWdir=+($('#arrWindDir').value||1), arrWkt=+($('#arrWindKt').value||0),
+          arrWdir=+($('#arrWindDir').value||0), arrWkt=+($('#arrWindKt').value||0),
           arrExtra=+($('#arrExtraLDG').value||1), arrLdw=+($('#arrLdw').value||900);
 
     const safety=+($('#safety').value||30);
@@ -476,12 +490,12 @@
 
     const D={ icao:($('#depIcao').value||'').toUpperCase(), qfu:+($('#depQfu').value||0), toda:+($('#depToda').value||0),
               alt:+($('#depAlt').value||0), oat:+($('#depOat').value||0),
-              wdir:+($('#depWindDir').value||1), wkt:+($('#depWindKt').value||0),
+              wdir:+($('#depWindDir').value||0), wkt:+($('#depWindKt').value||0),
               extra:+($('#depExtraTO').value||1), mass:+($('#depTow').value||900),
               surface:($('#depSurfGrass').classList.contains('on')?'Herbe':'Dur') };
     const A={ icao:($('#arrIcao').value||'').toUpperCase(), qfu:+($('#arrQfu').value||0), lda:+($('#arrLda').value||0),
               alt:+($('#arrAlt').value||0), oat:+($('#arrOat').value||0),
-              wdir:+($('#arrWindDir').value||1), wkt:+($('#arrWindKt').value||0),
+              wdir:+($('#arrWindDir').value||0), wkt:+($('#arrWindKt').value||0),
               extra:+($('#arrExtraLDG').value||1), mass:+($('#arrLdw').value||900),
               surface:($('#arrSurfGrass').classList.contains('on')?'Herbe':'Dur'),
               mode:($('#arrNoBrake').classList.contains('on')?'Sans frein herbe':'Freinage modéré') };
@@ -539,13 +553,11 @@
     ].join('\n');
   }
 
-  function doPrint(){
-    compute();
-    document.getElementById('rawPre').textContent=buildRawReport();
-    window.print();
-  }
+  // Remplir le rapport brut juste avant impression
+  window.addEventListener('beforeprint', ()=>{
+    document.getElementById('rawPre').textContent = buildRawReport();
+  });
 
-  // Recompute initially
   compute();
 </script>
 </body>
