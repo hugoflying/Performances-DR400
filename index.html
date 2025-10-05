@@ -30,9 +30,10 @@
   .header{display:flex;gap:12px;align-items:center;justify-content:space-between}
   .muted{color:var(--muted)}
   .footer{font-size:12px;color:var(--muted);margin-top:18px}
+
   .kpi{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin:8px 0}
   .kpi .left{display:flex;flex-direction:column}
-  .kpi .title{font-size:12px;color:var(--muted);letter-spacing:.02em}
+  .kpi .title{font-size:12px;color:var(--muted)}
   .kpi .value{font-size:26px;font-weight:800;line-height:1.1}
   .kpi .sub{font-size:12px;color:var(--muted)}
   .kpi.ok{background:#ecfdf5;border-color:#86efac}
@@ -41,7 +42,18 @@
   .chip.ok{background:#dcfce7;color:#14532d;border-color:#86efac}
   .chip.bad{background:#fee2e2;color:#7f1d1d;border-color:#fca5a5}
   .chip.neutral{background:#f3f4f6;color:#374151;border-color:#e5e7eb}
-  .runway{width:100%;height:240px;border:1px solid var(--line);border-radius:12px;background:linear-gradient(#f8fafc,#f3f4f6)}
+
+  /* Piste : occupe toute la hauteur disponible de la carte */
+  .runwayWrap{display:flex;gap:12px;align-items:stretch}
+  .runway{flex:1 1 auto;height:520px;border:1px solid var(--line);border-radius:12px;background:linear-gradient(#f8fafc,#f3f4f6)}
+  @media (max-width:640px){.runway{height:440px}}
+  .legend{width:170px;font-size:12px;color:#334155}
+  .lg{display:flex;align-items:center;gap:6px;margin:6px 0}
+  .dot{width:10px;height:10px;border-radius:2px;display:inline-block}
+  .c-toda{background:#0ea5e9}
+  .c-asda{background:#f59e0b}
+  .c-lda{background:#22c55e}
+
   @media print{.no-print{display:none!important}.container{max-width:none;padding:0}.card{box-shadow:none}}
 </style>
 </head>
@@ -77,6 +89,8 @@
         <label>ICAO<input id="depIcao"/></label>
         <label>QFU (°)<input id="depQfu" type="number" value="0"/></label>
         <label>TODA (m)<input id="depToda" type="number" value="0"/></label>
+        <label>ASDA (m)<input id="depAsda" type="number" value="0"/></label>
+        <label>LDA (m)<input id="depLda" type="number" value="0"/></label>
         <div class="grid1">
           <label>Surface piste</label>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -97,13 +111,20 @@
         <div class="field"><div class="k">Vent arrière</div><div class="v"><span id="depTw">0</span> kt</div></div>
       </div>
       <div id="depXwWarn" class="muted" style="margin-top:6px"></div>
-
       <div class="grid2" style="margin-top:10px">
         <label>Facteur suppl. décollage<input id="depExtraTO" type="number" step="0.01" value="1.00"/></label>
         <label>Masse au décollage (kg)<input id="depTow" type="number" value="900"/></label>
       </div>
 
-      <div class="runway" style="margin-top:12px"><svg id="depRunway" width="100%" height="100%"></svg></div>
+      <div class="runwayWrap" style="margin-top:12px">
+        <div class="runway"><svg id="depRunway" width="100%" height="100%"></svg></div>
+        <div class="legend">
+          <div class="lg"><span class="dot c-toda"></span>TODA</div>
+          <div class="lg"><span class="dot c-asda"></span>ASDA</div>
+          <div class="lg"><span class="dot c-lda"></span>LDA</div>
+          <div class="muted" style="margin-top:8px">La barre colorée sur le bord indique la distance requise (marge incluse). La manche à air reflète le vent relatif au QFU.</div>
+        </div>
+      </div>
     </section>
 
     <!-- ARRIVEE -->
@@ -113,6 +134,8 @@
         <label>ICAO<input id="arrIcao"/></label>
         <label>QFU (°)<input id="arrQfu" type="number" value="0"/></label>
         <label>LDA (m)<input id="arrLda" type="number" value="0"/></label>
+        <label>ASDA (m)<input id="arrAsda" type="number" value="0"/></label>
+        <label>TODA (m)<input id="arrToda" type="number" value="0"/></label>
         <div class="grid1">
           <label>Surface piste</label>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -133,7 +156,6 @@
         <div class="field"><div class="k">Vent arrière</div><div class="v"><span id="arrTw">0</span> kt</div></div>
       </div>
       <div id="arrXwWarn" class="muted" style="margin-top:6px"></div>
-
       <div class="grid2" style="margin-top:10px">
         <label>Facteur suppl. atterrissage<input id="arrExtraLDG" type="number" step="0.01" value="1.00"/></label>
         <label>Masse à l’atterrissage (kg)<input id="arrLdw" type="number" value="900"/></label>
@@ -147,7 +169,14 @@
         </div>
       </div>
 
-      <div class="runway" style="margin-top:12px"><svg id="arrRunway" width="100%" height="100%"></svg></div>
+      <div class="runwayWrap" style="margin-top:12px">
+        <div class="runway"><svg id="arrRunway" width="100%" height="100%"></svg></div>
+        <div class="legend">
+          <div class="lg"><span class="dot c-toda"></span>TODA</div>
+          <div class="lg"><span class="dot c-asda"></span>ASDA</div>
+          <div class="lg"><span class="dot c-lda"></span>LDA</div>
+        </div>
+      </div>
     </section>
   </div>
 
@@ -190,7 +219,7 @@
   </div>
 
   <div class="footer">
-    Sources : Manuel de vol DR400-120 (STD±20). Vent face (10→0,78 · 20→0,63 · 30→0,52). Vent arrière : +10 % par tranche de 2 kt. Bulletin ROBIN « Sans carénages » : +3 % (décollage 15 m).
+    Sources : Manuel de vol DR400-120 (STD±20). Vent face (10→0,78 · 20→0,63 · 30→0,52). Vent arrière : +10 %/2 kt. Bulletin ROBIN « Sans carénages » : +3 % au décollage (15 m).
   </div>
 </div>
 
@@ -215,7 +244,7 @@ function status(val,limit){if(!limit)return'neutral';return val<=limit?'ok':'bad
 
 /* ----- State & events ----- */
 let depSurface='hard',arrSurface='hard',landingMode='moderate',withSpats=true;
-['safety','depIcao','depQfu','depToda','depAlt','depOat','depWindDir','depWindKt','depExtraTO','depTow','arrIcao','arrQfu','arrLda','arrAlt','arrOat','arrWindDir','arrWindKt','arrExtraLDG','arrLdw'].forEach(id=>$('#'+id).addEventListener('input',compute));
+['safety','depIcao','depQfu','depToda','depAsda','depLda','depAlt','depOat','depWindDir','depWindKt','depExtraTO','depTow','arrIcao','arrQfu','arrLda','arrAsda','arrToda','arrAlt','arrOat','arrWindDir','arrWindKt','arrExtraLDG','arrLdw'].forEach(id=>$('#'+id).addEventListener('input',compute));
 $('#depSurfHard').onclick=()=>{depSurface='hard';toggleBtns('#depSurfHard','#depSurfGrass');compute()};
 $('#depSurfGrass').onclick=()=>{depSurface='grass';toggleBtns('#depSurfGrass','#depSurfHard');compute()};
 $('#arrSurfHard').onclick=()=>{arrSurface='hard';toggleBtns('#arrSurfHard','#arrSurfGrass');compute()};
@@ -226,39 +255,67 @@ $('#spatsWith').onclick=()=>{withSpats=true;toggleBtns('#spatsWith','#spatsWitho
 $('#spatsWithout').onclick=()=>{withSpats=false;toggleBtns('#spatsWithout','#spatsWith');compute()};
 function toggleBtns(onSel,offSel){$(onSel).classList.add('on');$(offSel).classList.remove('on')}
 
-/* ----- Runway drawing (SVG) ----- */
-function drawRunway(svgId,{available,required,ok,label,qfu,windDir,windKt,diffDeg}){
-  const svg=$(svgId); if(!svg) return; const w=svg.clientWidth||320,h=svg.clientHeight||240;
+/* ----- Runway drawing (full-height SVG + manche à air + lignes TODA/ASDA/LDA) ----- */
+function drawRunway(svgId,opts){
+  const {qfu,windDir,windKt,diffDeg,lengthText,maxAvail,lines,required,available,label,ok}=opts;
+  const svg=$(svgId); if(!svg) return; const w=svg.clientWidth||320,h=svg.clientHeight||480;
   svg.innerHTML='';
   const ns='http://www.w3.org/2000/svg';
-  const add=(tag,attrs)=>{const el=document.createElementNS(ns,tag);Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,String(v)));svg.appendChild(el);return el}
+  const add=(tag,attrs,parent=svg)=>{const el=document.createElementNS(ns,tag);for(const k in attrs)el.setAttribute(k,String(attrs[k]));parent.appendChild(el);return el}
+
   // Background
   add('rect',{x:0,y:0,width:w,height:h,fill:'transparent'});
-  // Runway
-  const rx=w*0.6, rw=w*0.18, ry=h*0.08, rh=h*0.84;
-  add('rect',{x:rx,y:ry,width:rw,height:rh,fill:'#111',rx:8});
+
+  // Runway body
+  const rx=w*0.58, rw=w*0.20, ry=8, rh=h-16;
+  add('rect',{x:rx,y:ry,width:rw,height:rh,fill:'#0f0f10',rx:10});
+
   // Centerline
-  const dashH=12, gap=10; for(let y=ry+8;y<ry+rh-8;y+=dashH+gap){add('rect',{x:rx+rw/2-2,y,width:4,height:dashH,fill:'#fff'})}
-  // Threshold strips
-  for(let i=0;i<6;i++){add('rect',{x:rx+6+i*10,y:ry+rh-16,width:6,height:10,fill:'#fff'})}
-  // Scale/labels
-  add('text',{x:rx+rw+8,y:ry+12,fill:'#334155','font-size':'12','font-family':'system-ui'}).textContent=label+' : '+(available?available+' m':'—');
-  // Used bar (required)
-  if(available>0 && required>0){
-    const ratio=Math.min(required/available,1.2); // cap 120% for display
-    const used=ratio*rh;
-    add('rect',{x:rx-16,y:ry+rh-used,width:10,height:used,fill:ok?'#16a34a':'#dc2626',rx:4});
-    add('text',{x:rx-18,y:ry+rh-used-6,fill:ok?'#16a34a':'#dc2626','font-size':'12','text-anchor':'end','font-family':'system-ui'}).textContent=required+' m';
+  const dashH=18, gap=14; for(let y=ry+10;y<ry+rh-10;y+=dashH+gap){add('rect',{x:rx+rw/2-2,y,width:4,height:dashH,fill:'#fff'})}
+
+  // Threshold markings (bottom)
+  for(let i=0;i<6;i++){add('rect',{x:rx+8+i*12,y:ry+rh-18,width:8,height:12,fill:'#fff'})}
+  // Threshold markings (top)
+  for(let i=0;i<6;i++){add('rect',{x:rx+rw-8-i*12-8,y:ry+6,width:8,height:12,fill:'#fff'})}
+
+  // QFU + longueur au centre, vertical
+  const textG=add('g',{transform:`translate(${rx+rw/2},${ry+rh/2}) rotate(-90)`});
+  add('text',{x:0,y:-10,'text-anchor':'middle','font-size':'18','font-family':'system-ui',fill:'#e5e7eb','font-weight':'700'},textG).textContent=`${Math.round(qfu)||0}°`;
+  add('text',{x:0,y:16,'text-anchor':'middle','font-size':'16','font-family':'system-ui',fill:'#e5e7eb'},textG).textContent=`${lengthText}`;
+
+  // Scale helper
+  const scale = (m)=> ry + rh - (maxAvail>0 ? Math.min(m,maxAvail)/maxAvail*rh : 0);
+
+  // Lines TODA/ASDA/LDA
+  const palette={TODA:'#0ea5e9',ASDA:'#f59e0b',LDA:'#22c55e'};
+  lines.forEach(L=>{
+    if(!L.value) return;
+    const y=scale(L.value);
+    add('line',{x1:rx-24,x2:rx+rw+24,y1:y,y2:y,stroke:palette[L.key], 'stroke-width':2});
+    add('text',{x:rx+rw+28,y:y-4,'font-size':'12','font-family':'system-ui',fill:'#334155'}).textContent=`${L.key} ${L.value} m`;
+  });
+
+  // Required bar on left side (like gauge)
+  if(required>0 && available>0){
+    const usedPx=Math.min(required/available,1.2)*rh;
+    add('rect',{x:rx-18,y:ry+rh-usedPx,width:12,height:usedPx,fill:ok?'#16a34a':'#dc2626',rx:4});
+    const margin=available-required;
+    const tag=add('text',{x:rx-20,y:ry+rh-usedPx-6,'text-anchor':'end','font-size':'12','font-family':'system-ui',fill:ok?'#16a34a':'#dc2626'});
+    tag.textContent=(required|0)+' m '+(isFinite(margin)? (margin>=0?`(+${margin|0})`:`(${margin|0})`):'');
   }
-  // Windsock (relative to runway axis)
-  const g=document.createElementNS(ns,'g'); g.setAttribute('transform',`translate(${rx+rw+40},${ry+rh/2}) rotate(${-diffDeg})`); svg.appendChild(g);
-  const addG=(tag,attrs)=>{const el=document.createElementNS(ns,tag);Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k,String(v)));g.appendChild(el);return el}
-  addG('rect',{x:-2,y:-40,width:4,height:80,fill:'#6b7280'}); // pole
-  // sock body (5 segments)
-  const segs=[[0,-30,30,12],[30,-26,20,10],[50,-22,16,9],[66,-19,12,8],[78,-16,8,7]];
-  segs.forEach((s,i)=>addG('rect',{x:s[0],y:s[1],width:s[2],height:s[3],fill:i%2? '#ffffff' : '#f97316',rx:2}))
-  // wind text
-  add('text',{x:rx+rw+8,y:ry+rh/2+50,fill:'#334155','font-size':'12','font-family':'system-ui'}).textContent=`${windDir}° / ${windKt} kt`;
+
+  // Windsock (orientée par diffDeg)
+  const wsG=add('g',{transform:`translate(${rx+rw+54},${ry+rh/2}) rotate(${-diffDeg})`});
+  // pole
+  add('rect',{x:-2,y:-55,width:4,height:110,fill:'#6b7280'},wsG);
+  // sock (segments alternés orange/blanc)
+  const segs=[[0,-40,36,14],[36,-36,24,12],[60,-32,18,10],[78,-29,14,9],[92,-27,10,8]];
+  segs.forEach((s,i)=>add('rect',{x:s[0],y:s[1],width:s[2],height:s[3],fill:i%2?'#ffffff':'#f97316',rx:2},wsG));
+  // small tail ring
+  add('circle',{cx:segs.at(-1)[0]+segs.at(-1)[2]+2,cy:-23,r:2,fill:'#6b7280'},wsG);
+
+  // Wind text
+  add('text',{x:rx+rw+10,y:ry+rh/2+56,'font-size':'12','font-family':'system-ui',fill:'#334155'}).textContent=`${windDir||0}° / ${windKt||0} kt`;
 }
 
 /* ----- Compute ----- */
@@ -266,25 +323,38 @@ function compute(){
   const safety=Number($('#safety').value||30);
 
   // DEP
-  const depQfu=Number($('#depQfu').value||0), depToda=Number($('#depToda').value||0);
-  const depAlt=Number($('#depAlt').value||0), depOat=Number($('#depOat').value||0);
-  const depWdir=Number($('#depWindDir').value||0), depWkt=Number($('#depWindKt').value||0);
-  const depExtra=Number($('#depExtraTO').value||1), depTow=Number($('#depTow').value||900);
+  const depQfu=Number($('#depQfu').value||0),
+        depToda=Number($('#depToda').value||0),
+        depAsda=Number($('#depAsda').value||0),
+        depLda =Number($('#depLda').value||0),
+        depAlt=Number($('#depAlt').value||0),
+        depOat=Number($('#depOat').value||0),
+        depWdir=Number($('#depWindDir').value||0),
+        depWkt =Number($('#depWindKt').value||0),
+        depExtra=Number($('#depExtraTO').value||1),
+        depTow=Number($('#depTow').value||900);
 
   // ARR
-  const arrQfu=Number($('#arrQfu').value||0), arrLda=Number($('#arrLda').value||0);
-  const arrAlt=Number($('#arrAlt').value||0), arrOat=Number($('#arrOat').value||0);
-  const arrWdir=Number($('#arrWindDir').value||0), arrWkt=Number($('#arrWindKt').value||0);
-  const arrExtra=Number($('#arrExtraLDG').value||1), arrLdw=Number($('#arrLdw').value||900);
+  const arrQfu=Number($('#arrQfu').value||0),
+        arrLda=Number($('#arrLda').value||0),
+        arrAsda=Number($('#arrAsda').value||0),
+        arrToda=Number($('#arrToda').value||0),
+        arrAlt=Number($('#arrAlt').value||0),
+        arrOat=Number($('#arrOat').value||0),
+        arrWdir=Number($('#arrWindDir').value||0),
+        arrWkt =Number($('#arrWindKt').value||0),
+        arrExtra=Number($('#arrExtraLDG').value||1),
+        arrLdw=Number($('#arrLdw').value||900);
 
-  // Winds
-  const depComp=windComponents(depQfu,depWdir,depWkt);
-  const arrComp=windComponents(arrQfu,arrWdir,arrWkt);
-  const depHw=depComp.headwind, depXw=Math.abs(depComp.crosswind), depHwFace=Math.max(0,depHw), depTw=Math.max(0,-depHw);
-  const arrHw=arrComp.headwind, arrXw=Math.abs(arrComp.crosswind), arrHwFace=Math.max(0,arrHw), arrTw=Math.max(0,-arrHw);
+  // Vents
+  const depComp=windComponents(depQfu,depWdir,depWkt),
+        arrComp=windComponents(arrQfu,arrWdir,arrWkt);
+  const depHwFace=Math.max(0,depComp.headwind), depTw=Math.max(0,-depComp.headwind), depXw=Math.abs(depComp.crosswind);
+  const arrHwFace=Math.max(0,arrComp.headwind), arrTw=Math.max(0,-arrComp.headwind), arrXw=Math.abs(arrComp.crosswind);
   $('#depHwFace').textContent=depHwFace.toFixed(0); $('#depXw').textContent=depXw.toFixed(0); $('#depTw').textContent=depTw.toFixed(0);
   $('#arrHwFace').textContent=arrHwFace.toFixed(0); $('#arrXw').textContent=arrXw.toFixed(0); $('#arrTw').textContent=arrTw.toFixed(0);
-  const crossLimit=22; const depWarn=$('#depXwWarn'), arrWarn=$('#arrXwWarn');
+  const crossLimit=22;
+  const depWarn=$('#depXwWarn'), arrWarn=$('#arrXwWarn');
   depWarn.textContent=depXw>crossLimit?`⚠️ ${depXw.toFixed(0)} kt > ${crossLimit} kt (limite DR400)`:''; depWarn.style.color=depXw>crossLimit?'#dc2626':'var(--muted)';
   arrWarn.textContent=arrXw>crossLimit?`⚠️ ${arrXw.toFixed(0)} kt > ${crossLimit} kt (limite DR400)`:''; arrWarn.style.color=arrXw>crossLimit?'#dc2626':'var(--muted)';
 
@@ -294,8 +364,8 @@ function compute(){
   const baseLDG_pass=interpLDG(arrAlt,arrOat,arrLdw,landingMode,'pass');
   const baseLDG_roll=interpLDG(arrAlt,arrOat,arrLdw,landingMode,'roll');
 
-  const depWindF=windDistanceFactor(depHw);
-  const arrWindF=windDistanceFactor(arrHw);
+  const depWindF=windDistanceFactor(depComp.headwind);
+  const arrWindF=windDistanceFactor(arrComp.headwind);
   const spatsF=withSpats?1.00:1.03;
 
   const toCalc=Math.round(baseTO_pass*depWindF*depExtra*spatsF);
@@ -303,7 +373,7 @@ function compute(){
   const toMargin=Math.round(toCalc*(1+safety/100));
   const ldgMargin=Math.round(ldgCalc*(1+safety/100));
 
-  // Résultats
+  // Résultats textes
   $('#toBasePass').textContent=Math.round(baseTO_pass)+' m';
   $('#toBaseRoll').textContent=Math.round(baseTO_roll)+' m';
   $('#toWindF').textContent=depWindF.toFixed(2)+'×';
@@ -321,14 +391,40 @@ function compute(){
   $('#ldgResM').textContent=ldgMargin+' m';
   $('#ldaMini').textContent=arrLda?arrLda+' m':'—';
 
-  const stTO=status(toMargin,depToda), stLDG=status(ldgMargin,arrLda);
-  setChip($('#toChip'),stTO); setChip($('#ldgChip'),stLDG); setKpi($('#toKpi'),stTO); setKpi($('#ldgKpi'),stLDG);
-  $('#toKpiVal').textContent=toMargin+' m'; $('#ldgKpiVal').textContent=ldgMargin+' m';
+  // KPI + chips
+  const stTO=status(toMargin,depToda);
+  const stLDG=status(ldgMargin,arrLda);
+  setChip($('#toChip'),stTO); setChip($('#ldgChip'),stLDG);
+  setKpi($('#toKpi'),stTO); setKpi($('#ldgKpi'),stLDG);
+  $('#toKpiVal').textContent=toMargin+' m';
+  $('#ldgKpiVal').textContent=ldgMargin+' m';
 
-  // Dessins piste + manche à air
-  drawRunway('#depRunway',{available:depToda,required:toMargin,ok:stTO==='ok',label:'TODA',qfu:depQfu,windDir:depWdir,windKt:depWkt,diffDeg:depComp.diff});
-  drawRunway('#arrRunway',{available:arrLda,required:ldgMargin,ok:stLDG==='ok',label:'LDA',qfu:arrQfu,windDir:arrWdir,windKt:arrWkt,diffDeg:arrComp.diff});
+  // Dessins piste
+  const depMax = Math.max(depToda, depAsda, depLda, 1);
+  drawRunway('#depRunway',{
+    qfu:depQfu, windDir:depWdir, windKt:depWkt, diffDeg:depComp.diff,
+    lengthText:(depMax?' '+depMax+' m':''), maxAvail:depMax,
+    lines:[
+      {key:'TODA', value:depToda},
+      {key:'ASDA', value:depAsda},
+      {key:'LDA',  value:depLda},
+    ],
+    required:toMargin, available:depToda||depMax, label:'TODA', ok:stTO==='ok'
+  });
+
+  const arrMax = Math.max(arrLda, arrAsda, arrToda, 1);
+  drawRunway('#arrRunway',{
+    qfu:arrQfu, windDir:arrWdir, windKt:arrWkt, diffDeg:arrComp.diff,
+    lengthText:(arrMax?' '+arrMax+' m':''), maxAvail:arrMax,
+    lines:[
+      {key:'TODA', value:arrToda},
+      {key:'ASDA', value:arrAsda},
+      {key:'LDA',  value:arrLda},
+    ],
+    required:ldgMargin, available:arrLda||arrMax, label:'LDA', ok:stLDG==='ok'
+  });
 }
+
 compute();
 </script>
 </body>
