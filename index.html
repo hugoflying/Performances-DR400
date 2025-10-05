@@ -1,61 +1,58 @@
 <!doctype html>
 <html lang="fr">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>DR400-120 – Calculateur de performances</title>
-<style>
-  :root{--bg:#f6f7fb;--card:#fff;--ink:#0f172a;--muted:#6b7280;--line:#e5e7eb;--primary:#2563eb;--amber:#f59e0b}
-  *{box-sizing:border-box}
-  html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue","Noto Sans",Arial}
-  h1{font-size:clamp(20px,3vw,28px);margin:0}
-  h2{font-size:18px;margin:0 0 .6rem}
-  .container{max-width:1200px;margin:0 auto;padding:16px}
-  .row{display:grid;grid-template-columns:1fr;gap:16px}
-  @media(min-width:1200px){.row{grid-template-columns:repeat(2,1fr)}}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.04);position:relative}
-  .card.dep{border-left:8px solid var(--primary)}
-  .card.arr{border-left:8px solid var(--amber)}
-  .btn{border:1px solid var(--line);background:#fff;padding:9px 12px;border-radius:12px;cursor:pointer}
-  .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
-  .btn.toggle.on{background:var(--primary);color:#fff;border-color:var(--primary)}
-  label{display:block;font-size:12px;color:var(--muted)}
-  input{width:100%;margin-top:6px;padding:10px;border-radius:12px;border:1px solid var(--line);background:#fff}
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-  .grid1{display:grid;grid-template-columns:1fr;gap:12px}
-  .field{border:1px solid var(--line);border-radius:12px;background:#f8fafc;padding:10px}
-  .field .k{font-size:12px;color:var(--muted)}
-  .field .v{margin-top:4px;font-weight:600}
-  .header{display:flex;gap:12px;align-items:center;justify-content:space-between}
-  .muted{color:var(--muted)}
-  .footer{font-size:12px;color:var(--muted);margin-top:18px}
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DR400-120 – Calculateur de performances</title>
+  <style>
+    :root{
+      --bg:#f6f7fb;--card:#fff;--ink:#0f172a;--muted:#6b7280;
+      --ok:#16a34a;--bad:#dc2626;--line:#e5e7eb;--primary:#2563eb;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue","Noto Sans",Arial}
+    h1{font-size:clamp(20px,3vw,28px);margin:0}
+    h2{font-size:18px;margin:0 0 .6rem 0}
+    .container{max-width:1200px;margin:0 auto;padding:16px}
+    .row{display:grid;grid-template-columns:1fr;gap:16px}
+    @media(min-width:1200px){.row{grid-template-columns:repeat(2,1fr)}}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+    .btn{border:1px solid var(--line);background:#fff;padding:9px 12px;border-radius:12px;cursor:pointer}
+    .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+    .btn.toggle.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+    label{display:block;font-size:12px;color:var(--muted)}
+    input,select{width:100%;margin-top:6px;padding:10px;border-radius:12px;border:1px solid var(--line);background:#fff}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+    .grid1{display:grid;grid-template-columns:1fr;gap:12px}
+    .field{border:1px solid var(--line);border-radius:12px;background:#f8fafc;padding:10px}
+    .field .k{font-size:12px;color:var(--muted)}
+    .field .v{margin-top:4px;font-weight:600}
+    .header{display:flex;gap:12px;align-items:center;justify-content:space-between}
+    .muted{color:var(--muted)}
+    .footer{font-size:12px;color:var(--muted);margin-top:18px}
+    .hidden{display:none}
 
-  .kpi{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin:8px 0}
-  .kpi .left{display:flex;flex-direction:column}
-  .kpi .title{font-size:12px;color:var(--muted)}
-  .kpi .value{font-size:26px;font-weight:800;line-height:1.1}
-  .kpi .sub{font-size:12px;color:var(--muted)}
-  .kpi.ok{background:#ecfdf5;border-color:#86efac}
-  .kpi.bad{background:#fef2f2;border-color:#fecaca}
-  .chip{padding:6px 10px;border-radius:999px;border:1px solid;font-weight:800}
-  .chip.ok{background:#dcfce7;color:#14532d;border-color:#86efac}
-  .chip.bad{background:#fee2e2;color:#7f1d1d;border-color:#fca5a5}
-  .chip.neutral{background:#f3f4f6;color:#374151;border-color:#e5e7eb}
+    /* KPI binaire OK/KO */
+    .kpi{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin:8px 0}
+    .kpi .left{display:flex;flex-direction:column}
+    .kpi .title{font-size:12px;color:var(--muted);letter-spacing:.02em}
+    .kpi .value{font-size:26px;font-weight:800;line-height:1.1}
+    .kpi .sub{font-size:12px;color:var(--muted)}
+    .kpi.ok{background:#ecfdf5;border-color:#86efac}
+    .kpi.bad{background:#fef2f2;border-color:#fecaca}
+    .chip{padding:6px 10px;border-radius:999px;border:1px solid;font-weight:800}
+    .chip.ok{background:#dcfce7;color:#14532d;border-color:#86efac}
+    .chip.bad{background:#fee2e2;color:#7f1d1d;border-color:#fca5a5}
+    .chip.neutral{background:#f3f4f6;color:#374151;border-color:#e5e7eb}
 
-  /* Piste : occupe toute la hauteur disponible de la carte */
-  .runwayWrap{display:flex;gap:12px;align-items:stretch}
-  .runway{flex:1 1 auto;height:520px;border:1px solid var(--line);border-radius:12px;background:linear-gradient(#f8fafc,#f3f4f6)}
-  @media (max-width:640px){.runway{height:440px}}
-  .legend{width:170px;font-size:12px;color:#334155}
-  .lg{display:flex;align-items:center;gap:6px;margin:6px 0}
-  .dot{width:10px;height:10px;border-radius:2px;display:inline-block}
-  .c-toda{background:#0ea5e9}
-  .c-asda{background:#f59e0b}
-  .c-lda{background:#22c55e}
-
-  @media print{.no-print{display:none!important}.container{max-width:none;padding:0}.card{box-shadow:none}}
-</style>
+    @media print{
+      .no-print{display:none !important}
+      body{background:#fff}
+      .container{max-width:none;padding:0}
+      .card{box-shadow:none}
+    }
+  </style>
 </head>
 <body>
 <div class="container">
@@ -66,13 +63,15 @@
     </div>
   </div>
 
-  <!-- Paramètres globaux -->
+  <!-- Paramètres généraux -->
   <section class="card" style="margin-top:12px">
-    <h2>Paramètres globaux</h2>
+    <h2>Paramètres généraux</h2>
     <div class="grid2">
-      <label>Marge sécurité (%)<input id="safety" type="number" value="30"/></label>
+      <label>Marge sécurité (%)
+        <input id="safety" type="number" value="30"/>
+      </label>
       <div class="grid1">
-        <label>Carénages de roues (Décollage)</label>
+        <label>Carénages de roues (décollage)</label>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <button id="spatsWith" class="btn toggle on">Avec carénages de roues</button>
           <button id="spatsWithout" class="btn toggle">Sans carénages de roues</button>
@@ -81,16 +80,21 @@
     </div>
   </section>
 
+  <!-- Deux parties : Départ / Arrivée -->
   <div class="row" style="margin-top:12px">
-    <!-- DEPART -->
-    <section class="card dep">
+    <!-- Départ -->
+    <section class="card">
       <h2>Terrain de départ</h2>
       <div class="grid2">
-        <label>ICAO<input id="depIcao"/></label>
-        <label>QFU (°)<input id="depQfu" type="number" value="0"/></label>
-        <label>TODA (m)<input id="depToda" type="number" value="0"/></label>
-        <label>ASDA (m)<input id="depAsda" type="number" value="0"/></label>
-        <label>LDA (m)<input id="depLda" type="number" value="0"/></label>
+        <label>ICAO départ
+          <input id="depIcao" />
+        </label>
+        <label>QFU départ (°)
+          <input id="depQfu" type="number" value="0"/>
+        </label>
+        <label>TODA (m)
+          <input id="depToda" type="number" value="0"/>
+        </label>
         <div class="grid1">
           <label>Surface piste</label>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -99,43 +103,53 @@
           </div>
         </div>
       </div>
+
       <div class="grid2" style="margin-top:10px">
-        <label>Élévation (ft)<input id="depAlt" type="number" value="0"/></label>
-        <label>OAT (°C)<input id="depOat" type="number" value="15"/></label>
-        <label>Vent — Direction (°)<input id="depWindDir" type="number" value="0"/></label>
-        <label>Vent — Vitesse (kt)<input id="depWindKt" type="number" value="0"/></label>
+        <label>Élévation (ft)
+          <input id="depAlt" type="number" value="0"/>
+        </label>
+        <label>OAT (°C)
+          <input id="depOat" type="number" value="15"/>
+        </label>
+        <label>Vent — Direction (°)
+          <input id="depWindDir" type="number" value="0"/>
+        </label>
+        <label>Vent — Vitesse (kt)
+          <input id="depWindKt" type="number" value="0"/>
+        </label>
       </div>
+
+      <!-- Composantes vent départ -->
       <div class="grid3" style="margin-top:10px">
         <div class="field"><div class="k">Vent de face</div><div class="v"><span id="depHwFace">0</span> kt</div></div>
         <div class="field"><div class="k">Vent de travers</div><div class="v"><span id="depXw">0</span> kt</div></div>
         <div class="field"><div class="k">Vent arrière</div><div class="v"><span id="depTw">0</span> kt</div></div>
       </div>
-      <div id="depXwWarn" class="muted" style="margin-top:6px"></div>
-      <div class="grid2" style="margin-top:10px">
-        <label>Facteur suppl. décollage<input id="depExtraTO" type="number" step="0.01" value="1.00"/></label>
-        <label>Masse au décollage (kg)<input id="depTow" type="number" value="900"/></label>
-      </div>
+      <div class="muted" id="depXwWarn" style="margin-top:6px"></div>
 
-      <div class="runwayWrap" style="margin-top:12px">
-        <div class="runway"><svg id="depRunway" width="100%" height="100%"></svg></div>
-        <div class="legend">
-          <div class="lg"><span class="dot c-toda"></span>TODA</div>
-          <div class="lg"><span class="dot c-asda"></span>ASDA</div>
-          <div class="lg"><span class="dot c-lda"></span>LDA</div>
-          <div class="muted" style="margin-top:8px">La barre colorée sur le bord indique la distance requise (marge incluse). La manche à air reflète le vent relatif au QFU.</div>
-        </div>
+      <div class="grid2" style="margin-top:10px">
+        <label>Facteur suppl. décollage
+          <input id="depExtraTO" type="number" step="0.01" value="1.00"/>
+        </label>
+        <label>Masse au décollage (kg)
+          <input id="depTow" type="number" value="900"/>
+        </label>
       </div>
     </section>
 
-    <!-- ARRIVEE -->
-    <section class="card arr">
-      <h2>Terrain d’arrivée</h2>
+    <!-- Arrivée -->
+    <section class="card">
+      <h2>Terrain d'arrivée</h2>
       <div class="grid2">
-        <label>ICAO<input id="arrIcao"/></label>
-        <label>QFU (°)<input id="arrQfu" type="number" value="0"/></label>
-        <label>LDA (m)<input id="arrLda" type="number" value="0"/></label>
-        <label>ASDA (m)<input id="arrAsda" type="number" value="0"/></label>
-        <label>TODA (m)<input id="arrToda" type="number" value="0"/></label>
+        <label>ICAO arrivée
+          <input id="arrIcao" />
+        </label>
+        <label>QFU arrivée (°)
+          <input id="arrQfu" type="number" value="0"/>
+        </label>
+        <label>LDA (m)
+          <input id="arrLda" type="number" value="0"/>
+        </label>
         <div class="grid1">
           <label>Surface piste</label>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -144,21 +158,37 @@
           </div>
         </div>
       </div>
+
       <div class="grid2" style="margin-top:10px">
-        <label>Élévation (ft)<input id="arrAlt" type="number" value="0"/></label>
-        <label>OAT (°C)<input id="arrOat" type="number" value="15"/></label>
-        <label>Vent — Direction (°)<input id="arrWindDir" type="number" value="0"/></label>
-        <label>Vent — Vitesse (kt)<input id="arrWindKt" type="number" value="0"/></label>
+        <label>Élévation (ft)
+          <input id="arrAlt" type="number" value="0"/>
+        </label>
+        <label>OAT (°C)
+          <input id="arrOat" type="number" value="15"/>
+        </label>
+        <label>Vent — Direction (°)
+          <input id="arrWindDir" type="number" value="0"/>
+        </label>
+        <label>Vent — Vitesse (kt)
+          <input id="arrWindKt" type="number" value="0"/>
+        </label>
       </div>
+
+      <!-- Composantes vent arrivée -->
       <div class="grid3" style="margin-top:10px">
         <div class="field"><div class="k">Vent de face</div><div class="v"><span id="arrHwFace">0</span> kt</div></div>
         <div class="field"><div class="k">Vent de travers</div><div class="v"><span id="arrXw">0</span> kt</div></div>
         <div class="field"><div class="k">Vent arrière</div><div class="v"><span id="arrTw">0</span> kt</div></div>
       </div>
-      <div id="arrXwWarn" class="muted" style="margin-top:6px"></div>
+      <div class="muted" id="arrXwWarn" style="margin-top:6px"></div>
+
       <div class="grid2" style="margin-top:10px">
-        <label>Facteur suppl. atterrissage<input id="arrExtraLDG" type="number" step="0.01" value="1.00"/></label>
-        <label>Masse à l’atterrissage (kg)<input id="arrLdw" type="number" value="900"/></label>
+        <label>Facteur suppl. atterrissage
+          <input id="arrExtraLDG" type="number" step="0.01" value="1.00"/>
+        </label>
+        <label>Masse à l'atterrissage (kg)
+          <input id="arrLdw" type="number" value="900"/>
+        </label>
       </div>
 
       <div style="margin-top:10px">
@@ -168,26 +198,22 @@
           <button id="arrNoBrake" class="btn toggle">Sans frein sur herbe</button>
         </div>
       </div>
-
-      <div class="runwayWrap" style="margin-top:12px">
-        <div class="runway"><svg id="arrRunway" width="100%" height="100%"></svg></div>
-        <div class="legend">
-          <div class="lg"><span class="dot c-toda"></span>TODA</div>
-          <div class="lg"><span class="dot c-asda"></span>ASDA</div>
-          <div class="lg"><span class="dot c-lda"></span>LDA</div>
-        </div>
-      </div>
     </section>
   </div>
 
   <!-- Résultats -->
   <div class="row" style="margin-top:16px">
-    <div class="card dep">
+    <div class="card">
       <div class="header">
-        <h2>Décollage</h2><span id="toChip" class="chip neutral">—</span>
+        <h2>Décollage (départ)</h2>
+        <span id="toChip" class="chip neutral">—</span>
       </div>
       <div id="toKpi" class="kpi">
-        <div class="left"><span class="title">Requis (marge incluse)</span><span class="value" id="toKpiVal">— m</span><span class="sub">TODA dispo : <span id="todaMini">—</span></span></div>
+        <div class="left">
+          <span class="title">Requis (marge incluse)</span>
+          <span class="value" id="toKpiVal">— m</span>
+          <span class="sub">TODA dispo : <span id="todaMini">—</span></span>
+        </div>
       </div>
       <div class="grid2" style="margin-top:8px">
         <div class="field"><div class="k">Base (passage 15 m)</div><div id="toBasePass" class="v">—</div></div>
@@ -200,12 +226,17 @@
       </div>
     </div>
 
-    <div class="card arr">
+    <div class="card">
       <div class="header">
-        <h2>Atterrissage</h2><span id="ldgChip" class="chip neutral">—</span>
+        <h2>Atterrissage (arrivée)</h2>
+        <span id="ldgChip" class="chip neutral">—</span>
       </div>
       <div id="ldgKpi" class="kpi">
-        <div class="left"><span class="title">Requis (marge incluse)</span><span class="value" id="ldgKpiVal">— m</span><span class="sub">LDA dispo : <span id="ldaMini">—</span></span></div>
+        <div class="left">
+          <span class="title">Requis (marge incluse)</span>
+          <span class="value" id="ldgKpiVal">— m</span>
+          <span class="sub">LDA dispo : <span id="ldaMini">—</span></span>
+        </div>
       </div>
       <div class="grid2" style="margin-top:8px">
         <div class="field"><div class="k">Base (passage 15 m)</div><div id="ldgBasePass" class="v">—</div></div>
@@ -219,213 +250,253 @@
   </div>
 
   <div class="footer">
-    Sources : Manuel de vol DR400-120 (STD±20). Vent face (10→0,78 · 20→0,63 · 30→0,52). Vent arrière : +10 %/2 kt. Bulletin ROBIN « Sans carénages » : +3 % au décollage (15 m).
+    Sources : Manuel de vol DR400-120 (tables perf. – STD±20). Facteurs vent : face (10→0,78 ; 20→0,63 ; 30→0,52) · arrière : +10 %/2 kt. Bulletin ROBIN « Sans carénages » : +3 % sur distance de décollage (15 m).
   </div>
 </div>
 
 <script>
-/* ----- Tables perf (1979) ----- */
-const TO_TABLE={0:{temps:{minus20:-5,isa:15,plus20:35},hard:{kg700:{roll:[130,145,165],pass:[285,315,345]},kg900:{roll:[225,235,285],pass:[480,535,590]}},grass:{kg700:{roll:[165,185,215],pass:[320,355,395]},kg900:{roll:[315,360,410],pass:[570,640,715]}}},4000:{temps:{minus20:-13,isa:7,plus20:27},hard:{kg700:{roll:[175,195,220],pass:[375,415,460]},kg900:{roll:[305,345,390],pass:[645,720,800]}},grass:{kg700:{roll:[230,265,300],pass:[430,485,540]},kg900:{roll:[460,530,615],pass:[800,905,1025]}}},8000:{temps:{minus20:-21,isa:-1,plus20:19},hard:{kg700:{roll:[235,265,300],pass:[500,560,620]},kg900:{roll:[425,475,535],pass:[890,1000,1125]}},grass:{kg700:{roll:[330,380,440],pass:[595,675,760]},kg900:{roll:[700,820,960],pass:[1165,1350,1550]}}}};
-const LDG_TABLE={0:{temps:{minus20:-5,isa:15,plus20:35},moderate:{kg700:{roll:[145,155,165],pass:[365,385,400]},kg900:{roll:[185,200,210],pass:[435,460,485]}},nobrake_grass:{kg700:{roll:[215,230,250],pass:[435,460,485]},kg900:{roll:[280,300,325],pass:[530,560,590]}}},4000:{temps:{minus20:-13,isa:7,plus20:27},moderate:{kg700:{roll:[160,175,185],pass:[395,420,440]},kg900:{roll:[205,225,240],pass:[475,505,535]}},nobrake_grass:{kg700:{roll:[240,260,285],pass:[475,505,530]},kg900:{roll:[310,335,360],pass:[580,615,655]}}},8000:{temps:{minus20:-21,isa:-1,plus20:19},moderate:{kg700:{roll:[180,195,210],pass:[430,460,485]},kg900:{roll:[235,250,270],pass:[525,555,590]}},nobrake_grass:{kg700:{roll:[275,290,315],pass:[525,555,590]},kg900:{roll:[350,375,405],pass:[640,680,725]}}}};
+  /*=================== Tables — Décollage (STD±20) ===================*/
+  const TO_TABLE = {
+    0: {
+      temps:{minus20:-5, isa:15, plus20:35},
+      hard:{ kg700:{roll:[130,145,165], pass:[285,315,345]},
+             kg900:{roll:[225,235,285], pass:[480,535,590]} },
+      grass:{kg700:{roll:[165,185,215], pass:[320,355,395]},
+             kg900:{roll:[315,360,410], pass:[570,640,715]} }
+    },
+    4000: {
+      temps:{minus20:-13, isa:7, plus20:27},
+      hard:{ kg700:{roll:[175,195,220], pass:[375,415,460]},
+             kg900:{roll:[305,345,390], pass:[645,720,800]} },
+      grass:{kg700:{roll:[230,265,300], pass:[430,485,540]},
+             kg900:{roll:[460,530,615], pass:[800,905,1025]} }
+    },
+    8000: {
+      temps:{minus20:-21, isa:-1, plus20:19},
+      hard:{ kg700:{roll:[235,265,300], pass:[500,560,620]},
+             kg900:{roll:[425,475,535], pass:[890,1000,1125]} },
+      grass:{kg700:{roll:[330,380,440], pass:[595,675,760]},
+             kg900:{roll:[700,820,960], pass:[1165,1350,1550]} }
+    }
+  };
 
-/* ----- Utils ----- */
-const $=s=>document.querySelector(s);
-const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
-const lerp=(x0,y0,x1,y1,x)=>y0+(y1-y0)*((x-x0)/(x1-x0||1));
-function interpTemp(rowTemps,arr,oat){const xs=[rowTemps.minus20,rowTemps.isa,rowTemps.plus20],ys=arr;if(oat<=xs[0])return ys[0];if(oat>=xs[2])return ys[2];if(oat<=xs[1])return lerp(xs[0],ys[0],xs[1],ys[1],oat);return lerp(xs[1],ys[1],xs[2],ys[2],oat)}
-function interpTO(alt,oat,mass,surf,kind){const low=alt<=0?0:alt>=8000?8000:(alt<=4000?0:4000),high=alt<=0?0:alt>=8000?8000:(alt<=4000?4000:8000),a=clamp((mass-700)/(900-700),0,1),valAt=al=>{const t=TO_TABLE[al];const v700=interpTemp(t.temps,t[surf].kg700[kind],oat);const v900=interpTemp(t.temps,t[surf].kg900[kind],oat);return lerp(0,v700,1,v900,a)};if(low===high)return valAt(low);return lerp(low,valAt(low),high,valAt(high),alt)}
-function interpLDG(alt,oat,mass,mode,kind){const low=alt<=0?0:alt>=8000?8000:(alt<=4000?0:4000),high=alt<=0?0:alt>=8000?8000:(alt<=4000?4000:8000),a=clamp((mass-700)/(900-700),0,1),valAt=al=>{const t=LDG_TABLE[al];const v700=interpTemp(t.temps,t[mode].kg700[kind],oat);const v900=interpTemp(t.temps,t[mode].kg900[kind],oat);return lerp(0,v700,1,v900,a)};if(low===high)return valAt(low);return lerp(low,valAt(low),high,valAt(high),alt)}
-function windComponents(qfu,windDir,windKt){const diff=((windDir-qfu+540)%360)-180;const rad=diff*Math.PI/180;return{headwind:windKt*Math.cos(rad),crosswind:windKt*Math.sin(rad),diff}}
-function headwindFactorFace(hw){const pts=[{x:0,y:1.00},{x:10,y:0.78},{x:20,y:0.63},{x:30,y:0.52}],x=clamp(hw,0,30);if(x===0)return 1;for(let i=0;i<pts.length-1;i++){const p0=pts[i],p1=pts[i+1];if(x>=p0.x&&x<=p1.x)return lerp(p0.x,p0.y,p1.x,p1.y,x)}return pts[pts.length-1].y}
-function windDistanceFactor(hw){if(hw>=0)return headwindFactorFace(hw);const tw=Math.abs(hw);const steps=Math.ceil(tw/2);return 1+0.10*steps}
-function setChip(el,state){el.className='chip '+(state==='ok'?'ok':state==='bad'?'bad':'neutral');el.textContent=state==='ok'?'OK':state==='bad'?'KO':'—'}
-function setKpi(el,state){el.className='kpi '+(state==='ok'?'ok':state==='bad'?'bad':'')}
-function status(val,limit){if(!limit)return'neutral';return val<=limit?'ok':'bad'}
+  /*=================== Tables — Atterrissage (STD±20) ===================*/
+  const LDG_TABLE = {
+    0: {
+      temps:{minus20:-5, isa:15, plus20:35},
+      moderate:{ kg700:{roll:[145,155,165], pass:[365,385,400]},
+                 kg900:{roll:[185,200,210], pass:[435,460,485]} },
+      nobrake_grass:{ kg700:{roll:[215,230,250], pass:[435,460,485]},
+                       kg900:{roll:[280,300,325], pass:[530,560,590]} }
+    },
+    4000: {
+      temps:{minus20:-13, isa:7, plus20:27},
+      moderate:{ kg700:{roll:[160,175,185], pass:[395,420,440]},
+                 kg900:{roll:[205,225,240], pass:[475,505,535]} },
+      nobrake_grass:{ kg700:{roll:[240,260,285], pass:[475,505,530]},
+                       kg900:{roll:[310,335,360], pass:[580,615,655]} }
+    },
+    8000: {
+      temps:{minus20:-21, isa:-1, plus20:19},
+      moderate:{ kg700:{roll:[180,195,210], pass:[430,460,485]},
+                 kg900:{roll:[235,250,270], pass:[525,555,590]} },
+      nobrake_grass:{ kg700:{roll:[275,290,315], pass:[525,555,590]},
+                       kg900:{roll:[350,375,405], pass:[640,680,725]} }
+    }
+  };
 
-/* ----- State & events ----- */
-let depSurface='hard',arrSurface='hard',landingMode='moderate',withSpats=true;
-['safety','depIcao','depQfu','depToda','depAsda','depLda','depAlt','depOat','depWindDir','depWindKt','depExtraTO','depTow','arrIcao','arrQfu','arrLda','arrAsda','arrToda','arrAlt','arrOat','arrWindDir','arrWindKt','arrExtraLDG','arrLdw'].forEach(id=>$('#'+id).addEventListener('input',compute));
-$('#depSurfHard').onclick=()=>{depSurface='hard';toggleBtns('#depSurfHard','#depSurfGrass');compute()};
-$('#depSurfGrass').onclick=()=>{depSurface='grass';toggleBtns('#depSurfGrass','#depSurfHard');compute()};
-$('#arrSurfHard').onclick=()=>{arrSurface='hard';toggleBtns('#arrSurfHard','#arrSurfGrass');compute()};
-$('#arrSurfGrass').onclick=()=>{arrSurface='grass';toggleBtns('#arrSurfGrass','#arrSurfHard');compute()};
-$('#arrModerate').onclick=()=>{landingMode='moderate';toggleBtns('#arrModerate','#arrNoBrake');compute()};
-$('#arrNoBrake').onclick=()=>{landingMode='nobrake_grass';toggleBtns('#arrNoBrake','#arrModerate');compute()};
-$('#spatsWith').onclick=()=>{withSpats=true;toggleBtns('#spatsWith','#spatsWithout');compute()};
-$('#spatsWithout').onclick=()=>{withSpats=false;toggleBtns('#spatsWithout','#spatsWith');compute()};
-function toggleBtns(onSel,offSel){$(onSel).classList.add('on');$(offSel).classList.remove('on')}
+  /*=================== Utils ===================*/
+  const $ = s => document.querySelector(s);
+  const clamp = (v,min,max)=>Math.max(min,Math.min(max,v));
+  const lerp = (x0,y0,x1,y1,x)=> y0 + (y1-y0)*((x-x0)/(x1-x0||1));
 
-/* ----- Runway drawing (full-height SVG + manche à air + lignes TODA/ASDA/LDA) ----- */
-function drawRunway(svgId,opts){
-  const {qfu,windDir,windKt,diffDeg,lengthText,maxAvail,lines,required,available,label,ok}=opts;
-  const svg=$(svgId); if(!svg) return; const w=svg.clientWidth||320,h=svg.clientHeight||480;
-  svg.innerHTML='';
-  const ns='http://www.w3.org/2000/svg';
-  const add=(tag,attrs,parent=svg)=>{const el=document.createElementNS(ns,tag);for(const k in attrs)el.setAttribute(k,String(attrs[k]));parent.appendChild(el);return el}
-
-  // Background
-  add('rect',{x:0,y:0,width:w,height:h,fill:'transparent'});
-
-  // Runway body
-  const rx=w*0.58, rw=w*0.20, ry=8, rh=h-16;
-  add('rect',{x:rx,y:ry,width:rw,height:rh,fill:'#0f0f10',rx:10});
-
-  // Centerline
-  const dashH=18, gap=14; for(let y=ry+10;y<ry+rh-10;y+=dashH+gap){add('rect',{x:rx+rw/2-2,y,width:4,height:dashH,fill:'#fff'})}
-
-  // Threshold markings (bottom)
-  for(let i=0;i<6;i++){add('rect',{x:rx+8+i*12,y:ry+rh-18,width:8,height:12,fill:'#fff'})}
-  // Threshold markings (top)
-  for(let i=0;i<6;i++){add('rect',{x:rx+rw-8-i*12-8,y:ry+6,width:8,height:12,fill:'#fff'})}
-
-  // QFU + longueur au centre, vertical
-  const textG=add('g',{transform:`translate(${rx+rw/2},${ry+rh/2}) rotate(-90)`});
-  add('text',{x:0,y:-10,'text-anchor':'middle','font-size':'18','font-family':'system-ui',fill:'#e5e7eb','font-weight':'700'},textG).textContent=`${Math.round(qfu)||0}°`;
-  add('text',{x:0,y:16,'text-anchor':'middle','font-size':'16','font-family':'system-ui',fill:'#e5e7eb'},textG).textContent=`${lengthText}`;
-
-  // Scale helper
-  const scale = (m)=> ry + rh - (maxAvail>0 ? Math.min(m,maxAvail)/maxAvail*rh : 0);
-
-  // Lines TODA/ASDA/LDA
-  const palette={TODA:'#0ea5e9',ASDA:'#f59e0b',LDA:'#22c55e'};
-  lines.forEach(L=>{
-    if(!L.value) return;
-    const y=scale(L.value);
-    add('line',{x1:rx-24,x2:rx+rw+24,y1:y,y2:y,stroke:palette[L.key], 'stroke-width':2});
-    add('text',{x:rx+rw+28,y:y-4,'font-size':'12','font-family':'system-ui',fill:'#334155'}).textContent=`${L.key} ${L.value} m`;
-  });
-
-  // Required bar on left side (like gauge)
-  if(required>0 && available>0){
-    const usedPx=Math.min(required/available,1.2)*rh;
-    add('rect',{x:rx-18,y:ry+rh-usedPx,width:12,height:usedPx,fill:ok?'#16a34a':'#dc2626',rx:4});
-    const margin=available-required;
-    const tag=add('text',{x:rx-20,y:ry+rh-usedPx-6,'text-anchor':'end','font-size':'12','font-family':'system-ui',fill:ok?'#16a34a':'#dc2626'});
-    tag.textContent=(required|0)+' m '+(isFinite(margin)? (margin>=0?`(+${margin|0})`:`(${margin|0})`):'');
+  function interpTemp(rowTemps, arr, oat){
+    const xs=[rowTemps.minus20,rowTemps.isa,rowTemps.plus20], ys=arr;
+    if(oat<=xs[0]) return ys[0];
+    if(oat>=xs[2]) return ys[2];
+    if(oat<=xs[1]) return lerp(xs[0],ys[0],xs[1],ys[1],oat);
+    return lerp(xs[1],ys[1],xs[2],ys[2],oat);
+  }
+  function interpTO(altFt,oat,massKg,surface,kind){ // 'roll'|'pass'
+    const low = altFt<=0?0:altFt>=8000?8000:(altFt<=4000?0:4000);
+    const high= altFt<=0?0:altFt>=8000?8000:(altFt<=4000?4000:8000);
+    const alpha = clamp((massKg-700)/(900-700),0,1);
+    const valAt = (alt)=>{
+      const t=TO_TABLE[alt];
+      const v700 = interpTemp(t.temps, t[surface].kg700[kind], oat);
+      const v900 = interpTemp(t.temps, t[surface].kg900[kind], oat);
+      return lerp(0,v700,1,v900,alpha);
+    };
+    if(low===high) return valAt(low);
+    return lerp(low,valAt(low),high,valAt(high),altFt);
+  }
+  function interpLDG(altFt,oat,massKg,mode,kind){
+    const low = altFt<=0?0:altFt>=8000?8000:(altFt<=4000?0:4000);
+    const high= altFt<=0?0:altFt>=8000?8000:(altFt<=4000?4000:8000);
+    const alpha = clamp((massKg-700)/(900-700),0,1);
+    const valAt = (alt)=>{
+      const t=LDG_TABLE[alt];
+      const v700 = interpTemp(t.temps, t[mode].kg700[kind], oat);
+      const v900 = interpTemp(t.temps, t[mode].kg900[kind], oat);
+      return lerp(0,v700,1,v900,alpha);
+    };
+    if(low===high) return valAt(low);
+    return lerp(low,valAt(low),high,valAt(high),altFt);
+  }
+  function windComponents(qfu, windDir, windKt){
+    const diff = ((windDir - qfu + 540) % 360) - 180; // [-180,180]
+    const rad = diff * Math.PI/180;
+    return { headwind: windKt*Math.cos(rad), crosswind: windKt*Math.sin(rad) };
+  }
+  // Face (10→0.78,20→0.63,30→0.52), arrière +10%/2 kt
+  function headwindFactorFace(hw){
+    const pts=[{x:0,y:1.00},{x:10,y:0.78},{x:20,y:0.63},{x:30,y:0.52}];
+    const x=clamp(hw,0,30);
+    if(x===0) return 1;
+    for(let i=0;i<pts.length-1;i++){
+      const p0=pts[i], p1=pts[i+1];
+      if(x>=p0.x && x<=p1.x) return lerp(p0.x,p0.y,p1.x,p1.y,x);
+    }
+    return pts[pts.length-1].y;
+  }
+  function windDistanceFactor(headwind){
+    if(headwind>=0) return headwindFactorFace(headwind);
+    const tw = Math.abs(headwind);
+    const steps = Math.ceil(tw/2); // tranche 2 kt
+    return 1 + 0.10*steps;
+  }
+  function setChip(el, state){
+    el.className='chip '+(state==='ok'?'ok':state==='bad'?'bad':'neutral');
+    el.textContent = state==='ok'?'OK':state==='bad'?'KO':'—';
+  }
+  function setKpi(el, state){
+    el.className='kpi '+(state==='ok'?'ok':state==='bad'?'bad':'');
+  }
+  function status(val,limit){
+    if(!limit) return 'neutral';
+    return val<=limit ? 'ok' : 'bad';
   }
 
-  // Windsock (orientée par diffDeg)
-  const wsG=add('g',{transform:`translate(${rx+rw+54},${ry+rh/2}) rotate(${-diffDeg})`});
-  // pole
-  add('rect',{x:-2,y:-55,width:4,height:110,fill:'#6b7280'},wsG);
-  // sock (segments alternés orange/blanc)
-  const segs=[[0,-40,36,14],[36,-36,24,12],[60,-32,18,10],[78,-29,14,9],[92,-27,10,8]];
-  segs.forEach((s,i)=>add('rect',{x:s[0],y:s[1],width:s[2],height:s[3],fill:i%2?'#ffffff':'#f97316',rx:2},wsG));
-  // small tail ring
-  add('circle',{cx:segs.at(-1)[0]+segs.at(-1)[2]+2,cy:-23,r:2,fill:'#6b7280'},wsG);
+  /*=================== État & événements ===================*/
+  let depSurface='hard';
+  let arrSurface='hard'; // info visuelle
+  let landingMode='moderate';
+  let withSpats=true;
 
-  // Wind text
-  add('text',{x:rx+rw+10,y:ry+rh/2+56,'font-size':'12','font-family':'system-ui',fill:'#334155'}).textContent=`${windDir||0}° / ${windKt||0} kt`;
-}
+  // Toggles
+  $('#depSurfHard').onclick=()=>{depSurface='hard';$('#depSurfHard').classList.add('on');$('#depSurfGrass').classList.remove('on');compute()};
+  $('#depSurfGrass').onclick=()=>{depSurface='grass';$('#depSurfGrass').classList.add('on');$('#depSurfHard').classList.remove('on');compute()};
+  $('#arrSurfHard').onclick=()=>{arrSurface='hard';$('#arrSurfHard').classList.add('on');$('#arrSurfGrass').classList.remove('on');compute()};
+  $('#arrSurfGrass').onclick=()=>{arrSurface='grass';$('#arrSurfGrass').classList.add('on');$('#arrSurfHard').classList.remove('on');compute()};
+  $('#arrModerate').onclick=()=>{landingMode='moderate';$('#arrModerate').classList.add('on');$('#arrNoBrake').classList.remove('on');compute()};
+  $('#arrNoBrake').onclick=()=>{landingMode='nobrake_grass';$('#arrNoBrake').classList.add('on');$('#arrModerate').classList.remove('on');compute()};
+  $('#spatsWith').onclick=()=>{withSpats=true;$('#spatsWith').classList.add('on');$('#spatsWithout').classList.remove('on');compute()};
+  $('#spatsWithout').onclick=()=>{withSpats=false;$('#spatsWithout').classList.add('on');$('#spatsWith').classList.remove('on');compute()};
 
-/* ----- Compute ----- */
-function compute(){
-  const safety=Number($('#safety').value||30);
+  // Inputs → compute
+  ['safety',
+   'depIcao','depQfu','depToda','depAlt','depOat','depWindDir','depWindKt','depExtraTO','depTow',
+   'arrIcao','arrQfu','arrLda','arrAlt','arrOat','arrWindDir','arrWindKt','arrExtraLDG','arrLdw'
+  ].forEach(id=>$('#'+id).addEventListener('input', compute));
 
-  // DEP
-  const depQfu=Number($('#depQfu').value||0),
-        depToda=Number($('#depToda').value||0),
-        depAsda=Number($('#depAsda').value||0),
-        depLda =Number($('#depLda').value||0),
-        depAlt=Number($('#depAlt').value||0),
-        depOat=Number($('#depOat').value||0),
-        depWdir=Number($('#depWindDir').value||0),
-        depWkt =Number($('#depWindKt').value||0),
-        depExtra=Number($('#depExtraTO').value||1),
-        depTow=Number($('#depTow').value||900);
+  /*=================== Calcul ===================*/
+  function compute(){
+    // Départ
+    const depQfu = Number($('#depQfu').value||0);
+    const depToda= Number($('#depToda').value||0);
+    const depAlt = Number($('#depAlt').value||0);
+    const depOat = Number($('#depOat').value||0);
+    const depWdir= Number($('#depWindDir').value||0);
+    const depWkt = Number($('#depWindKt').value||0);
+    const depExtra= Number($('#depExtraTO').value||1);
+    const depTow = Number($('#depTow').value||900);
 
-  // ARR
-  const arrQfu=Number($('#arrQfu').value||0),
-        arrLda=Number($('#arrLda').value||0),
-        arrAsda=Number($('#arrAsda').value||0),
-        arrToda=Number($('#arrToda').value||0),
-        arrAlt=Number($('#arrAlt').value||0),
-        arrOat=Number($('#arrOat').value||0),
-        arrWdir=Number($('#arrWindDir').value||0),
-        arrWkt =Number($('#arrWindKt').value||0),
-        arrExtra=Number($('#arrExtraLDG').value||1),
-        arrLdw=Number($('#arrLdw').value||900);
+    // Arrivée
+    const arrQfu = Number($('#arrQfu').value||0);
+    const arrLda = Number($('#arrLda').value||0);
+    const arrAlt = Number($('#arrAlt').value||0);
+    const arrOat = Number($('#arrOat').value||0);
+    const arrWdir= Number($('#arrWindDir').value||0);
+    const arrWkt = Number($('#arrWindKt').value||0);
+    const arrExtra= Number($('#arrExtraLDG').value||1);
+    const arrLdw = Number($('#arrLdw').value||900);
 
-  // Vents
-  const depComp=windComponents(depQfu,depWdir,depWkt),
-        arrComp=windComponents(arrQfu,arrWdir,arrWkt);
-  const depHwFace=Math.max(0,depComp.headwind), depTw=Math.max(0,-depComp.headwind), depXw=Math.abs(depComp.crosswind);
-  const arrHwFace=Math.max(0,arrComp.headwind), arrTw=Math.max(0,-arrComp.headwind), arrXw=Math.abs(arrComp.crosswind);
-  $('#depHwFace').textContent=depHwFace.toFixed(0); $('#depXw').textContent=depXw.toFixed(0); $('#depTw').textContent=depTw.toFixed(0);
-  $('#arrHwFace').textContent=arrHwFace.toFixed(0); $('#arrXw').textContent=arrXw.toFixed(0); $('#arrTw').textContent=arrTw.toFixed(0);
-  const crossLimit=22;
-  const depWarn=$('#depXwWarn'), arrWarn=$('#arrXwWarn');
-  depWarn.textContent=depXw>crossLimit?`⚠️ ${depXw.toFixed(0)} kt > ${crossLimit} kt (limite DR400)`:''; depWarn.style.color=depXw>crossLimit?'#dc2626':'var(--muted)';
-  arrWarn.textContent=arrXw>crossLimit?`⚠️ ${arrXw.toFixed(0)} kt > ${crossLimit} kt (limite DR400)`:''; arrWarn.style.color=arrXw>crossLimit?'#dc2626':'var(--muted)';
+    const safety = Number($('#safety').value||30);
 
-  // Interpolations
-  const baseTO_pass=interpTO(depAlt,depOat,depTow,depSurface,'pass');
-  const baseTO_roll=interpTO(depAlt,depOat,depTow,depSurface,'roll');
-  const baseLDG_pass=interpLDG(arrAlt,arrOat,arrLdw,landingMode,'pass');
-  const baseLDG_roll=interpLDG(arrAlt,arrOat,arrLdw,landingMode,'roll');
+    // Vent départ
+    const depComp = windComponents(depQfu, depWdir, depWkt);
+    const depHw = depComp.headwind, depXw = Math.abs(depComp.crosswind);
+    const depHwFace = Math.max(0, depHw), depTw = Math.max(0, -depHw);
+    $('#depHwFace').textContent = depHwFace.toFixed(0);
+    $('#depXw').textContent = depXw.toFixed(0);
+    $('#depTw').textContent = depTw.toFixed(0);
 
-  const depWindF=windDistanceFactor(depComp.headwind);
-  const arrWindF=windDistanceFactor(arrComp.headwind);
-  const spatsF=withSpats?1.00:1.03;
+    // Vent arrivée
+    const arrComp = windComponents(arrQfu, arrWdir, arrWkt);
+    const arrHw = arrComp.headwind, arrXw = Math.abs(arrComp.crosswind);
+    const arrHwFace = Math.max(0, arrHw), arrTw = Math.max(0, -arrHw);
+    $('#arrHwFace').textContent = arrHwFace.toFixed(0);
+    $('#arrXw').textContent = arrXw.toFixed(0);
+    $('#arrTw').textContent = arrTw.toFixed(0);
 
-  const toCalc=Math.round(baseTO_pass*depWindF*depExtra*spatsF);
-  const ldgCalc=Math.round(baseLDG_pass*arrWindF*arrExtra);
-  const toMargin=Math.round(toCalc*(1+safety/100));
-  const ldgMargin=Math.round(ldgCalc*(1+safety/100));
+    // Limite travers 22 kt
+    const crossLimit = 22;
+    const depWarn = $('#depXwWarn'), arrWarn = $('#arrXwWarn');
+    depWarn.textContent = depXw>crossLimit ? `⚠️ ${depXw.toFixed(0)} kt > ${crossLimit} kt (limite DR400)` : '';
+    arrWarn.textContent = arrXw>crossLimit ? `⚠️ ${arrXw.toFixed(0)} kt > ${crossLimit} kt (limite DR400)` : '';
+    depWarn.style.color = depXw>crossLimit ? '#dc2626' : 'var(--muted)';
+    arrWarn.style.color = arrXw>crossLimit ? '#dc2626' : 'var(--muted)';
 
-  // Résultats textes
-  $('#toBasePass').textContent=Math.round(baseTO_pass)+' m';
-  $('#toBaseRoll').textContent=Math.round(baseTO_roll)+' m';
-  $('#toWindF').textContent=depWindF.toFixed(2)+'×';
-  $('#toSpat').textContent=`${spatsF.toFixed(2)}×`+(withSpats?' (carénages présents)':' (sans carénages)');
-  $('#toExtra').textContent=depExtra.toFixed(2)+'×';
-  $('#toRes').textContent=toCalc+' m';
-  $('#toResM').textContent=toMargin+' m';
-  $('#todaMini').textContent=depToda?depToda+' m':'—';
+    // Interpolations (décollage/atterrissage)
+    const baseTO_pass  = interpTO(depAlt, depOat, depTow, depSurface, 'pass');
+    const baseTO_roll  = interpTO(depAlt, depOat, depTow, depSurface, 'roll');
+    const baseLDG_pass = interpLDG(arrAlt, arrOat, arrLdw, landingMode, 'pass');
+    const baseLDG_roll = interpLDG(arrAlt, arrOat, arrLdw, landingMode, 'roll');
 
-  $('#ldgBasePass').textContent=Math.round(baseLDG_pass)+' m';
-  $('#ldgBaseRoll').textContent=Math.round(baseLDG_roll)+' m';
-  $('#ldgWindF').textContent=arrWindF.toFixed(2)+'×';
-  $('#ldgExtra').textContent=arrExtra.toFixed(2)+'×';
-  $('#ldgRes').textContent=ldgCalc+' m';
-  $('#ldgResM').textContent=ldgMargin+' m';
-  $('#ldaMini').textContent=arrLda?arrLda+' m':'—';
+    // Facteurs vent + carénages
+    const depWindF = windDistanceFactor(depHw);
+    const arrWindF = windDistanceFactor(arrHw);
+    const spatsF = withSpats ? 1.00 : 1.03; // +3% sans carénages (TO seulement)
 
-  // KPI + chips
-  const stTO=status(toMargin,depToda);
-  const stLDG=status(ldgMargin,arrLda);
-  setChip($('#toChip'),stTO); setChip($('#ldgChip'),stLDG);
-  setKpi($('#toKpi'),stTO); setKpi($('#ldgKpi'),stLDG);
-  $('#toKpiVal').textContent=toMargin+' m';
-  $('#ldgKpiVal').textContent=ldgMargin+' m';
+    // Résultats
+    const toCalc = Math.round(baseTO_pass * depWindF * depExtra * spatsF);
+    const ldgCalc= Math.round(baseLDG_pass * arrWindF * arrExtra);
 
-  // Dessins piste
-  const depMax = Math.max(depToda, depAsda, depLda, 1);
-  drawRunway('#depRunway',{
-    qfu:depQfu, windDir:depWdir, windKt:depWkt, diffDeg:depComp.diff,
-    lengthText:(depMax?' '+depMax+' m':''), maxAvail:depMax,
-    lines:[
-      {key:'TODA', value:depToda},
-      {key:'ASDA', value:depAsda},
-      {key:'LDA',  value:depLda},
-    ],
-    required:toMargin, available:depToda||depMax, label:'TODA', ok:stTO==='ok'
-  });
+    const toMargin = Math.round(toCalc * (1 + safety/100));
+    const ldgMargin= Math.round(ldgCalc* (1 + safety/100));
 
-  const arrMax = Math.max(arrLda, arrAsda, arrToda, 1);
-  drawRunway('#arrRunway',{
-    qfu:arrQfu, windDir:arrWdir, windKt:arrWkt, diffDeg:arrComp.diff,
-    lengthText:(arrMax?' '+arrMax+' m':''), maxAvail:arrMax,
-    lines:[
-      {key:'TODA', value:arrToda},
-      {key:'ASDA', value:arrAsda},
-      {key:'LDA',  value:arrLda},
-    ],
-    required:ldgMargin, available:arrLda||arrMax, label:'LDA', ok:stLDG==='ok'
-  });
-}
+    // UI départ
+    $('#toBasePass').textContent = Math.round(baseTO_pass)+' m';
+    $('#toBaseRoll').textContent = Math.round(baseTO_roll)+' m';
+    $('#toWindF').textContent = depWindF.toFixed(2)+'×';
+    $('#toSpat').textContent = `${spatsF.toFixed(2)}×` + (withSpats?' (carénages présents)':' (sans carénages)');
+    $('#toExtra').textContent = depExtra.toFixed(2)+'×';
+    $('#toRes').textContent = toCalc+' m';
+    $('#toResM').textContent = toMargin+' m';
+    $('#todaMini').textContent = depToda? (depToda+' m') : '—';
 
-compute();
+    // UI arrivée
+    $('#ldgBasePass').textContent = Math.round(baseLDG_pass)+' m';
+    $('#ldgBaseRoll').textContent = Math.round(baseLDG_roll)+' m';
+    $('#ldgWindF').textContent = arrWindF.toFixed(2)+'×';
+    $('#ldgExtra').textContent = arrExtra.toFixed(2)+'×';
+    $('#ldgRes').textContent = ldgCalc+' m';
+    $('#ldgResM').textContent = ldgMargin+' m';
+    $('#ldaMini').textContent = arrLda? (arrLda+' m') : '—';
+
+    // KPI + chips
+    const stTO  = status(toMargin, depToda);
+    const stLDG = status(ldgMargin, arrLda);
+    setChip(document.getElementById('toChip'), stTO);
+    setChip(document.getElementById('ldgChip'), stLDG);
+    setKpi(document.getElementById('toKpi'),  stTO);
+    setKpi(document.getElementById('ldgKpi'), stLDG);
+    document.getElementById('toKpiVal').textContent  = toMargin+' m';
+    document.getElementById('ldgKpiVal').textContent = ldgMargin+' m';
+  }
+
+  // Initial
+  compute();
 </script>
 </body>
 </html>
