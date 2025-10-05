@@ -122,7 +122,8 @@
           <input id="depOat" type="number" value="15"/>
         </label>
         <label>Vent — Direction (°)
-          <input id="depWindDir" type="number" min="0" max="350" step="10" value="0"/>
+          <!-- TEXTE pour pouvoir afficher 000, 010, etc. -->
+          <input id="depWindDir" type="text" inputmode="numeric" pattern="[0-9]*" value="000" />
         </label>
         <label>Vent — Vitesse (kt)
           <input id="depWindKt" type="number" min="0" step="1" value="0"/>
@@ -176,7 +177,7 @@
           <input id="arrOat" type="number" value="15"/>
         </label>
         <label>Vent — Direction (°)
-          <input id="arrWindDir" type="number" min="0" max="350" step="10" value="0"/>
+          <input id="arrWindDir" type="text" inputmode="numeric" pattern="[0-9]*" value="000" />
         </label>
         <label>Vent — Vitesse (kt)
           <input id="arrWindKt" type="number" min="0" step="1" value="0"/>
@@ -338,7 +339,6 @@
     el.addEventListener('blur',()=>sanitizeIcao(el));
   });
 
-  // Avion -> hélice
   const propByAircraft={
     'F-GCAL (120cv)':'Sensenich',
     'F-BXEK (120cv)':'Sensenich',
@@ -353,7 +353,7 @@
   });
   $('#propeller').value=propByAircraft[$('#aircraftSel').value];
 
-  // Toggles surface / mode / spats
+  // Toggles
   $('#depSurfHard').onclick=()=>{depSurface='hard';$('#depSurfHard').classList.add('on');$('#depSurfGrass').classList.remove('on');compute()};
   $('#depSurfGrass').onclick=()=>{depSurface='grass';$('#depSurfGrass').classList.add('on');$('#depSurfHard').classList.remove('on');compute()};
   $('#arrSurfHard').onclick=()=>{arrSurface='hard';$('#arrSurfHard').classList.add('on');$('#arrSurfGrass').classList.remove('on');compute()};
@@ -363,32 +363,40 @@
   $('#spatsWith').onclick=()=>{withSpats=true;$('#spatsWith').classList.add('on');$('#spatsWithout').classList.remove('on');compute()};
   $('#spatsWithout').onclick=()=>{withSpats=false;$('#spatsWithout').classList.add('on');$('#spatsWith').classList.remove('on');compute()};
 
-  // Bind vents: direction 000↔350 par pas de 10, vitesse entière ≥ 0
+  // Direction vent: champ texte "000"→"350", zero-padding, incrément 1°, wrap.
   function bindDir(id){
     const el=$('#'+id);
-    const normalize=()=>{
-      let v=parseInt(el.value,10);
-      if(isNaN(v)) v=0;
-      // arrondi au 10 le plus proche
-      v = Math.round(v/10)*10;
-      if(v<0) v=0;
-      if(v>350) v=350;
-      el.value=String(v);
+    const clampDir=(v)=>{ if(isNaN(v)) v=0; v=Math.round(v); if(v<0) v=0; if(v>350) v=350; return v; };
+    const normalizeDigits=()=>{ el.value = el.value.replace(/\D/g,'').slice(0,3); };
+    const format=()=>{
+      let v = clampDir(parseInt(el.value,10));
+      el.value = pad3(v);
+      return v;
     };
-    el.addEventListener('change',()=>{normalize();compute()});
-    el.addEventListener('blur',()=>{normalize();compute()});
+
+    // Saisie: chiffres uniquement, pas de padding immédiat pour ne pas gêner la frappe
+    el.addEventListener('input', ()=>{ normalizeDigits(); compute(); });
+
+    // Perte de focus / change: clamp + padding 3 digits
+    el.addEventListener('blur', ()=>{ format(); compute(); });
+    el.addEventListener('change', ()=>{ format(); compute(); });
+
+    // Flèches: ±1°, wrap 000↔350
     el.addEventListener('keydown',(e)=>{
-      if(e.key==='ArrowDown'||e.key==='ArrowUp'){
+      if(e.key==='ArrowUp' || e.key==='ArrowDown'){
         e.preventDefault();
-        let v=parseInt(el.value||'0',10); if(isNaN(v)) v=0;
-        v += (e.key==='ArrowDown'?-10:+10);
+        let v = clampDir(parseInt(el.value||'0',10));
+        v += (e.key==='ArrowUp'? +1 : -1);
         if(v<0) v=350;
         if(v>350) v=0;
-        el.value=String(v);
+        el.value = pad3(v);
         compute();
       }
     });
   }
+  bindDir('depWindDir'); bindDir('arrWindDir');
+
+  // Vitesse vent: entier ≥0 (incrément 1 kt)
   function bindSpeed(id){
     const el=$('#'+id);
     const norm=()=>{
@@ -405,7 +413,6 @@
       }
     });
   }
-  bindDir('depWindDir'); bindDir('arrWindDir');
   bindSpeed('depWindKt'); bindSpeed('arrWindKt');
 
   // Inputs → compute
@@ -413,15 +420,40 @@
    'arrQfu','arrLda','arrAlt','arrOat','arrExtraLDG','arrLdw'
   ].forEach(id=>$('#'+id).addEventListener('input', compute));
 
+  function windComponents(qfu,windDir,windKt){
+    const diff=((windDir-qfu+540)%360)-180;
+    const rad=diff*Math.PI/180;
+    return{headwind:windKt*Math.cos(rad),crosswind:windKt*Math.sin(rad)};
+  }
+  function headwindFactorFace(hw){
+    const pts=[{x:0,y:1.00},{x:10,y:0.78},{x:20,y:0.63},{x:30,y:0.52}],x=Math.max(0,Math.min(30,hw));
+    if(x===0)return 1;
+    for(let i=0;i<pts.length-1;i++){const p0=pts[i],p1=pts[i+1];if(x>=p0.x&&x<=p1.x)return p0.y+(p1.y-p0.y)*((x-p0.x)/(p1.x-p0.x))}
+    return pts.at(-1).y;
+  }
+  function windDistanceFactor(headwind){
+    if(headwind>=0)return headwindFactorFace(headwind);
+    const tw=Math.abs(headwind),steps=Math.ceil(tw/2);
+    return 1+0.10*steps;
+  }
+  function setChip(el,state){
+    el.className='chip '+(state==='ok'?'ok':state==='bad'?'bad':'neutral');
+    el.textContent=state==='ok'?'OK':state==='bad'?'KO':'—';
+  }
+  function setKpi(el,state){el.className='kpi '+(state==='ok'?'ok':state==='bad'?'bad':'')}
+  function status(val,limit){if(!limit)return'neutral';return val<=limit?'ok':'bad'}
+
   function compute(){
     const depQfu=+($('#depQfu').value||0), depToda=+($('#depToda').value||0),
           depAlt=+($('#depAlt').value||0), depOat=+($('#depOat').value||0),
-          depWdir=+($('#depWindDir').value||0), depWkt=+($('#depWindKt').value||0),
+          depWdir=parseInt($('#depWindDir').value||'0',10),
+          depWkt=+($('#depWindKt').value||0),
           depExtra=+($('#depExtraTO').value||1), depTow=+($('#depTow').value||900);
 
     const arrQfu=+($('#arrQfu').value||0), arrLda=+($('#arrLda').value||0),
           arrAlt=+($('#arrAlt').value||0), arrOat=+($('#arrOat').value||0),
-          arrWdir=+($('#arrWindDir').value||0), arrWkt=+($('#arrWindKt').value||0),
+          arrWdir=parseInt($('#arrWindDir').value||'0',10),
+          arrWkt=+($('#arrWindKt').value||0),
           arrExtra=+($('#arrExtraLDG').value||1), arrLdw=+($('#arrLdw').value||900);
 
     const safety=+($('#safety').value||30);
@@ -462,7 +494,7 @@
     $('#toBasePass').textContent=Math.round(baseTO_pass)+' m';
     $('#toBaseRoll').textContent=Math.round(baseTO_roll)+' m';
     $('#toWindF').textContent=depWindF.toFixed(2)+'×';
-    $('#toSpat').textContent=`${spatsF.toFixed(2)}×`+(withSpats?' (carénages présents)':' (sans carénages)');
+    $('#toSpat').textContent=`${spatsF.toFixed(2)}×`+(spatsF===1?' (carénages présents)':' (sans carénages)');
     $('#toExtra').textContent=depExtra.toFixed(2)+'×';
     $('#toRes').textContent=toCalc+' m';
     $('#toResM').textContent=toMargin+' m';
@@ -476,7 +508,8 @@
     $('#ldgResM').textContent=ldgMargin+' m';
     $('#ldaMini').textContent=arrLda?arrLda+' m':'—';
 
-    const stTO=status(toMargin,depToda), stLDG=status(ldgMargin,arrLda);
+    const stTO=(depToda? (toMargin<=depToda?'ok':'bad'):'neutral');
+    const stLDG=(arrLda? (ldgMargin<=arrLda?'ok':'bad'):'neutral');
     setChip($('#toChip'),stTO); setChip($('#ldgChip'),stLDG);
     setKpi($('#toKpi'),stTO); setKpi($('#ldgKpi'),stLDG);
     $('#toKpiVal').textContent=toMargin+' m'; $('#ldgKpiVal').textContent=ldgMargin+' m';
@@ -490,12 +523,12 @@
 
     const D={ icao:($('#depIcao').value||'').toUpperCase(), qfu:+($('#depQfu').value||0), toda:+($('#depToda').value||0),
               alt:+($('#depAlt').value||0), oat:+($('#depOat').value||0),
-              wdir:+($('#depWindDir').value||0), wkt:+($('#depWindKt').value||0),
+              wdir:parseInt($('#depWindDir').value||'0',10), wkt:+($('#depWindKt').value||0),
               extra:+($('#depExtraTO').value||1), mass:+($('#depTow').value||900),
               surface:($('#depSurfGrass').classList.contains('on')?'Herbe':'Dur') };
     const A={ icao:($('#arrIcao').value||'').toUpperCase(), qfu:+($('#arrQfu').value||0), lda:+($('#arrLda').value||0),
               alt:+($('#arrAlt').value||0), oat:+($('#arrOat').value||0),
-              wdir:+($('#arrWindDir').value||0), wkt:+($('#arrWindKt').value||0),
+              wdir:parseInt($('#arrWindDir').value||'0',10), wkt:+($('#arrWindKt').value||0),
               extra:+($('#arrExtraLDG').value||1), mass:+($('#arrLdw').value||900),
               surface:($('#arrSurfGrass').classList.contains('on')?'Herbe':'Dur'),
               mode:($('#arrNoBrake').classList.contains('on')?'Sans frein herbe':'Freinage modéré') };
@@ -553,7 +586,6 @@
     ].join('\n');
   }
 
-  // Remplir le rapport brut juste avant impression
   window.addEventListener('beforeprint', ()=>{
     document.getElementById('rawPre').textContent = buildRawReport();
   });
