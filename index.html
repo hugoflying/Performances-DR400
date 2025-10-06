@@ -5,10 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>CALCULCATEUR DE PERFORMANCES</title>
   <style>
-    :root{
-      --bg:#f6f7fb;--card:#fff;--ink:#0f172a;--muted:#6b7280;
-      --ok:#16a34a;--bad:#dc2626;--line:#e5e7eb;--primary:#2563eb;--green:#16a34a;
-    }
+    :root{--bg:#f6f7fb;--card:#fff;--ink:#0f172a;--muted:#6b7280;--ok:#16a34a;--bad:#dc2626;--line:#e5e7eb;--primary:#2563eb;--green:#16a34a;}
     *{box-sizing:border-box}
     html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue","Noto Sans",Arial}
     h1{font-size:clamp(22px,3.5vw,30px);margin:0;text-align:center;letter-spacing:.02em}
@@ -60,7 +57,6 @@
     <h1>CALCULCATEUR DE PERFORMANCES</h1>
   </div>
 
-  <!-- Paramètres généraux -->
   <section class="card" style="margin-top:4px">
     <h2>Paramètres généraux</h2>
     <div class="grid2">
@@ -90,9 +86,7 @@
     </div>
   </section>
 
-  <!-- Départ / Arrivée -->
   <div class="row" style="margin-top:12px">
-    <!-- Départ -->
     <section class="card">
       <h2 class="center">Terrain de départ</h2>
       <div class="grid2">
@@ -122,7 +116,6 @@
           <input id="depOat" type="number" value="15"/>
         </label>
         <label>Vent — Direction (°)
-          <!-- TEXTE pour pouvoir afficher 000, 010, etc. -->
           <input id="depWindDir" type="text" inputmode="numeric" pattern="[0-9]*" value="000" />
         </label>
         <label>Vent — Vitesse (kt)
@@ -147,7 +140,6 @@
       </div>
     </section>
 
-    <!-- Arrivée -->
     <section class="card">
       <h2 class="center">Terrain d'arrivée</h2>
       <div class="grid2">
@@ -210,7 +202,6 @@
     </section>
   </div>
 
-  <!-- Résultats -->
   <div class="row" style="margin-top:16px">
     <div class="card">
       <div class="header">
@@ -261,32 +252,72 @@
   <div class="footer">Source : Manuel de vol - Aéroclub de Beauvais-Tillé</div>
 </div>
 
-<!-- Impression brute -->
 <section id="printRaw"><pre id="rawPre"></pre></section>
 
 <script>
-  /* Tables (STD±20) — DR400-120 F-GCAL */
-  const TO_TABLE={0:{temps:{minus20:-5,isa:15,plus20:35},hard:{kg700:{roll:[130,145,165],pass:[285,315,345]},kg900:{roll:[225,235,285],pass:[480,535,590]}},grass:{kg700:{roll:[165,185,215],pass:[320,355,395]},kg900:{roll:[315,360,410],pass:[570,640,715]}}},4000:{temps:{minus20:-13,isa:7,plus20:27},hard:{kg700:{roll:[175,195,220],pass:[375,415,460]},kg900:{roll:[305,345,390],pass:[645,720,800]}},grass:{kg700:{roll:[230,265,300],pass:[430,485,540]},kg900:{roll:[460,530,615],pass:[800,905,1025]}}},8000:{temps:{minus20:-21,isa:-1,plus20:19},hard:{kg700:{roll:[235,265,300],pass:[500,560,620]},kg900:{roll:[425,475,535],pass:[890,1000,1125]}},grass:{kg700:{roll:[330,380,440],pass:[595,675,760]},kg900:{roll:[700,820,960],pass:[1165,1350,1550]}}}};
-  const LDG_TABLE={0:{temps:{minus20:-5,isa:15,plus20:35},moderate:{kg700:{roll:[145,155,165],pass:[365,385,400]},kg900:{roll:[185,200,210],pass:[435,460,485]}},nobrake_grass:{kg700:{roll:[215,230,250],pass:[435,460,485]},kg900:{roll:[280,300,325],pass:[530,560,590]}}},4000:{temps:{minus20:-13,isa:7,plus20:27},moderate:{kg700:{roll:[160,175,185],pass:[395,420,440]},kg900:{roll:[205,225,240],pass:[475,505,535]}},nobrake_grass:{kg700:{roll:[240,260,285],pass:[475,505,530]},kg900:{roll:[310,335,360],pass:[580,615,655]}}},8000:{temps:{minus20:-21,isa:-1,plus20:19},moderate:{kg700:{roll:[180,195,210],pass:[430,460,485]},kg900:{roll:[235,250,270],pass:[525,555,590]}},nobrake_grass:{kg700:{roll:[275,290,315],pass:[525,555,590]},kg900:{roll:[350,375,405],pass:[640,680,725]}}}};
+  /* ===================== DONNÉES ===================== */
+  // DR400-120 (F-GCAL) — tables existantes (STD±20) [inchangé]
+  const TO_DR400={0:{temps:{minus20:-5,isa:15,plus20:35},hard:{kg700:{roll:[130,145,165],pass:[285,315,345]},kg900:{roll:[225,235,285],pass:[480,535,590]}},grass:{kg700:{roll:[165,185,215],pass:[320,355,395]},kg900:{roll:[315,360,410],pass:[570,640,715]}}},4000:{temps:{minus20:-13,isa:7,plus20:27},hard:{kg700:{roll:[175,195,220],pass:[375,415,460]},kg900:{roll:[305,345,390],pass:[645,720,800]}},grass:{kg700:{roll:[230,265,300],pass:[430,485,540]},kg900:{roll:[460,530,615],pass:[800,905,1025]}}},8000:{temps:{minus20:-21,isa:-1,plus20:19},hard:{kg700:{roll:[235,265,300],pass:[500,560,620]},kg900:{roll:[425,475,535],pass:[890,1000,1125]}},grass:{kg700:{roll:[330,380,440],pass:[595,675,760]},kg900:{roll:[700,820,960],pass:[1165,1350,1550]}}}};
+  const LDG_DR400={0:{temps:{minus20:-5,isa:15,plus20:35},moderate:{kg700:{roll:[145,155,165],pass:[365,385,400]},kg900:{roll:[185,200,210],pass:[435,460,485]}},nobrake_grass:{kg700:{roll:[215,230,250],pass:[435,460,485]},kg900:{roll:[280,300,325],pass:[530,560,590]}}},4000:{temps:{minus20:-13,isa:7,plus20:27},moderate:{kg700:{roll:[160,175,185],pass:[395,420,440]},kg900:{roll:[205,225,240],pass:[475,505,535]}},nobrake_grass:{kg700:{roll:[240,260,285],pass:[475,505,530]},kg900:{roll:[310,335,360],pass:[580,615,655]}}},8000:{temps:{minus20:-21,isa:-1,plus20:19},moderate:{kg700:{roll:[180,195,210],pass:[430,460,485]},kg900:{roll:[235,250,270],pass:[525,555,590]}},nobrake_grass:{kg700:{roll:[275,290,315],pass:[525,555,590]},kg900:{roll:[350,375,405],pass:[640,680,725]}}}};
 
+  // DR300-120 (F-BTKG, F-BTXS) — Décollage uniquement (roulement & 15 m)
+  // Temp columns: 0°, 15°, 30°, 45°
+  // Alt béton: 0,1500,3000,4500 ; Alt herbe: 0,1500,3000,4600
+  const DR300_TEMPS=[0,15,30,45];
+  const TO_DR300 = {
+    hard: {
+      alts:[0,1500,3000,4500],
+      roll: [
+        [315,350,390,430],
+        [330,360,400,460],
+        [385,430,475,520],
+        [430,480,520,560],
+      ],
+      pass: [
+        [530,590,655,720],
+        [605,675,745,820],
+        [685,765,845,920],
+        [760,845,935,1020],
+      ],
+    },
+    grass: {
+      alts:[0,1500,3000,4600],
+      roll: [
+        [380,420,470,515],
+        [420,470,515,575],
+        [455,510,570,625],
+        [510,575,635,695],
+      ],
+      pass: [
+        [595,660,735,805],
+        [675,745,820,895],
+        [760,850,935,1025],
+        [845,940,1040,1135],
+      ],
+    },
+    // mise à l'échelle masse (<1000 kg) : facteur = masse/1000 (capé à 1)
+    massScale: m => Math.min(1, m/1000)
+  };
+
+  /* ===================== UTILITAIRES ===================== */
   const $=s=>document.querySelector(s);
   const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
   const lerp=(x0,y0,x1,y1,x)=> y0 + (y1-y0)*((x-x0)/(x1-x0||1));
   const pad3=n=>String(Math.round(n)).padStart(3,'0');
 
+  // Interp DR400 (ISA-based)
   function interpTemp(rowTemps,arr,oat){
     const xs=[rowTemps.minus20,rowTemps.isa,rowTemps.plus20],ys=arr;
-    if(oat<=xs[0])return ys[0];
-    if(oat>=xs[2])return ys[2];
+    if(oat<=xs[0])return ys[0]; if(oat>=xs[2])return ys[2];
     if(oat<=xs[1])return lerp(xs[0],ys[0],xs[1],ys[1],oat);
     return lerp(xs[1],ys[1],xs[2],ys[2],oat);
   }
-  function interpTO(altFt,oat,massKg,surface,kind){
+  function interpTO_DR400(altFt,oat,massKg,surface,kind){
     const low=altFt<=0?0:altFt>=8000?8000:(altFt<=4000?0:4000);
     const high=altFt<=0?0:altFt>=8000?8000:(altFt<=4000?4000:8000);
     const alpha=clamp((massKg-700)/(900-700),0,1);
     const valAt=alt=>{
-      const t=TO_TABLE[alt];
+      const t=TO_DR400[alt];
       const v700=interpTemp(t.temps,t[surface].kg700[kind],oat);
       const v900=interpTemp(t.temps,t[surface].kg900[kind],oat);
       return lerp(0,v700,1,v900,alpha);
@@ -294,12 +325,12 @@
     if(low===high)return valAt(low);
     return lerp(low,valAt(low),high,valAt(high),altFt);
   }
-  function interpLDG(altFt,oat,massKg,mode,kind){
+  function interpLDG_DR400(altFt,oat,massKg,mode,kind){
     const low=altFt<=0?0:altFt>=8000?8000:(altFt<=4000?0:4000);
     const high=altFt<=0?0:altFt>=8000?8000:(altFt<=4000?4000:8000);
     const alpha=clamp((massKg-700)/(900-700),0,1);
     const valAt=alt=>{
-      const t=LDG_TABLE[alt];
+      const t=LDG_DR400[alt];
       const v700=interpTemp(t.temps,t[mode].kg700[kind],oat);
       const v900=interpTemp(t.temps,t[mode].kg900[kind],oat);
       return lerp(0,v700,1,v900,alpha);
@@ -307,119 +338,39 @@
     if(low===high)return valAt(low);
     return lerp(low,valAt(low),high,valAt(high),altFt);
   }
-  function windComponents(qfu,windDir,windKt){
-    const diff=((windDir-qfu+540)%360)-180;
-    const rad=diff*Math.PI/180;
-    return{headwind:windKt*Math.cos(rad),crosswind:windKt*Math.sin(rad)};
+
+  // Interp DR300 (axes fixes alt×temp)
+  function interpGridDR300(surface,kind,altFt,oat,massKg){
+    const surf=TO_DR300[surface];
+    const temps=DR300_TEMPS;
+    const alts=surf.alts;
+    // Interp T pour chaque palier d'altitude
+    function interpRow(row){
+      const ys=row;
+      const x=oat;
+      if(x<=temps[0])return ys[0];
+      if(x>=temps[3])return ys[3];
+      if(x<=temps[1])return lerp(temps[0],ys[0],temps[1],ys[1],x);
+      if(x<=temps[2])return lerp(temps[1],ys[1],temps[2],ys[2],x);
+      return lerp(temps[2],ys[2],temps[3],ys[3],x);
+    }
+    // Trouver 2 altitudes encadrantes
+    let a0=alts[0], a1=alts[alts.length-1];
+    for(let i=0;i<alts.length-1;i++){
+      if(altFt<=alts[0]){a0=a1=alts[0];break;}
+      if(altFt>=alts[alts.length-1]){a0=a1=alts[alts.length-1];break;}
+      if(altFt>=alts[i] && altFt<=alts[i+1]){a0=alts[i];a1=alts[i+1];break;}
+    }
+    const idx0=alts.indexOf(a0), idx1=alts.indexOf(a1);
+    const v0=interpRow(surf[kind][idx0]);
+    const v1=interpRow(surf[kind][idx1]);
+    let val = (a0===a1)? v0 : lerp(a0,v0,a1,v1,altFt);
+    // Mise à l'échelle masse (<1000 kg)
+    val = val * TO_DR300.massScale(massKg);
+    return val;
   }
-  function headwindFactorFace(hw){
-    const pts=[{x:0,y:1.00},{x:10,y:0.78},{x:20,y:0.63},{x:30,y:0.52}],x=clamp(hw,0,30);
-    if(x===0)return 1;
-    for(let i=0;i<pts.length-1;i++){const p0=pts[i],p1=pts[i+1];if(x>=p0.x&&x<=p1.x)return lerp(p0.x,p0.y,p1.x,p1.y,x)}
-    return pts.at(-1).y;
-  }
-  function windDistanceFactor(headwind){
-    if(headwind>=0)return headwindFactorFace(headwind);
-    const tw=Math.abs(headwind),steps=Math.ceil(tw/2);
-    return 1+0.10*steps;
-  }
-  function setChip(el,state){
-    el.className='chip '+(state==='ok'?'ok':state==='bad'?'bad':'neutral');
-    el.textContent=state==='ok'?'OK':state==='bad'?'KO':'—';
-  }
-  function setKpi(el,state){el.className='kpi '+(state==='ok'?'ok':state==='bad'?'bad':'')}
-  function status(val,limit){if(!limit)return'neutral';return val<=limit?'ok':'bad'}
 
-  let depSurface='hard',arrSurface='hard',landingMode='moderate',withSpats=true;
-
-  function sanitizeIcao(el){el.value=(el.value||'').toUpperCase().replace(/[^A-Z]/g,'').slice(0,4)}
-  ['depIcao','arrIcao'].forEach(id=>{
-    const el=$('#'+id);
-    el.addEventListener('input',()=>{sanitizeIcao(el);compute()});
-    el.addEventListener('blur',()=>sanitizeIcao(el));
-  });
-
-  const propByAircraft={
-    'F-GCAL (120cv)':'Sensenich',
-    'F-BXEK (120cv)':'Sensenich',
-    'F-BTKG (120cv)':'Sensenich',
-    'F-BTXS (120cv)':'Sensenich',
-    'F-BTBS (120cv)':'Mac Cauley',
-    'F-BTBJ (108cv)':'Mac Cauley'
-  };
-  $('#aircraftSel').addEventListener('change',()=>{
-    $('#propeller').value=propByAircraft[$('#aircraftSel').value]||'';
-    compute();
-  });
-  $('#propeller').value=propByAircraft[$('#aircraftSel').value];
-
-  // Toggles
-  $('#depSurfHard').onclick=()=>{depSurface='hard';$('#depSurfHard').classList.add('on');$('#depSurfGrass').classList.remove('on');compute()};
-  $('#depSurfGrass').onclick=()=>{depSurface='grass';$('#depSurfGrass').classList.add('on');$('#depSurfHard').classList.remove('on');compute()};
-  $('#arrSurfHard').onclick=()=>{arrSurface='hard';$('#arrSurfHard').classList.add('on');$('#arrSurfGrass').classList.remove('on');compute()};
-  $('#arrSurfGrass').onclick=()=>{arrSurface='grass';$('#arrSurfGrass').classList.add('on');$('#arrSurfHard').classList.remove('on');compute()};
-  $('#arrModerate').onclick=()=>{landingMode='moderate';$('#arrModerate').classList.add('on');$('#arrNoBrake').classList.remove('on');compute()};
-  $('#arrNoBrake').onclick=()=>{landingMode='nobrake_grass';$('#arrNoBrake').classList.add('on');$('#arrModerate').classList.remove('on');compute()};
-  $('#spatsWith').onclick=()=>{withSpats=true;$('#spatsWith').classList.add('on');$('#spatsWithout').classList.remove('on');compute()};
-  $('#spatsWithout').onclick=()=>{withSpats=false;$('#spatsWithout').classList.add('on');$('#spatsWith').classList.remove('on');compute()};
-
-  // Direction vent: champ texte "000"→"350", zero-padding, incrément 1°, wrap.
-  function bindDir(id){
-    const el=$('#'+id);
-    const clampDir=(v)=>{ if(isNaN(v)) v=0; v=Math.round(v); if(v<0) v=0; if(v>350) v=350; return v; };
-    const normalizeDigits=()=>{ el.value = el.value.replace(/\D/g,'').slice(0,3); };
-    const format=()=>{
-      let v = clampDir(parseInt(el.value,10));
-      el.value = pad3(v);
-      return v;
-    };
-
-    // Saisie: chiffres uniquement, pas de padding immédiat pour ne pas gêner la frappe
-    el.addEventListener('input', ()=>{ normalizeDigits(); compute(); });
-
-    // Perte de focus / change: clamp + padding 3 digits
-    el.addEventListener('blur', ()=>{ format(); compute(); });
-    el.addEventListener('change', ()=>{ format(); compute(); });
-
-    // Flèches: ±1°, wrap 000↔350
-    el.addEventListener('keydown',(e)=>{
-      if(e.key==='ArrowUp' || e.key==='ArrowDown'){
-        e.preventDefault();
-        let v = clampDir(parseInt(el.value||'0',10));
-        v += (e.key==='ArrowUp'? +1 : -1);
-        if(v<0) v=350;
-        if(v>350) v=0;
-        el.value = pad3(v);
-        compute();
-      }
-    });
-  }
-  bindDir('depWindDir'); bindDir('arrWindDir');
-
-  // Vitesse vent: entier ≥0 (incrément 1 kt)
-  function bindSpeed(id){
-    const el=$('#'+id);
-    const norm=()=>{
-      let v=Math.round(Number(el.value));
-      if(!isFinite(v)||v<0) v=0;
-      el.value=String(v);
-    };
-    el.addEventListener('input',()=>{norm();compute()});
-    el.addEventListener('blur',()=>{norm();compute()});
-    el.addEventListener('keydown',(e)=>{
-      if(e.key==='ArrowDown'){
-        let v=parseInt(el.value||'0',10); if(isNaN(v)) v=0;
-        if(v<=0){ e.preventDefault(); el.value='0'; }
-      }
-    });
-  }
-  bindSpeed('depWindKt'); bindSpeed('arrWindKt');
-
-  // Inputs → compute
-  ['safety','depQfu','depToda','depAlt','depOat','depExtraTO','depTow',
-   'arrQfu','arrLda','arrAlt','arrOat','arrExtraLDG','arrLdw'
-  ].forEach(id=>$('#'+id).addEventListener('input', compute));
-
+  // Vent
   function windComponents(qfu,windDir,windKt){
     const diff=((windDir-qfu+540)%360)-180;
     const rad=diff*Math.PI/180;
@@ -436,51 +387,122 @@
     const tw=Math.abs(headwind),steps=Math.ceil(tw/2);
     return 1+0.10*steps;
   }
-  function setChip(el,state){
-    el.className='chip '+(state==='ok'?'ok':state==='bad'?'bad':'neutral');
-    el.textContent=state==='ok'?'OK':state==='bad'?'KO':'—';
-  }
+  function setChip(el,state){el.className='chip '+(state==='ok'?'ok':state==='bad'?'bad':'neutral');el.textContent=state==='ok'?'OK':state==='bad'?'KO':'—'}
   function setKpi(el,state){el.className='kpi '+(state==='ok'?'ok':state==='bad'?'bad':'')}
   function status(val,limit){if(!limit)return'neutral';return val<=limit?'ok':'bad'}
 
+  /* ===================== LOGIQUE UI ===================== */
+  let depSurface='hard',arrSurface='hard',landingMode='moderate',withSpats=true, profile='DR400';
+
+  // Sélection avion → hélice + profil (DR400 ou DR300)
+  const propByAircraft={
+    'F-GCAL (120cv)':'Sensenich',
+    'F-BXEK (120cv)':'Sensenich',
+    'F-BTKG (120cv)':'Sensenich',
+    'F-BTXS (120cv)':'Sensenich',
+    'F-BTBS (120cv)':'Mac Cauley',
+    'F-BTBJ (108cv)':'Mac Cauley'
+  };
+  function onAircraftChange(){
+    const ac=$('#aircraftSel').value;
+    $('#propeller').value=propByAircraft[ac]||'';
+    profile = (ac.startsWith('F-BTKG') || ac.startsWith('F-BTXS')) ? 'DR300' : 'DR400';
+    compute();
+  }
+  $('#aircraftSel').addEventListener('change', onAircraftChange);
+  onAircraftChange();
+
+  function sanitizeIcao(el){el.value=(el.value||'').toUpperCase().replace(/[^A-Z]/g,'').slice(0,4)}
+  ['depIcao','arrIcao'].forEach(id=>{
+    const el=$('#'+id);
+    el.addEventListener('input',()=>{sanitizeIcao(el);compute()});
+    el.addEventListener('blur',()=>sanitizeIcao(el));
+  });
+
+  // Toggles
+  $('#depSurfHard').onclick=()=>{depSurface='hard';$('#depSurfHard').classList.add('on');$('#depSurfGrass').classList.remove('on');compute()};
+  $('#depSurfGrass').onclick=()=>{depSurface='grass';$('#depSurfGrass').classList.add('on');$('#depSurfHard').classList.remove('on');compute()};
+  $('#arrSurfHard').onclick=()=>{arrSurface='hard';$('#arrSurfHard').classList.add('on');$('#arrSurfGrass').classList.remove('on');compute()};
+  $('#arrSurfGrass').onclick=()=>{arrSurface='grass';$('#arrSurfGrass').classList.add('on');$('#arrSurfHard').classList.remove('on');compute()};
+  $('#arrModerate').onclick=()=>{landingMode='moderate';$('#arrModerate').classList.add('on');$('#arrNoBrake').classList.remove('on');compute()};
+  $('#arrNoBrake').onclick=()=>{landingMode='nobrake_grass';$('#arrNoBrake').classList.add('on');$('#arrModerate').classList.remove('on');compute()};
+  $('#spatsWith').onclick=()=>{withSpats=true;$('#spatsWith').classList.add('on');$('#spatsWithout').classList.remove('on');compute()};
+  $('#spatsWithout').onclick=()=>{withSpats=false;$('#spatsWithout').classList.add('on');$('#spatsWith').classList.remove('on');compute()};
+
+  // Direction vent (format "000"… "350")
+  function bindDir(id){
+    const el=$('#'+id);
+    const clampDir=v=>{if(isNaN(v))v=0;v=Math.round(v);if(v<0)v=0;if(v>350)v=350;return v;}
+    const normalizeDigits=()=>{el.value=el.value.replace(/\D/g,'').slice(0,3);}
+    const format=()=>{let v=clampDir(parseInt(el.value,10));el.value=pad3(v);return v;}
+    el.addEventListener('input',()=>{normalizeDigits();compute()});
+    el.addEventListener('blur',()=>{format();compute()});
+    el.addEventListener('change',()=>{format();compute()});
+    el.addEventListener('keydown',e=>{
+      if(e.key==='ArrowUp'||e.key==='ArrowDown'){
+        e.preventDefault(); let v=clampDir(parseInt(el.value||'0',10)); v+=(e.key==='ArrowUp'?+1:-1);
+        if(v<0)v=350; if(v>350)v=0; el.value=pad3(v); compute();
+      }
+    });
+  }
+  bindDir('depWindDir'); bindDir('arrWindDir');
+
+  // Vitesse vent: entier ≥0
+  function bindSpeed(id){
+    const el=$('#'+id);
+    const norm=()=>{let v=Math.round(Number(el.value)); if(!isFinite(v)||v<0)v=0; el.value=String(v);}
+    el.addEventListener('input',()=>{norm();compute()});
+    el.addEventListener('blur',()=>{norm();compute()});
+    el.addEventListener('keydown',e=>{
+      if(e.key==='ArrowDown'){let v=parseInt(el.value||'0',10); if(isNaN(v))v=0; if(v<=0){e.preventDefault(); el.value='0';}}
+    });
+  }
+  bindSpeed('depWindKt'); bindSpeed('arrWindKt');
+
+  // Inputs → compute
+  ['safety','depQfu','depToda','depAlt','depOat','depExtraTO','depTow',
+   'arrQfu','arrLda','arrAlt','arrOat','arrExtraLDG','arrLdw'
+  ].forEach(id=>$('#'+id).addEventListener('input', compute));
+
+  /* ===================== CALCUL ===================== */
   function compute(){
     const depQfu=+($('#depQfu').value||0), depToda=+($('#depToda').value||0),
           depAlt=+($('#depAlt').value||0), depOat=+($('#depOat').value||0),
-          depWdir=parseInt($('#depWindDir').value||'0',10),
-          depWkt=+($('#depWindKt').value||0),
+          depWdir=parseInt($('#depWindDir').value||'0',10), depWkt=+($('#depWindKt').value||0),
           depExtra=+($('#depExtraTO').value||1), depTow=+($('#depTow').value||900);
-
     const arrQfu=+($('#arrQfu').value||0), arrLda=+($('#arrLda').value||0),
           arrAlt=+($('#arrAlt').value||0), arrOat=+($('#arrOat').value||0),
-          arrWdir=parseInt($('#arrWindDir').value||'0',10),
-          arrWkt=+($('#arrWindKt').value||0),
+          arrWdir=parseInt($('#arrWindDir').value||'0',10), arrWkt=+($('#arrWindKt').value||0),
           arrExtra=+($('#arrExtraLDG').value||1), arrLdw=+($('#arrLdw').value||900);
-
     const safety=+($('#safety').value||30);
 
-    const depComp=windComponents(depQfu,depWdir,depWkt);
-    const arrComp=windComponents(arrQfu,arrWdir,arrWkt);
+    const depComp=windComponents(depQfu,depWdir,depWkt), arrComp=windComponents(arrQfu,arrWdir,arrWkt);
     const depHw=depComp.headwind, depXw=Math.abs(depComp.crosswind);
     const arrHw=arrComp.headwind, arrXw=Math.abs(arrComp.crosswind);
     const depHwFace=Math.max(0,depHw), depTw=Math.max(0,-depHw);
     const arrHwFace=Math.max(0,arrHw), arrTw=Math.max(0,-arrHw);
 
-    $('#depHwFace').textContent=depHwFace.toFixed(0);
-    $('#depXw').textContent=depXw.toFixed(0);
-    $('#depTw').textContent=depTw.toFixed(0);
-    $('#arrHwFace').textContent=arrHwFace.toFixed(0);
-    $('#arrXw').textContent=arrXw.toFixed(0);
-    $('#arrTw').textContent=arrTw.toFixed(0);
+    $('#depHwFace').textContent=depHwFace.toFixed(0); $('#depXw').textContent=depXw.toFixed(0); $('#depTw').textContent=depTw.toFixed(0);
+    $('#arrHwFace').textContent=arrHwFace.toFixed(0); $('#arrXw').textContent=arrXw.toFixed(0); $('#arrTw').textContent=arrTw.toFixed(0);
 
     const crossLimit=22;
     const depWarn=$('#depXwWarn'), arrWarn=$('#arrXwWarn');
     depWarn.textContent=depXw>crossLimit?`⚠️ ${depXw.toFixed(0)} kt > ${crossLimit} kt (limite DR400)`:''; depWarn.style.color=depXw>crossLimit?'#dc2626':'var(--muted)';
     arrWarn.textContent=arrXw>crossLimit?`⚠️ ${arrXw.toFixed(0)} kt > ${crossLimit} kt (limite DR400)`:''; arrWarn.style.color=arrXw>crossLimit?'#dc2626':'var(--muted)';
 
-    const baseTO_pass=interpTO(depAlt,depOat,depTow,depSurface,'pass');
-    const baseTO_roll=interpTO(depAlt,depOat,depTow,depSurface,'roll');
-    const baseLDG_pass=interpLDG(arrAlt,arrOat,arrLdw,landingMode,'pass');
-    const baseLDG_roll=interpLDG(arrAlt,arrOat,arrLdw,landingMode,'roll');
+    // ----- TO base values by profile -----
+    let baseTO_pass, baseTO_roll;
+    if(profile==='DR300'){
+      baseTO_pass = interpGridDR300(depSurface,'pass',depAlt,depOat,depTow);
+      baseTO_roll = interpGridDR300(depSurface,'roll',depAlt,depOat,depTow);
+    }else{
+      baseTO_pass = interpTO_DR400(depAlt,depOat,depTow,depSurface,'pass');
+      baseTO_roll = interpTO_DR400(depAlt,depOat,depTow,depSurface,'roll');
+    }
+
+    // ----- LDG (on garde le profil DR400 pour l’instant) -----
+    const baseLDG_pass = interpLDG_DR400(arrAlt,arrOat,arrLdw,landingMode,'pass');
+    const baseLDG_roll = interpLDG_DR400(arrAlt,arrOat,arrLdw,landingMode,'roll');
 
     const depWindF=windDistanceFactor(depHw);
     const arrWindF=windDistanceFactor(arrHw);
@@ -515,6 +537,7 @@
     $('#toKpiVal').textContent=toMargin+' m'; $('#ldgKpiVal').textContent=ldgMargin+' m';
   }
 
+  // Impression brute
   function buildRawReport(){
     const safety=+($('#safety').value||30);
     const aircraft=$('#aircraftSel').value;
@@ -536,10 +559,16 @@
     const depComp=windComponents(D.qfu,D.wdir,D.wkt), arrComp=windComponents(A.qfu,A.wdir,A.wkt);
     const depHw=depComp.headwind, arrHw=arrComp.headwind;
 
-    const baseTO_pass=interpTO(D.alt,D.oat,D.mass,(D.surface==='Herbe'?'grass':'hard'),'pass');
-    const baseTO_roll=interpTO(D.alt,D.oat,D.mass,(D.surface==='Herbe'?'grass':'hard'),'roll');
-    const baseLDG_pass=interpLDG(A.alt,A.oat,A.mass,(A.mode.startsWith('Sans')?'nobrake_grass':'moderate'),'pass');
-    const baseLDG_roll=interpLDG(A.alt,A.oat,A.mass,(A.mode.startsWith('Sans')?'nobrake_grass':'moderate'),'roll');
+    // Recalcule bases pour report
+    const baseTO_pass = (profile==='DR300')
+      ? interpGridDR300(D.surface==='Herbe'?'grass':'hard','pass',D.alt,D.oat,D.mass)
+      : interpTO_DR400(D.alt,D.oat,D.mass,D.surface==='Herbe'?'grass':'hard','pass');
+    const baseTO_roll = (profile==='DR300')
+      ? interpGridDR300(D.surface==='Herbe'?'grass':'hard','roll',D.alt,D.oat,D.mass)
+      : interpTO_DR400(D.alt,D.oat,D.mass,D.surface==='Herbe'?'grass':'hard','roll');
+
+    const baseLDG_pass=interpLDG_DR400(A.alt,A.oat,A.mass,(A.mode.startsWith('Sans')?'nobrake_grass':'moderate'),'pass');
+    const baseLDG_roll=interpLDG_DR400(A.alt,A.oat,A.mass,(A.mode.startsWith('Sans')?'nobrake_grass':'moderate'),'roll');
 
     const depWindF=windDistanceFactor(depHw), arrWindF=windDistanceFactor(arrHw);
     const spatsF=spats.startsWith('Avec')?1.00:1.03;
@@ -559,14 +588,14 @@
       `Horodatage : ${ts}`,
       ``,
       `[Paramètres généraux]`,
-      `  Avion : ${aircraft}    Hélice : ${prop}`,
+      `  Avion : ${aircraft}    Hélice : ${prop}    Profil : ${profile}`,
       `  Marge sécurité : ${safety}%`,
       `  Carénages : ${spats}`,
       ``,
       `[Départ]`,
       `  ICAO : ${D.icao}    QFU : ${D.qfu}°    Surface : ${D.surface}`,
       `  Élévation : ${D.alt} ft    OAT : ${D.oat} °C`,
-      `  Vent : ${pad3(D.wdir)}°/${Math.round(D.wkt)} kt  → Face ${Math.max(0,depHw).toFixed(0)} kt | Travers ${Math.abs(depComp.crosswind).toFixed(0)} kt | Arrière ${Math.max(0,-depHw).toFixed(0)} kt`,
+      `  Vent : ${String(D.wdir).padStart(3,'0')}°/${Math.round(D.wkt)} kt  → Face ${Math.max(0,depHw).toFixed(0)} kt | Travers ${Math.abs(depComp.crosswind).toFixed(0)} kt | Arrière ${Math.max(0,-depHw).toFixed(0)} kt`,
       `  Masse décollage : ${D.mass} kg`,
       `  Base roul. : ${Math.round(baseTO_roll)} m    Base 15 m : ${Math.round(baseTO_pass)} m`,
       `  Facteurs : Vent ${depWindF.toFixed(2)}×  · Carénages ${spatsF.toFixed(2)}×  · Suppl. ${D.extra.toFixed(2)}×`,
@@ -577,7 +606,7 @@
       `  ICAO : ${A.icao}    QFU : ${A.qfu}°    Surface : ${A.surface}`,
       `  Mode : ${A.mode}`,
       `  Élévation : ${A.alt} ft    OAT : ${A.oat} °C`,
-      `  Vent : ${pad3(A.wdir)}°/${Math.round(A.wkt)} kt  → Face ${Math.max(0,arrHw).toFixed(0)} kt | Travers ${Math.abs(arrComp.crosswind).toFixed(0)} kt | Arrière ${Math.max(0,-arrHw).toFixed(0)} kt`,
+      `  Vent : ${String(A.wdir).padStart(3,'0')}°/${Math.round(A.wkt)} kt  → Face ${Math.max(0,arrHw).toFixed(0)} kt | Travers ${Math.abs(arrComp.crosswind).toFixed(0)} kt | Arrière ${Math.max(0,-arrHw).toFixed(0)} kt`,
       `  Masse atterrissage : ${A.mass} kg`,
       `  Base roul. : ${Math.round(baseLDG_roll)} m    Base 15 m : ${Math.round(baseLDG_pass)} m`,
       `  Facteurs : Vent ${arrWindF.toFixed(2)}×  · Suppl. ${A.extra.toFixed(2)}×`,
@@ -585,11 +614,7 @@
       `  LDA dispo : ${A.lda||'—'} m    Statut : ${stLDG}`,
     ].join('\n');
   }
-
-  window.addEventListener('beforeprint', ()=>{
-    document.getElementById('rawPre').textContent = buildRawReport();
-  });
-
+  window.addEventListener('beforeprint', ()=>{document.getElementById('rawPre').textContent = buildRawReport();});
   compute();
 </script>
 </body>
