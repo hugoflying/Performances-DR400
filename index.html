@@ -20,7 +20,8 @@
     .btn.toggle.on{background:var(--primary);color:#fff;border-color:var(--primary)}
     .btn.toggle.on.grass{background:var(--green)!important;border-color:var(--green)!important;color:#fff!important}
     label{display:block;font-size:12px;color:var(--muted)}
-    input,select{width:100%;margin-top:6px;padding:10px;border-radius:12px;border:1px solid var(--line);background:#fff}
+    input,select,textarea{width:100%;margin-top:6px;padding:10px;border-radius:12px;border:1px solid var(--line);background:#fff}
+    textarea{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;min-height:84px;white-space:pre-wrap}
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
     .grid1{display:grid;grid-template-columns:1fr;gap:12px}
@@ -43,16 +44,15 @@
     .chip.bad{background:#fee2e2;color:#7f1d1d;border-color:#fca5a5}
     .chip.neutral{background:#f3f4f6;color:#374151;border-color:#e5e7eb}
     #printRaw{display:none}
-    .inline-field{display:flex;gap:8px;align-items:flex-end}
-    .inline-field > label{flex:1}
-    .mini{padding:8px 10px;border-radius:10px;font-size:12px}
-    .note{font-size:12px;margin-top:6px}
     @media print{
       #appRoot{display:none!important}
       #printRaw{display:block!important;padding:20mm;color:#000}
       #rawPre{white-space:pre;font:12pt/1.35 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
       body{background:#fff}
     }
+    .wxbox{border:1px dashed var(--line);border-radius:12px;padding:10px;background:#fff}
+    .wxbox h3{margin:0 0 6px 0;font-size:13px;color:#374151}
+    .note{font-size:11px;color:#6b7280;margin-top:6px}
   </style>
 </head>
 <body>
@@ -61,6 +61,7 @@
     <h1>CALCULCATEUR DE PERFORMANCES</h1>
   </div>
 
+  <!-- Paramètres généraux -->
   <section class="card" style="margin-top:4px">
     <h2>Paramètres généraux</h2>
     <div class="grid2">
@@ -90,19 +91,15 @@
     </div>
   </section>
 
+  <!-- Départ / Arrivée -->
   <div class="row" style="margin-top:12px">
     <!-- Départ -->
     <section class="card">
       <h2 class="center">Terrain de départ</h2>
-
-      <div class="inline-field">
+      <div class="grid2">
         <label>ICAO départ
           <input id="depIcao" inputmode="latin" maxlength="4" placeholder="LFxx" />
         </label>
-        <button id="btnDepMetar" class="btn mini">Charger METAR</button>
-      </div>
-
-      <div class="grid2" style="margin-top:10px">
         <label>QFU départ (°)
           <input id="depQfu" type="number" value="0"/>
         </label>
@@ -116,6 +113,14 @@
             <button id="depSurfGrass" class="btn toggle grass">Herbe</button>
           </div>
         </div>
+      </div>
+
+      <!-- Choix piste (depuis l'API Station) -->
+      <div class="grid2" style="margin-top:10px">
+        <label>Piste (remplit QFU automatiquement)
+          <select id="depRunwaySel"><option value="">—</option></select>
+        </label>
+        <div></div>
       </div>
 
       <div class="grid2" style="margin-top:10px">
@@ -138,7 +143,6 @@
         <div class="field"><div class="k">Vent de travers</div><div class="v"><span id="depXw">0</span> kt</div></div>
         <div class="field"><div class="k">Vent arrière</div><div class="v"><span id="depTw">0</span> kt</div></div>
       </div>
-      <div class="muted note" id="depMetarMsg"></div>
       <div class="muted" id="depXwWarn" style="margin-top:6px"></div>
 
       <div class="grid2" style="margin-top:10px">
@@ -149,20 +153,23 @@
           <input id="depTow" type="number" value="900"/>
         </label>
       </div>
+
+      <!-- METAR/TAF bruts -->
+      <div class="wxbox" style="margin-top:10px">
+        <h3>Météo (METAR / TAF)</h3>
+        <textarea id="depMetarRaw" readonly placeholder="METAR — en attente…"></textarea>
+        <textarea id="depTafRaw" readonly placeholder="TAF — en attente…"></textarea>
+        <div class="note">Source : AVWX REST API (METAR/TAF/Station). Données station & pistes : AVWX/OurAirports. </div>
+      </div>
     </section>
 
     <!-- Arrivée -->
     <section class="card">
       <h2 class="center">Terrain d'arrivée</h2>
-
-      <div class="inline-field">
+      <div class="grid2">
         <label>ICAO arrivée
           <input id="arrIcao" inputmode="latin" maxlength="4" placeholder="LFxx" />
         </label>
-        <button id="btnArrMetar" class="btn mini">Charger METAR</button>
-      </div>
-
-      <div class="grid2" style="margin-top:10px">
         <label>QFU arrivée (°)
           <input id="arrQfu" type="number" value="0"/>
         </label>
@@ -176,6 +183,14 @@
             <button id="arrSurfGrass" class="btn toggle grass">Herbe</button>
           </div>
         </div>
+      </div>
+
+      <!-- Choix piste arrivée -->
+      <div class="grid2" style="margin-top:10px">
+        <label>Piste (remplit QFU automatiquement)
+          <select id="arrRunwaySel"><option value="">—</option></select>
+        </label>
+        <div></div>
       </div>
 
       <div class="grid2" style="margin-top:10px">
@@ -198,7 +213,6 @@
         <div class="field"><div class="k">Vent de travers</div><div class="v"><span id="arrXw">0</span> kt</div></div>
         <div class="field"><div class="k">Vent arrière</div><div class="v"><span id="arrTw">0</span> kt</div></div>
       </div>
-      <div class="muted note" id="arrMetarMsg"></div>
       <div class="muted" id="arrXwWarn" style="margin-top:6px"></div>
 
       <div class="grid2" style="margin-top:10px">
@@ -217,9 +231,18 @@
           <button id="arrNoBrake" class="btn toggle grass">Sans frein sur herbe</button>
         </div>
       </div>
+
+      <!-- METAR/TAF bruts -->
+      <div class="wxbox" style="margin-top:10px">
+        <h3>Météo (METAR / TAF)</h3>
+        <textarea id="arrMetarRaw" readonly placeholder="METAR — en attente…"></textarea>
+        <textarea id="arrTafRaw" readonly placeholder="TAF — en attente…"></textarea>
+        <div class="note">Source : AVWX REST API (METAR/TAF/Station). Données station & pistes : AVWX/OurAirports. </div>
+      </div>
     </section>
   </div>
 
+  <!-- Résultats (inchangé) -->
   <div class="row" style="margin-top:16px">
     <div class="card">
       <div class="header">
@@ -270,23 +293,29 @@
   <div class="footer">Source : Manuel de vol - Aéroclub de Beauvais-Tillé</div>
 </div>
 
+<!-- Impression brute -->
 <section id="printRaw"><pre id="rawPre"></pre></section>
 
-<script>
-  /* ===================== DONNÉES ===================== */
-  const TO_DR400={0:{temps:{minus20:-5,isa:15,plus20:35},hard:{kg700:{roll:[130,145,165],pass:[285,315,345]},kg900:{roll:[225,235,285],pass:[480,535,590]}},grass:{kg700:{roll:[165,185,215],pass:[320,355,395]},kg900:{roll:[315,360,410],pass:[570,640,715]}}},4000:{temps:{minus20:-13,isa:7,plus20:27},hard:{kg700:{roll:[175,195,220],pass:[375,415,460]},kg900:{roll:[305,345,390],pass:[645,720,800]}},grass:{kg700:{roll:[230,265,300],pass:[430,485,540]},kg900:{roll:[460,530,615],pass:[800,905,1025]}}},8000:{temps:{minus20:-21,isa:-1,plus20:19},hard:{kg700:{roll:[235,265,300],pass:[500,560,620]},kg900:{roll:[425,475,535],pass:[890,1000,1125]}},grass:{kg700:{roll:[330,380,440],pass:[595,675,760]},kg900:{roll:[700,820,960],pass:[1165,1350,1550]}}}};
-  const LDG_DR400={0:{temps:{minus20:-5,isa:15,plus20:35},moderate:{kg700:{roll:[145,155,165],pass:[365,385,400]},kg900:{roll:[185,200,210],pass:[435,460,485]}},nobrake_grass:{kg700:{roll:[215,230,250],pass:[435,460,485]},kg900:{roll:[280,300,325],pass:[530,560,590]} }},4000:{temps:{minus20:-13,isa:7,plus20:27},moderate:{kg700:{roll:[160,175,185],pass:[395,420,440]},kg900:{roll:[205,225,240],pass:[475,505,535]}},nobrake_grass:{kg700:{roll:[240,260,285],pass:[475,505,530]},kg900:{roll:[310,335,360],pass:[580,615,655]}}},8000:{temps:{minus20:-21,isa:-1,plus20:19},moderate:{kg700:{roll:[180,195,210],pass:[430,460,485]},kg900:{roll:[235,250,270],pass:[525,555,590]}},nobrake_grass:{kg700:{roll:[275,290,315],pass:[525,555,590]},kg900:{roll:[350,375,405],pass:[640,680,725]}}}};
+<!-- Axios CDN -->
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
+<script>
+  /* ============== CONFIG AVWX ============== */
+  const AVWX_TOKEN = 'q45JCSdkFjeZqHUyvawV2iaFm80CYmlPP6kC3XS8VNs'; // <- ta clé
+  const AX = axios.create({
+    baseURL: 'https://avwx.rest/api',
+    headers: { Authorization: 'BEARER ' + AVWX_TOKEN }
+  });
+
+  /* ===================== DONNÉES (inchangées) ===================== */
+  const TO_DR400={0:{temps:{minus20:-5,isa:15,plus20:35},hard:{kg700:{roll:[130,145,165],pass:[285,315,345]},kg900:{roll:[225,235,285],pass:[480,535,590]}},grass:{kg700:{roll:[165,185,215],pass:[320,355,395]},kg900:{roll:[315,360,410],pass:[570,640,715]}}},4000:{temps:{minus20:-13,isa:7,plus20:27},hard:{kg700:{roll:[175,195,220],pass:[375,415,460]},kg900:{roll:[305,345,390],pass:[645,720,800]}},grass:{kg700:{roll:[230,265,300],pass:[430,485,540]},kg900:{roll:[460,530,615],pass:[800,905,1025]}}},8000:{temps:{minus20:-21,isa:-1,plus20:19},hard:{kg700:{roll:[235,265,300],pass:[500,560,620]},kg900:{roll:[425,475,535],pass:[890,1000,1125]}},grass:{kg700:{roll:[330,380,440],pass:[595,675,760]},kg900:{roll:[700,820,960],pass:[1165,1350,1550]}}}};
+  const LDG_DR400={0:{temps:{minus20:-5,isa:15,plus20:35},moderate:{kg700:{roll:[145,155,165],pass:[365,385,400]},kg900:{roll:[185,200,210],pass:[435,460,485]}},nobrake_grass:{kg700:{roll:[215,230,250],pass:[435,460,485]},kg900:{roll:[280,300,325],pass:[530,560,590]}}} ,4000:{temps:{minus20:-13,isa:7,plus20:27},moderate:{kg700:{roll:[160,175,185],pass:[395,420,440]},kg900:{roll:[205,225,240],pass:[475,505,535]}},nobrake_grass:{kg700:{roll:[240,260,285],pass:[475,505,530]},kg900:{roll:[310,335,360],pass:[580,615,655]}}},8000:{temps:{minus20:-21,isa:-1,plus20:19},moderate:{kg700:{roll:[180,195,210],pass:[430,460,485]},kg900:{roll:[235,250,270],pass:[525,555,590]}},nobrake_grass:{kg700:{roll:[275,290,315],pass:[525,555,590]},kg900:{roll:[350,375,405],pass:[640,680,725]}}}};
   const DR300_TEMPS=[0,15,30,45];
   const TO_DR300 = {
-    hard: { alts:[0,1500,3000,4500],
-      roll: [[315,350,390,430],[330,360,400,460],[385,430,475,520],[430,480,520,560]],
-      pass: [[530,590,655,720],[605,675,745,820],[685,765,845,920],[760,845,935,1020]],
-    },
-    grass: { alts:[0,1500,3000,4600],
-      roll: [[380,420,470,515],[420,470,515,575],[455,510,570,625],[510,575,635,695]],
-      pass: [[595,660,735,805],[675,745,820,895],[760,850,935,1025],[845,940,1040,1135]],
-    },
+    hard:{alts:[0,1500,3000,4500],roll:[[315,350,390,430],[330,360,400,460],[385,430,475,520],[430,480,520,560]],
+          pass:[[530,590,655,720],[605,675,745,820],[685,765,845,920],[760,845,935,1020]]},
+    grass:{alts:[0,1500,3000,4600],roll:[[380,420,470,515],[420,470,515,575],[455,510,570,625],[510,575,635,695]],
+           pass:[[595,660,735,805],[675,745,820,895],[760,850,935,1025],[845,940,1040,1135]]},
     massScale: m => Math.min(1, m/1000)
   };
 
@@ -329,9 +358,11 @@
     return lerp(low,valAt(low),high,valAt(high),altFt);
   }
   function interpGridDR300(surface,kind,altFt,oat,massKg){
-    const surf=TO_DR300[surface], temps=DR300_TEMPS, alts=surf.alts;
+    const surf=TO_DR300[surface];
+    const temps=DR300_TEMPS;
+    const alts=surf.alts;
     function interpRow(row){
-      const ys=row,x=oat;
+      const ys=row, x=oat;
       if(x<=temps[0])return ys[0];
       if(x>=temps[3])return ys[3];
       if(x<=temps[1])return lerp(temps[0],ys[0],temps[1],ys[1],x);
@@ -347,13 +378,11 @@
     const idx0=alts.indexOf(a0), idx1=alts.indexOf(a1);
     const v0=interpRow(surf[kind][idx0]);
     const v1=interpRow(surf[kind][idx1]);
-    let val=(a0===a1)?v0:lerp(a0,v0,a1,v1,altFt);
-    return val*TO_DR300.massScale(massKg);
+    let val = (a0===a1)? v0 : lerp(a0,v0,a1,v1,altFt);
+    return val * TO_DR300.massScale(massKg);
   }
-
   function windComponents(qfu,windDir,windKt){
-    const diff=((windDir-qfu+540)%360)-180;
-    const rad=diff*Math.PI/180;
+    const diff=((windDir-qfu+540)%360)-180; const rad=diff*Math.PI/180;
     return{headwind:windKt*Math.cos(rad),crosswind:windKt*Math.sin(rad)};
   }
   function headwindFactorFace(hw){
@@ -371,7 +400,7 @@
   function setKpi(el,state){el.className='kpi '+(state==='ok'?'ok':state==='bad'?'bad':'')}
   function status(val,limit){if(!limit)return'neutral';return val<=limit?'ok':'bad'}
 
-  /* ===================== LOGIQUE UI ===================== */
+  /* ===================== LOGIQUE UI (inchangé sauf ICAO/WX) ===================== */
   let depSurface='hard',arrSurface='hard',landingMode='moderate',withSpats=true, profile='DR400';
 
   const propByAircraft={
@@ -391,14 +420,16 @@
   $('#aircraftSel').addEventListener('change', onAircraftChange);
   onAircraftChange();
 
-  function sanitizeIcao(el){el.value=(el.value||'').toUpperCase().replace(/[^A-Z]/g,'').slice(0,4)}
+  function sanitizeIcao(el){
+    el.value=(el.value||'').toUpperCase().replace(/[^A-Z]/g,'').slice(0,4);
+  }
   ['depIcao','arrIcao'].forEach(id=>{
     const el=$('#'+id);
-    el.addEventListener('input',()=>{sanitizeIcao(el);compute()});
-    el.addEventListener('blur',()=>sanitizeIcao(el));
+    el.addEventListener('input',()=>{sanitizeIcao(el); compute(); fetchAllWxFor(id.startsWith('dep')?'dep':'arr');});
+    el.addEventListener('blur',()=>{sanitizeIcao(el); fetchAllWxFor(id.startsWith('dep')?'dep':'arr');});
   });
 
-  // Toggles
+  // Toggles surface & atterrissage
   $('#depSurfHard').onclick=()=>{depSurface='hard';$('#depSurfHard').classList.add('on');$('#depSurfGrass').classList.remove('on');compute()};
   $('#depSurfGrass').onclick=()=>{depSurface='grass';$('#depSurfGrass').classList.add('on');$('#depSurfHard').classList.remove('on');compute()};
   $('#arrSurfHard').onclick=()=>{arrSurface='hard';$('#arrSurfHard').classList.add('on');$('#arrSurfGrass').classList.remove('on');compute()};
@@ -443,59 +474,117 @@
    'arrQfu','arrLda','arrAlt','arrOat','arrExtraLDG','arrLdw'
   ].forEach(id=>$('#'+id).addEventListener('input', compute));
 
-  /* ===================== METAR (AVWX) ===================== */
-  const AVWX_TOKEN = 'q45JCSdkFjeZqHUyvawV2iaFm80CYmlPP6kC3XS8VNs';
-
+  /* ===================== METAR/TAF + PISTES (AVWX) ===================== */
   async function fetchMetar(icao){
-    if(!icao || icao.length!==4) throw new Error('ICAO invalide');
-    const url=`https://avwx.rest/api/metar/${icao}`;
-    const resp = await fetch(url,{ headers:{ Authorization:'BEARER '+AVWX_TOKEN }});
-    if(!resp.ok) throw new Error('HTTP '+resp.status);
-    return await resp.json();
+    const r = await AX.get('/metar/'+icao);
+    return r.data?.raw || r.data?.sanitized || '';
+  }
+  async function fetchTaf(icao){
+    const r = await AX.get('/taf/'+icao);
+    return r.data?.raw || r.data?.sanitized || '';
+  }
+  async function fetchStation(icao){
+    const r = await AX.get('/station/'+icao);
+    return r.data; // contient coords + runways (cf. AVWX Station Info)
+  }
+  async function fetchNearestReporting(lat, lon){
+    // Recherche de la station reportant la plus proche (METAR/TAF)
+    // Endpoints "Search nearest" existent côté AVWX (voir site). On tente le plus standard:
+    const r = await AX.get('/search/station', { params:{ lat, lon, n: 1, reporting: true }});
+    const st = Array.isArray(r.data)? r.data[0] : (r.data?.results?.[0] || null);
+    return st;
   }
 
-  function applyMetar(side, data){
-    // data.wind_direction.value / repr (VRB possible), data.wind_speed.value, data.temperature.value
-    const dirVal = (data?.wind_direction?.value ?? null);
-    const dirRepr = (data?.wind_direction?.repr ?? '');
-    const spdVal = Math.max(0, Math.round(data?.wind_speed?.value ?? 0));
-    const oatVal = Math.round(data?.temperature?.value ?? 15);
-
-    // Direction : si VRB ou null → ne pas écraser, sinon pad 3
-    if(dirVal!==null && dirRepr!=='VRB'){
-      const elDir = document.getElementById(side+'WindDir');
-      elDir.value = pad3(dirVal);
-    }
-    // Vitesse
-    document.getElementById(side+'WindKt').value = String(spdVal);
-    // Température
-    document.getElementById(side+'Oat').value = String(oatVal);
-
-    // Message
-    const msgEl = document.getElementById(side==='dep'?'depMetarMsg':'arrMetarMsg');
-    const usedDir = (dirVal!==null && dirRepr!=='VRB') ? pad3(dirVal) : '—';
-    msgEl.textContent = `METAR chargé : vent ${dirRepr||usedDir}/${spdVal} kt · OAT ${oatVal} °C${(dirRepr==='VRB'?' (direction variable non appliquée)':'')}`;
-
-    compute();
+  function fillRunwaySelect(which, station){
+    const sel = $('#'+which+'RunwaySel');
+    sel.innerHTML = '<option value="">—</option>';
+    const rwy = station?.runways || [];
+    rwy.forEach((rw, idx)=>{
+      // AVWX/OurAirports structure habituelle: le_ident/he_ident + heading + length_m
+      const le = rw.le_ident || rw.ident1 || rw.le || rw.low_end_ident;
+      const he = rw.he_ident || rw.ident2 || rw.he || rw.high_end_ident;
+      const leH = Math.round(rw.le_heading_degT || rw.le_hdg_t || rw.le_heading || rw.hdg1 || (Number(le)*10)||0);
+      const heH = Math.round(rw.he_heading_degT || rw.he_hdg_t || rw.he_heading || rw.hdg2 || (Number(he)*10)||((leH+180)%360));
+      const lenm = Math.round(rw.length_m || (rw.length_ft? rw.length_ft*0.3048 : 0));
+      const label1 = `${le??'??'} (${String(leH).padStart(3,'0')}°) – ${lenm?lenm+' m':''}`;
+      const label2 = `${he??'??'} (${String(heH).padStart(3,'0')}°) – ${lenm?lenm+' m':''}`;
+      const opt1 = document.createElement('option');
+      opt1.value = String(leH); opt1.textContent = label1; sel.appendChild(opt1);
+      const opt2 = document.createElement('option');
+      opt2.value = String(heH); opt2.textContent = label2; sel.appendChild(opt2);
+    });
+    sel.onchange = ()=>{
+      const qfuEl = $('#'+which+'Qfu');
+      const v = Number(sel.value||0);
+      if(qfuEl && v>0) qfuEl.value = v;
+      compute();
+    };
   }
 
-  async function loadMetarFor(side){
-    const icaoEl = document.getElementById(side+'Icao');
-    const icao = (icaoEl.value||'').toUpperCase();
-    const msgEl = document.getElementById(side==='dep'?'depMetarMsg':'arrMetarMsg');
-    msgEl.textContent = 'Chargement METAR…';
+  async function fetchAllWxFor(which){
+    const icao = ($('#'+which+'Icao').value||'').toUpperCase();
+    const metarBox = $('#'+which+'MetarRaw');
+    const tafBox   = $('#'+which+'TafRaw');
+    const runwaySel= $('#'+which+'RunwaySel');
+
+    if(!icao || icao.length<4){ metarBox.value=''; tafBox.value=''; runwaySel.innerHTML='<option value="">—</option>'; return; }
+
+    // Station + pistes
     try{
-      const data = await fetchMetar(icao);
-      applyMetar(side, data);
+      const st = await fetchStation(icao);
+      if(st){ fillRunwaySelect(which, st); }
     }catch(e){
-      msgEl.textContent = 'METAR indisponible ('+(e.message||'erreur')+')';
+      // ignore (on gardera le select vide)
+    }
+
+    // METAR direct ou fallback nearest
+    try{
+      const met = await fetchMetar(icao);
+      metarBox.value = met || '(METAR indisponible)';
+    }catch(e){
+      // fallback nearest
+      try{
+        const st = await fetchStation(icao);
+        if(st?.latitude && st?.longitude){
+          const nearest = await fetchNearestReporting(st.latitude, st.longitude);
+          if(nearest?.icao || nearest?.ident){
+            const nearIcao = (nearest.icao || nearest.ident).toUpperCase();
+            const metNear = await fetchMetar(nearIcao);
+            metarBox.value = (metNear? metNear : '(METAR indisponible)') + `\n[pris à ${nearIcao}]`;
+          }else{
+            metarBox.value = '(METAR indisponible)';
+          }
+        }else{
+          metarBox.value = '(METAR indisponible)';
+        }
+      }catch{ metarBox.value = '(METAR indisponible)'; }
+    }
+
+    // TAF direct ou fallback nearest
+    try{
+      const taf = await fetchTaf(icao);
+      tafBox.value = taf || '(TAF indisponible)';
+    }catch(e){
+      try{
+        const st = await fetchStation(icao);
+        if(st?.latitude && st?.longitude){
+          const nearest = await fetchNearestReporting(st.latitude, st.longitude);
+          if(nearest?.icao || nearest?.ident){
+            const nearIcao = (nearest.icao || nearest.ident).toUpperCase();
+            const tafNear = await fetchTaf(nearIcao);
+            tafBox.value = (tafNear? tafNear : '(TAF indisponible)') + `\n[pris à ${nearIcao}]`;
+          }else{
+            tafBox.value = '(TAF indisponible)';
+          }
+        }else{
+          tafBox.value = '(TAF indisponible)';
+        }
+      }catch{ tafBox.value='(TAF indisponible)'; }
     }
   }
 
-  document.getElementById('btnDepMetar').addEventListener('click', ()=>loadMetarFor('dep'));
-  document.getElementById('btnArrMetar').addEventListener('click', ()=>loadMetarFor('arr'));
-
-  /* ===================== CALCUL ===================== */
+  /* ===================== CALCUL (inchangé) ===================== */
+  let profile='DR400';
   function compute(){
     const depQfu=+($('#depQfu').value||0), depToda=+($('#depToda').value||0),
           depAlt=+($('#depAlt').value||0), depOat=+($('#depOat').value||0),
@@ -529,7 +618,6 @@
       baseTO_pass = interpTO_DR400(depAlt,depOat,depTow,depSurface,'pass');
       baseTO_roll = interpTO_DR400(depAlt,depOat,depTow,depSurface,'roll');
     }
-
     const baseLDG_pass = interpLDG_DR400(arrAlt,arrOat,arrLdw,landingMode,'pass');
     const baseLDG_roll = interpLDG_DR400(arrAlt,arrOat,arrLdw,landingMode,'roll');
 
@@ -566,6 +654,7 @@
     $('#toKpiVal').textContent=toMargin+' m'; $('#ldgKpiVal').textContent=ldgMargin+' m';
   }
 
+  // Impression brute (identique à ta version précédente)
   function buildRawReport(){
     const safety=+($('#safety').value||30);
     const aircraft=$('#aircraftSel').value;
@@ -641,8 +730,13 @@
       `  LDA dispo : ${A.lda||'—'} m    Statut : ${stLDG}`,
     ].join('\n');
   }
-  window.addEventListener('beforeprint', ()=>{document.getElementById('rawPre').textContent = buildRawReport();});
+  window.addEventListener('beforeprint', ()=>{ document.getElementById('rawPre').textContent = buildRawReport(); });
+
+  // Liaison QFU auto via select piste déjà faite dans fillRunwaySelect()
+
+  // Au chargement : calcul + essais METAR/TAF si des ICAO sont saisis
   compute();
+  ['dep','arr'].forEach(fetchAllWxFor);
 </script>
 </body>
 </html>
