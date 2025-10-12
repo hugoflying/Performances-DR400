@@ -43,6 +43,10 @@
     .chip.bad{background:#fee2e2;color:#7f1d1d;border-color:#fca5a5}
     .chip.neutral{background:#f3f4f6;color:#374151;border-color:#e5e7eb}
     #printRaw{display:none}
+    .inline-field{display:flex;gap:8px;align-items:flex-end}
+    .inline-field > label{flex:1}
+    .mini{padding:8px 10px;border-radius:10px;font-size:12px}
+    .note{font-size:12px;margin-top:6px}
     @media print{
       #appRoot{display:none!important}
       #printRaw{display:block!important;padding:20mm;color:#000}
@@ -87,12 +91,18 @@
   </section>
 
   <div class="row" style="margin-top:12px">
+    <!-- Départ -->
     <section class="card">
       <h2 class="center">Terrain de départ</h2>
-      <div class="grid2">
+
+      <div class="inline-field">
         <label>ICAO départ
           <input id="depIcao" inputmode="latin" maxlength="4" placeholder="LFxx" />
         </label>
+        <button id="btnDepMetar" class="btn mini">Charger METAR</button>
+      </div>
+
+      <div class="grid2" style="margin-top:10px">
         <label>QFU départ (°)
           <input id="depQfu" type="number" value="0"/>
         </label>
@@ -128,6 +138,7 @@
         <div class="field"><div class="k">Vent de travers</div><div class="v"><span id="depXw">0</span> kt</div></div>
         <div class="field"><div class="k">Vent arrière</div><div class="v"><span id="depTw">0</span> kt</div></div>
       </div>
+      <div class="muted note" id="depMetarMsg"></div>
       <div class="muted" id="depXwWarn" style="margin-top:6px"></div>
 
       <div class="grid2" style="margin-top:10px">
@@ -140,12 +151,18 @@
       </div>
     </section>
 
+    <!-- Arrivée -->
     <section class="card">
       <h2 class="center">Terrain d'arrivée</h2>
-      <div class="grid2">
+
+      <div class="inline-field">
         <label>ICAO arrivée
           <input id="arrIcao" inputmode="latin" maxlength="4" placeholder="LFxx" />
         </label>
+        <button id="btnArrMetar" class="btn mini">Charger METAR</button>
+      </div>
+
+      <div class="grid2" style="margin-top:10px">
         <label>QFU arrivée (°)
           <input id="arrQfu" type="number" value="0"/>
         </label>
@@ -181,6 +198,7 @@
         <div class="field"><div class="k">Vent de travers</div><div class="v"><span id="arrXw">0</span> kt</div></div>
         <div class="field"><div class="k">Vent arrière</div><div class="v"><span id="arrTw">0</span> kt</div></div>
       </div>
+      <div class="muted note" id="arrMetarMsg"></div>
       <div class="muted" id="arrXwWarn" style="margin-top:6px"></div>
 
       <div class="grid2" style="margin-top:10px">
@@ -256,46 +274,19 @@
 
 <script>
   /* ===================== DONNÉES ===================== */
-  // DR400-120 (F-GCAL) — tables existantes (STD±20) [inchangé]
   const TO_DR400={0:{temps:{minus20:-5,isa:15,plus20:35},hard:{kg700:{roll:[130,145,165],pass:[285,315,345]},kg900:{roll:[225,235,285],pass:[480,535,590]}},grass:{kg700:{roll:[165,185,215],pass:[320,355,395]},kg900:{roll:[315,360,410],pass:[570,640,715]}}},4000:{temps:{minus20:-13,isa:7,plus20:27},hard:{kg700:{roll:[175,195,220],pass:[375,415,460]},kg900:{roll:[305,345,390],pass:[645,720,800]}},grass:{kg700:{roll:[230,265,300],pass:[430,485,540]},kg900:{roll:[460,530,615],pass:[800,905,1025]}}},8000:{temps:{minus20:-21,isa:-1,plus20:19},hard:{kg700:{roll:[235,265,300],pass:[500,560,620]},kg900:{roll:[425,475,535],pass:[890,1000,1125]}},grass:{kg700:{roll:[330,380,440],pass:[595,675,760]},kg900:{roll:[700,820,960],pass:[1165,1350,1550]}}}};
-  const LDG_DR400={0:{temps:{minus20:-5,isa:15,plus20:35},moderate:{kg700:{roll:[145,155,165],pass:[365,385,400]},kg900:{roll:[185,200,210],pass:[435,460,485]}},nobrake_grass:{kg700:{roll:[215,230,250],pass:[435,460,485]},kg900:{roll:[280,300,325],pass:[530,560,590]}}},4000:{temps:{minus20:-13,isa:7,plus20:27},moderate:{kg700:{roll:[160,175,185],pass:[395,420,440]},kg900:{roll:[205,225,240],pass:[475,505,535]}},nobrake_grass:{kg700:{roll:[240,260,285],pass:[475,505,530]},kg900:{roll:[310,335,360],pass:[580,615,655]}}},8000:{temps:{minus20:-21,isa:-1,plus20:19},moderate:{kg700:{roll:[180,195,210],pass:[430,460,485]},kg900:{roll:[235,250,270],pass:[525,555,590]}},nobrake_grass:{kg700:{roll:[275,290,315],pass:[525,555,590]},kg900:{roll:[350,375,405],pass:[640,680,725]}}}};
+  const LDG_DR400={0:{temps:{minus20:-5,isa:15,plus20:35},moderate:{kg700:{roll:[145,155,165],pass:[365,385,400]},kg900:{roll:[185,200,210],pass:[435,460,485]}},nobrake_grass:{kg700:{roll:[215,230,250],pass:[435,460,485]},kg900:{roll:[280,300,325],pass:[530,560,590]} }},4000:{temps:{minus20:-13,isa:7,plus20:27},moderate:{kg700:{roll:[160,175,185],pass:[395,420,440]},kg900:{roll:[205,225,240],pass:[475,505,535]}},nobrake_grass:{kg700:{roll:[240,260,285],pass:[475,505,530]},kg900:{roll:[310,335,360],pass:[580,615,655]}}},8000:{temps:{minus20:-21,isa:-1,plus20:19},moderate:{kg700:{roll:[180,195,210],pass:[430,460,485]},kg900:{roll:[235,250,270],pass:[525,555,590]}},nobrake_grass:{kg700:{roll:[275,290,315],pass:[525,555,590]},kg900:{roll:[350,375,405],pass:[640,680,725]}}}};
 
-  // DR300-120 (F-BTKG, F-BTXS) — Décollage uniquement (roulement & 15 m)
-  // Temp columns: 0°, 15°, 30°, 45°
-  // Alt béton: 0,1500,3000,4500 ; Alt herbe: 0,1500,3000,4600
   const DR300_TEMPS=[0,15,30,45];
   const TO_DR300 = {
-    hard: {
-      alts:[0,1500,3000,4500],
-      roll: [
-        [315,350,390,430],
-        [330,360,400,460],
-        [385,430,475,520],
-        [430,480,520,560],
-      ],
-      pass: [
-        [530,590,655,720],
-        [605,675,745,820],
-        [685,765,845,920],
-        [760,845,935,1020],
-      ],
+    hard: { alts:[0,1500,3000,4500],
+      roll: [[315,350,390,430],[330,360,400,460],[385,430,475,520],[430,480,520,560]],
+      pass: [[530,590,655,720],[605,675,745,820],[685,765,845,920],[760,845,935,1020]],
     },
-    grass: {
-      alts:[0,1500,3000,4600],
-      roll: [
-        [380,420,470,515],
-        [420,470,515,575],
-        [455,510,570,625],
-        [510,575,635,695],
-      ],
-      pass: [
-        [595,660,735,805],
-        [675,745,820,895],
-        [760,850,935,1025],
-        [845,940,1040,1135],
-      ],
+    grass: { alts:[0,1500,3000,4600],
+      roll: [[380,420,470,515],[420,470,515,575],[455,510,570,625],[510,575,635,695]],
+      pass: [[595,660,735,805],[675,745,820,895],[760,850,935,1025],[845,940,1040,1135]],
     },
-    // mise à l'échelle masse (<1000 kg) : facteur = masse/1000 (capé à 1)
     massScale: m => Math.min(1, m/1000)
   };
 
@@ -305,7 +296,6 @@
   const lerp=(x0,y0,x1,y1,x)=> y0 + (y1-y0)*((x-x0)/(x1-x0||1));
   const pad3=n=>String(Math.round(n)).padStart(3,'0');
 
-  // Interp DR400 (ISA-based)
   function interpTemp(rowTemps,arr,oat){
     const xs=[rowTemps.minus20,rowTemps.isa,rowTemps.plus20],ys=arr;
     if(oat<=xs[0])return ys[0]; if(oat>=xs[2])return ys[2];
@@ -338,23 +328,16 @@
     if(low===high)return valAt(low);
     return lerp(low,valAt(low),high,valAt(high),altFt);
   }
-
-  // Interp DR300 (axes fixes alt×temp)
   function interpGridDR300(surface,kind,altFt,oat,massKg){
-    const surf=TO_DR300[surface];
-    const temps=DR300_TEMPS;
-    const alts=surf.alts;
-    // Interp T pour chaque palier d'altitude
+    const surf=TO_DR300[surface], temps=DR300_TEMPS, alts=surf.alts;
     function interpRow(row){
-      const ys=row;
-      const x=oat;
+      const ys=row,x=oat;
       if(x<=temps[0])return ys[0];
       if(x>=temps[3])return ys[3];
       if(x<=temps[1])return lerp(temps[0],ys[0],temps[1],ys[1],x);
       if(x<=temps[2])return lerp(temps[1],ys[1],temps[2],ys[2],x);
       return lerp(temps[2],ys[2],temps[3],ys[3],x);
     }
-    // Trouver 2 altitudes encadrantes
     let a0=alts[0], a1=alts[alts.length-1];
     for(let i=0;i<alts.length-1;i++){
       if(altFt<=alts[0]){a0=a1=alts[0];break;}
@@ -364,13 +347,10 @@
     const idx0=alts.indexOf(a0), idx1=alts.indexOf(a1);
     const v0=interpRow(surf[kind][idx0]);
     const v1=interpRow(surf[kind][idx1]);
-    let val = (a0===a1)? v0 : lerp(a0,v0,a1,v1,altFt);
-    // Mise à l'échelle masse (<1000 kg)
-    val = val * TO_DR300.massScale(massKg);
-    return val;
+    let val=(a0===a1)?v0:lerp(a0,v0,a1,v1,altFt);
+    return val*TO_DR300.massScale(massKg);
   }
 
-  // Vent
   function windComponents(qfu,windDir,windKt){
     const diff=((windDir-qfu+540)%360)-180;
     const rad=diff*Math.PI/180;
@@ -394,7 +374,6 @@
   /* ===================== LOGIQUE UI ===================== */
   let depSurface='hard',arrSurface='hard',landingMode='moderate',withSpats=true, profile='DR400';
 
-  // Sélection avion → hélice + profil (DR400 ou DR300)
   const propByAircraft={
     'F-GCAL (120cv)':'Sensenich',
     'F-BXEK (120cv)':'Sensenich',
@@ -464,6 +443,58 @@
    'arrQfu','arrLda','arrAlt','arrOat','arrExtraLDG','arrLdw'
   ].forEach(id=>$('#'+id).addEventListener('input', compute));
 
+  /* ===================== METAR (AVWX) ===================== */
+  const AVWX_TOKEN = 'q45JCSdkFjeZqHUyvawV2iaFm80CYmlPP6kC3XS8VNs';
+
+  async function fetchMetar(icao){
+    if(!icao || icao.length!==4) throw new Error('ICAO invalide');
+    const url=`https://avwx.rest/api/metar/${icao}`;
+    const resp = await fetch(url,{ headers:{ Authorization:'BEARER '+AVWX_TOKEN }});
+    if(!resp.ok) throw new Error('HTTP '+resp.status);
+    return await resp.json();
+  }
+
+  function applyMetar(side, data){
+    // data.wind_direction.value / repr (VRB possible), data.wind_speed.value, data.temperature.value
+    const dirVal = (data?.wind_direction?.value ?? null);
+    const dirRepr = (data?.wind_direction?.repr ?? '');
+    const spdVal = Math.max(0, Math.round(data?.wind_speed?.value ?? 0));
+    const oatVal = Math.round(data?.temperature?.value ?? 15);
+
+    // Direction : si VRB ou null → ne pas écraser, sinon pad 3
+    if(dirVal!==null && dirRepr!=='VRB'){
+      const elDir = document.getElementById(side+'WindDir');
+      elDir.value = pad3(dirVal);
+    }
+    // Vitesse
+    document.getElementById(side+'WindKt').value = String(spdVal);
+    // Température
+    document.getElementById(side+'Oat').value = String(oatVal);
+
+    // Message
+    const msgEl = document.getElementById(side==='dep'?'depMetarMsg':'arrMetarMsg');
+    const usedDir = (dirVal!==null && dirRepr!=='VRB') ? pad3(dirVal) : '—';
+    msgEl.textContent = `METAR chargé : vent ${dirRepr||usedDir}/${spdVal} kt · OAT ${oatVal} °C${(dirRepr==='VRB'?' (direction variable non appliquée)':'')}`;
+
+    compute();
+  }
+
+  async function loadMetarFor(side){
+    const icaoEl = document.getElementById(side+'Icao');
+    const icao = (icaoEl.value||'').toUpperCase();
+    const msgEl = document.getElementById(side==='dep'?'depMetarMsg':'arrMetarMsg');
+    msgEl.textContent = 'Chargement METAR…';
+    try{
+      const data = await fetchMetar(icao);
+      applyMetar(side, data);
+    }catch(e){
+      msgEl.textContent = 'METAR indisponible ('+(e.message||'erreur')+')';
+    }
+  }
+
+  document.getElementById('btnDepMetar').addEventListener('click', ()=>loadMetarFor('dep'));
+  document.getElementById('btnArrMetar').addEventListener('click', ()=>loadMetarFor('arr'));
+
   /* ===================== CALCUL ===================== */
   function compute(){
     const depQfu=+($('#depQfu').value||0), depToda=+($('#depToda').value||0),
@@ -490,7 +521,6 @@
     depWarn.textContent=depXw>crossLimit?`⚠️ ${depXw.toFixed(0)} kt > ${crossLimit} kt (limite DR400)`:''; depWarn.style.color=depXw>crossLimit?'#dc2626':'var(--muted)';
     arrWarn.textContent=arrXw>crossLimit?`⚠️ ${arrXw.toFixed(0)} kt > ${crossLimit} kt (limite DR400)`:''; arrWarn.style.color=arrXw>crossLimit?'#dc2626':'var(--muted)';
 
-    // ----- TO base values by profile -----
     let baseTO_pass, baseTO_roll;
     if(profile==='DR300'){
       baseTO_pass = interpGridDR300(depSurface,'pass',depAlt,depOat,depTow);
@@ -500,7 +530,6 @@
       baseTO_roll = interpTO_DR400(depAlt,depOat,depTow,depSurface,'roll');
     }
 
-    // ----- LDG (on garde le profil DR400 pour l’instant) -----
     const baseLDG_pass = interpLDG_DR400(arrAlt,arrOat,arrLdw,landingMode,'pass');
     const baseLDG_roll = interpLDG_DR400(arrAlt,arrOat,arrLdw,landingMode,'roll');
 
@@ -537,7 +566,6 @@
     $('#toKpiVal').textContent=toMargin+' m'; $('#ldgKpiVal').textContent=ldgMargin+' m';
   }
 
-  // Impression brute
   function buildRawReport(){
     const safety=+($('#safety').value||30);
     const aircraft=$('#aircraftSel').value;
@@ -559,7 +587,6 @@
     const depComp=windComponents(D.qfu,D.wdir,D.wkt), arrComp=windComponents(A.qfu,A.wdir,A.wkt);
     const depHw=depComp.headwind, arrHw=arrComp.headwind;
 
-    // Recalcule bases pour report
     const baseTO_pass = (profile==='DR300')
       ? interpGridDR300(D.surface==='Herbe'?'grass':'hard','pass',D.alt,D.oat,D.mass)
       : interpTO_DR400(D.alt,D.oat,D.mass,D.surface==='Herbe'?'grass':'hard','pass');
