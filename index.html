@@ -106,10 +106,13 @@
       <h2 class="center">Terrain de départ</h2>
 
       <div class="inline">
-        <label>ICAO départ
+        <label style="flex:0.6">ICAO départ
           <input id="depIcao" inputmode="latin" maxlength="4" placeholder="LFxx" />
         </label>
-        <button id="btnDepMetar" class="btn">Charger METAR</button>
+         <label style="flex:0.6">Élévation (ft)
+           <input id="depAlt" type="number" min="0" step="10" value="0" />
+         </label>
+        <button id="btnDepMetar" class="btn" style="flex:0.4">Charger METAR</button>
       </div>
       <div id="depMetarMsg" class="muted note"></div>
 
@@ -190,10 +193,13 @@
       <h2 class="center">Terrain d'arrivée</h2>
 
       <div class="inline">
-        <label>ICAO arrivée
+        <label style="flex:0.6">ICAO arrivée
           <input id="arrIcao" inputmode="latin" maxlength="4" placeholder="LFxx" />
         </label>
-        <button id="btnArrMetar" class="btn">Charger METAR</button>
+        <label style="flex:0.6">Élévation (ft)
+          <input id="arrAlt" type="number" min="0" step="10" value="0" />
+        </label>
+        <button id="btnArrMetar" class="btn" style="flex:0.4">Charger METAR</button>
       </div>
       <div id="arrMetarMsg" class="muted note"></div>
 
