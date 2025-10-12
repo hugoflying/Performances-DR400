@@ -6,12 +6,12 @@
   <title>CALCULCATEUR DE PERFORMANCES</title>
   <style>
     :root{
-      --bg:#e5e7eb; /* fond plus foncé */
+      --bg:#e5e7eb; /* fond un peu plus foncé */
       --card:#fff;--ink:#0f172a;--muted:#6b7280;--ok:#16a34a;--bad:#dc2626;
       --line:#d1d5db;--primary:#2563eb;--green:#16a34a;
       --warn-yellow-bg:#fff7ed; --warn-yellow-border:#fbbf24;
       --warn-red-bg:#fef2f2; --warn-red-border:#ef4444;
-      --banner:#1e3a8a; /* bleu foncé */
+      --banner:#0b1f5e; /* bleu de bannière plus foncé */
     }
     *{box-sizing:border-box}
     html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue","Noto Sans",Arial}
@@ -42,6 +42,7 @@
     .header{display:flex;gap:12px;align-items:center;justify-content:space-between}
     .muted{color:var(--muted)}
     .note{font-size:12px;margin-top:6px}
+    .mini-note{font-size:11px}
     .hidden{display:none}
     .kpi{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin:8px 0}
     .kpi .left{display:flex;flex-direction:column}
@@ -59,9 +60,9 @@
     .vrbFlex input{flex:1}
     .vrbSep{font-weight:700;color:#6b7280}
     .banner{background:var(--banner);color:#fff;border-radius:14px;padding:14px 16px;margin-bottom:8px}
-    .rowline{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
-    .rowline .group{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-    .group label{margin:0;color:var(--muted)}
+    .rowline{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;margin-top:10px}
+    .rowline .group{display:flex;flex-direction:column;gap:8px;flex-basis:48%;align-items:center}
+    .group .buttons{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
     @media print{
       #appRoot{display:none!important}
       #printRaw{display:block!important;padding:20mm;color:#000}
@@ -116,7 +117,7 @@
           <input id="depQfu" type="text" placeholder="001–360"/>
         </label>
         <label>TODA (m)
-          <input id="depToda" type="number" value="0" min="0"/>
+          <input id="depToda" type="text" inputmode="numeric" />
         </label>
       </div>
 
@@ -151,17 +152,21 @@
         <div class="field"><div class="k">Vent arrière</div><div class="v"><span id="depTw">—</span> kt</div></div>
       </div>
 
-      <!-- Carénages + Surface sur la même ligne -->
-      <div class="rowline" style="margin-top:10px">
+      <!-- Carénages + Surface : titres au-dessus, boutons centrés -->
+      <div class="rowline">
         <div class="group">
           <label>Carénages de roues</label>
-          <button id="spatsWith" class="btn toggle on">Avec</button>
-          <button id="spatsWithout" class="btn toggle">Sans</button>
+          <div class="buttons">
+            <button id="spatsWith" class="btn toggle on">Avec</button>
+            <button id="spatsWithout" class="btn toggle">Sans</button>
+          </div>
         </div>
         <div class="group">
           <label>Surface piste</label>
-          <button id="depSurfHard" class="btn toggle on">Dur</button>
-          <button id="depSurfGrass" class="btn toggle grass">Herbe</button>
+          <div class="buttons">
+            <button id="depSurfHard" class="btn toggle on">Dur</button>
+            <button id="depSurfGrass" class="btn toggle grass">Herbe</button>
+          </div>
         </div>
       </div>
 
@@ -194,7 +199,7 @@
           <input id="arrQfu" type="text" placeholder="001–360"/>
         </label>
         <label>LDA (m)
-          <input id="arrLda" type="text" inputmode="numeric" placeholder="max 4 chiffres"/>
+          <input id="arrLda" type="text" inputmode="numeric" />
         </label>
       </div>
 
@@ -230,8 +235,8 @@
       </div>
 
       <div class="grid1" style="margin-top:10px">
-        <label>Atterrissage — mode</label>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <label>Type de freinage</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
           <button id="arrModerate" class="btn toggle on">Freinage modéré (dur/herbe)</button>
           <button id="arrNoBrake" class="btn toggle grass">Sans frein sur herbe</button>
         </div>
@@ -271,7 +276,7 @@
         <div class="field"><div class="k">Facteur supplémentaire</div><div id="toExtra" class="v">—</div></div>
         <div class="field"><div class="k">Résultat</div><div id="toRes" class="v">—</div></div>
       </div>
-      <div id="toExplain" class="muted note"></div>
+      <div id="toExplain" class="muted mini-note"></div>
     </div>
 
     <div class="card">
@@ -293,11 +298,11 @@
         <div class="field"><div class="k">Facteur supplémentaire</div><div id="ldgExtra" class="v">—</div></div>
         <div class="field"><div class="k">Résultat</div><div id="ldgRes" class="v">—</div></div>
       </div>
-      <div id="ldgExplain" class="muted note"></div>
+      <div id="ldgExplain" class="muted mini-note"></div>
     </div>
   </div>
 
-  <div class="muted center" style="margin-top:12px">
+  <div class="muted center" style="margin-top:12px;font-size:11px">
     <div>Source : Manuel de vol respectif de chaque avion - Aéroclub de Beauvais-Tillé</div>
     <div>Développé par Hugo DERUELLE avec l'aide de l'IA</div>
   </div>
@@ -362,7 +367,9 @@
     el.addEventListener('blur',()=>{ const n=normQFU(el.value); el.value=display3(n); updateWindDisplay(id.startsWith('dep')?'dep':'arr'); });
     el.addEventListener('input',()=>{ updateWindDisplay(id.startsWith('dep')?'dep':'arr'); });
   });
-  $('#depToda').addEventListener('input',()=>{ let v=parseInt($('#depToda').value||'0',10); if(!isFinite(v)||v<0)v=0; $('#depToda').value=String(v); });
+
+  // TODA/LDA: pas de négatif, LDA max 4 chiffres (silencieux)
+  $('#depToda').addEventListener('input',()=>{ let s=$('#depToda').value.replace(/\D/g,''); if(s==='') return; let v=parseInt(s,10); if(!isFinite(v)||v<0)v=0; $('#depToda').value=String(v); });
   $('#arrLda').addEventListener('input',()=>{ let s=$('#arrLda').value.replace(/\D/g,'').slice(0,4); $('#arrLda').value=s; });
 
   /* ===================== METAR (AVWX) ===================== */
@@ -492,7 +499,7 @@
     else{ $('#ldaMini').textContent=($('#arrLda').value?$('#arrLda').value+' m':'—'); }
   }
 
-  ['depWindDir','arrWindDir','depWindKt','arrWindKt','depVrbFrom','arrVrbFrom','depVrbTo','arrVrbTo','depWindGust','arrWindGust','depOat','arrOat']
+  ['depWindDir','arrWindDir','depWindKt','arrWindKt','depVrbFrom','arrVrbFrom','depVrbTo','arrVrbTo','depWindGust','arrWindGust','depOat','arrOat','depToda','arrLda']
   .forEach(id=>{
     $('#'+id).addEventListener('input',()=>updateWindDisplay(id.startsWith('dep')?'dep':'arr'));
     $('#'+id).addEventListener('blur',()=>{
@@ -506,7 +513,7 @@
     });
   });
 
-  /* ===================== RÈGLES “pire cas” POUR LES PERFS + EXPLICATION ===================== */
+  /* ===================== RÈGLES “pire cas” POUR LES PERFS (secteur prioritaire s’il existe) ===================== */
   function worstWindForPerfAndLimit(qfuDisp, dirStr, kt, gust, sectorObj){
     const V=Math.max(0,kt|0), G=Math.max(V,gust|0);
     if(qfuDisp===null) return null;
@@ -515,38 +522,49 @@
       const d = Math.abs(((dir-q+540)%360)-180);
       const hwSigned = speed * Math.cos(d*Math.PI/180);
       const xw = Math.abs(speed * Math.sin(d*Math.PI/180));
-      return {d, hwSigned, xw};
+      return {d, hwSigned, xw, dir};
     }
     const t=(dirStr||'').trim().toUpperCase();
     const f=normQFU($('#'+sectorObj.fromId).value), to=normQFU($('#'+sectorObj.toId).value);
     const hasSector=!!(f&&to);
-    function sectorDirs(){ if(!hasSector) return []; let a=f%360,b=to%360; const diff=((b-a+540)%360)-180; const mid=(a+diff/2+360)%360; return [a,b,mid]; }
-
-    if(t==='VRB' && !hasSector){
-      const cTail = comps((q+180)%360, G);
-      return { headwindForFactor:cTail.hwSigned, explain:`VRB sans secteur → cas le plus restrictif pris à 180° avec vitesse max/rafale (${G} kt)` };
+    function sectorDirs(){
+      if(!hasSector) return [];
+      let a=f%360,b=to%360;
+      const diff=((b-a+540)%360)-180;
+      const mid=(a+diff/2+360)%360;
+      return [a,b,mid];
     }
-    if(t==='VRB' && hasSector){
+
+    // 1) S’il y a un SECTEUR rempli, on l’utilise TOUJOURS (même si la direction n’est pas “VRB”)
+    if(hasSector){
       const dirs=sectorDirs();
-      const canTail = dirs.some(d=> Math.abs(((d-q+540)%360)-180) > 90);
-      if(canTail){
-        let worst = +1e9, worstDir=null;
-        dirs.forEach(d=>{ const c=comps(d,G); if(c.hwSigned<worst){ worst=c.hwSigned; worstDir=d; }});
-        return { headwindForFactor:worst, explain:`VRB ${pad3(f)}V${pad3(to)} → secteur passant à l'arrière : composante arrière max avec vitesse max/rafale (${G} kt) à ${pad3(worstDir)}°` };
+      const passesTail = dirs.some(d=> Math.abs(((d-q+540)%360)-180) > 90);
+      if(passesTail){
+        // Cas avec composante arrière possible → vitesse max/rafale
+        let worst = {hwSigned:+1e9, dir:null};
+        dirs.forEach(d=>{ const c=comps(d,G); if(c.hwSigned<worst.hwSigned){ worst=c; }});
+        return { headwindForFactor:worst.hwSigned, explain:`Secteur ${pad3(f)}V${pad3(to)} : passage à l'arrière → rafale/max (${G} kt) au cap ${pad3(worst.dir)}°` };
       }else{
-        let edge=null, edgeDir=null;
-        dirs.forEach(d=>{ const c=comps(d,V); if(!edge || c.hwSigned<edge.hwSigned){ edge=c; edgeDir=d; }});
-        return { headwindForFactor:edge.hwSigned, explain:`VRB ${pad3(f)}V${pad3(to)} sans arrière → bord le plus défavorable (le plus de travers / moins de face) avec vitesse minimale (${V} kt) à ${pad3(edgeDir)}°` };
+        // Pas d’arrière : prendre le bord le plus défavorable (le plus de travers / moins de face) avec vitesse minimale
+        let edge=null;
+        dirs.forEach(d=>{ const c=comps(d,V); if(!edge || c.hwSigned<edge.hwSigned){ edge=c; }});
+        return { headwindForFactor:edge.hwSigned, explain:`Secteur ${pad3(f)}V${pad3(to)} : pas d’arrière → bord le plus défavorable (${pad3(edge.dir)}°) avec vitesse minimale (${V} kt)` };
       }
+    }
+
+    // 2) Sinon, appliquer la règle standard “VRB sans secteur” ou direction fixe
+    if(t==='VRB'){
+      const cTail = comps((q+180)%360, G);
+      return { headwindForFactor:cTail.hwSigned, explain:`VRB sans secteur → cas arrière à 180° avec vitesse max/rafale (${G} kt)` };
     }
     let n=parseInt(t.replace(/\D/g,''),10);
     if(!isNaN(n)){
       n=Math.max(1,Math.min(360,n));
       const ang=Math.abs(((n-q+540)%360)-180);
-      const useG = ang>90;
+      const useG = ang>90; // >90° → composante arrière → on prend la rafale
       const spd = useG ? G : V;
       const c=comps(n, spd);
-      return { headwindForFactor:c.hwSigned, explain:`Vent ${pad3(n)}° ${spd} kt (${useG?'rafale/max car composante arrière possible':'vitesse moyenne car vent de face ou travers'})` };
+      return { headwindForFactor:c.hwSigned, explain:`Vent ${pad3(n)}° ${spd} kt (${useG?'rafale/max car composante arrière possible':'vitesse moyenne car face/travers'})` };
     }
     return { headwindForFactor:0, explain:`Vent non interprétable → facteur vent neutre` };
   }
@@ -656,7 +674,7 @@
     setChip($('#toChip'),stTO); $('#toKpi').className='kpi '+(stTO==='ok'?'ok':stTO==='bad'?'bad':'');
     $('#toKpiVal').textContent=toMargin+' m';
 
-    $('#toExplain').textContent = `Règle vent appliquée : ${w.explain || '—'}. Facteur vent = ${depWindF.toFixed(2)}× (composante utilisée ${Math.round(w.headwindForFactor||0)} kt). Surface=${depSurface==='hard'?'Dur':'Herbe'} · Spats=${withSpats?'Avec':'Sans'}.`;
+    $('#toExplain').textContent = `Règle vent : ${w.explain || '—'}. Facteur vent = ${depWindF.toFixed(2)}× (composante utilisée ${Math.round(w.headwindForFactor||0)} kt). Surface=${depSurface==='hard'?'Dur':'Herbe'} · Spats=${withSpats?'Avec':'Sans'}.`;
   }
 
   function computeArrPerf(){
@@ -689,7 +707,7 @@
     setChip($('#ldgChip'),stLDG); $('#ldgKpi').className='kpi '+(stLDG==='ok'?'ok':stLDG==='bad'?'bad':'');
     $('#ldgKpiVal').textContent=ldgMargin+' m';
 
-    $('#ldgExplain').textContent = `Règle vent appliquée : ${w.explain || '—'}. Facteur vent = ${arrWindF.toFixed(2)}× (composante utilisée ${Math.round(w.headwindForFactor||0)} kt). Mode=${landingMode==='moderate'?'Freinage modéré':'Sans frein herbe'}.`;
+    $('#ldgExplain').textContent = `Règle vent : ${w.explain || '—'}. Facteur vent = ${arrWindF.toFixed(2)}× (composante utilisée ${Math.round(w.headwindForFactor||0)} kt). Type de freinage=${landingMode==='moderate'?'Freinage modéré':'Sans frein herbe'}.`;
   }
 
   document.getElementById('btnCalcDep').addEventListener('click', computeDepPerf);
