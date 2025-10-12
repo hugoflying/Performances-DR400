@@ -6,57 +6,44 @@
   <title>CALCULCATEUR DE PERFORMANCES</title>
   <style>
     :root{
-      --bg:#e9ecf3;            /* fond plus foncé */
-      --card:#fff;
-      --ink:#0f172a;
-      --muted:#6b7280;
-      --ok:#16a34a;
-      --warn:#f59e0b;
-      --bad:#dc2626;
-      --line:#e5e7eb;
-      --primary:#0b3b86;       /* bleu bannière plus foncé */
-      --primaryText:#ffffff;
-      --green:#16a34a;
-      --chipNeutral:#f3f4f6;
+      --bg:#e5e7eb;
+      --card:#fff;--ink:#0f172a;--muted:#6b7280;--ok:#16a34a;--bad:#dc2626;
+      --line:#d1d5db;--primary:#2563eb;--green:#16a34a;
+      --warn-yellow-bg:#fff7ed; --warn-yellow-border:#fbbf24;
+      --warn-red-bg:#fef2f2; --warn-red-border:#ef4444;
+      --banner:#081a4f;
     }
     *{box-sizing:border-box}
     html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue","Noto Sans",Arial}
-
-    /* Bandeau titre */
-    .banner{background:var(--primary);color:var(--primaryText);padding:14px 16px;margin:0 0 12px 0}
-    .banner h1{font-size:clamp(22px,3.5vw,30px);margin:0;text-align:center;letter-spacing:.02em}
-
+    h1{font-size:clamp(22px,3.5vw,30px);margin:0;text-align:center;letter-spacing:.02em}
     h2{font-size:18px;margin:0 0 .6rem 0}
     .center{text-align:center}
     .container{max-width:1200px;margin:0 auto;padding:16px}
     .row{display:grid;grid-template-columns:1fr;gap:16px}
     @media(min-width:1200px){.row{grid-template-columns:repeat(2,1fr)}}
     .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
-    .btn{border:1px solid var(--line);background:#fff;padding:10px 14px;border-radius:12px;cursor:pointer}
+    .btn{border:1px solid var(--line);background:#fff;padding:9px 12px;border-radius:12px;cursor:pointer}
     .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
     .btn.toggle.on{background:var(--primary);color:#fff;border-color:var(--primary)}
     .btn.toggle.on.grass{background:var(--green)!important;border-color:var(--green)!important;color:#fff!important}
-    .btn.block{display:block;width:100%;text-align:center}
-
+    .btn.block{width:100%;text-align:center;padding:12px 14px;border-radius:14px}
     label{display:block;font-size:12px;color:var(--muted)}
     input,select{width:100%;margin-top:6px;padding:10px;border-radius:12px;border:1px solid var(--line);background:#fff}
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
     .grid1{display:grid;grid-template-columns:1fr;gap:12px}
-    .two-col-line{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .inline-field{display:flex;gap:8px;align-items:flex-end}
-    .inline-field > label{flex:1}
-    .mini{padding:8px 10px;border-radius:10px;font-size:12px}
-
+    .inline{display:flex;gap:8px;align-items:flex-end}
+    .inline > label{flex:1}
     .field{border:1px solid var(--line);border-radius:12px;background:#f8fafc;padding:10px}
     .field .k{font-size:12px;color:var(--muted)}
     .field .v{margin-top:4px;font-weight:600}
-
+    .field.warn-yellow{background:var(--warn-yellow-bg);border-color:var(--warn-yellow-border)}
+    .field.warn-red{background:var(--warn-red-bg);border-color:var(--warn-red-border)}
     .header{display:flex;gap:12px;align-items:center;justify-content:space-between}
     .muted{color:var(--muted)}
     .note{font-size:12px;margin-top:6px}
-    .footer{font-size:11px;color:var(--muted);margin:18px 0 6px 0;text-align:center}
-
+    .mini-note{font-size:11px}
+    .hidden{display:none}
     .kpi{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin:8px 0}
     .kpi .left{display:flex;flex-direction:column}
     .kpi .title{font-size:12px;color:var(--muted);letter-spacing:.02em}
@@ -64,23 +51,19 @@
     .kpi .sub{font-size:12px;color:var(--muted)}
     .kpi.ok{background:#ecfdf5;border-color:#86efac}
     .kpi.bad{background:#fef2f2;border-color:#fecaca}
-
     .chip{padding:6px 10px;border-radius:999px;border:1px solid;font-weight:800}
     .chip.ok{background:#dcfce7;color:#14532d;border-color:#86efac}
     .chip.bad{background:#fee2e2;color:#7f1d1d;border-color:#fca5a5}
-    .chip.neutral{background:var(--chipNeutral);color:#374151;border-color:#e5e7eb}
-
-    /* Crosswind colorization */
-    .xw{background:#f8fafc}
-    .xw.warn{background:#fff7ed;border-color:#fde68a} /* >=18 kt */
-    .xw.bad{background:#fef2f2;border-color:#fecaca}  /* >22 kt */
-
-    /* FROM/TO “cells” */
-    .vrbRow{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:end}
-    .vrbCellLabel{display:flex;justify-content:center;align-items:center;font-size:12px;color:var(--muted);padding:6px 8px}
-    .vrbCellLabel span{text-align:center;width:100%}
-
+    .chip.neutral{background:#f3f4f6;color:#374151;border-color:#e5e7eb}
     #printRaw{display:none}
+    .vrbFlex{display:flex;gap:8px;align-items:center}
+    .vrbFlex input{flex:1}
+    .vrbSep{font-weight:700;color:#6b7280}
+    .banner{background:var(--banner);color:#fff;border-radius:14px;padding:14px 16px;margin-bottom:8px}
+    .rowline{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;margin-top:10px}
+    .rowline .group{display:flex;flex-direction:column;gap:8px;flex-basis:48%;align-items:center}
+    .group .buttons{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+    .group.centered>label{text-align:center}
     @media print{
       #appRoot{display:none!important}
       #printRaw{display:block!important;padding:20mm;color:#000}
@@ -90,10 +73,11 @@
   </style>
 </head>
 <body>
-<div class="banner"><h1>CALCULCATEUR DE PERFORMANCES</h1></div>
-
 <div class="container" id="appRoot">
-  <!-- Paramètres généraux -->
+  <div class="banner">
+    <h1>CALCULCATEUR DE PERFORMANCES</h1>
+  </div>
+
   <section class="card" style="margin-top:4px">
     <h2>Paramètres généraux</h2>
     <div class="grid2">
@@ -121,75 +105,75 @@
     <section class="card">
       <h2 class="center">Terrain de départ</h2>
 
-      <div class="inline-field">
+      <div class="inline">
         <label>ICAO départ
           <input id="depIcao" inputmode="latin" maxlength="4" placeholder="LFxx" />
         </label>
-        <button id="btnDepMetar" class="btn mini" type="button">Charger METAR</button>
+        <button id="btnDepMetar" class="btn">Charger METAR</button>
       </div>
+      <div id="depMetarMsg" class="muted note"></div>
 
       <div class="grid2" style="margin-top:10px">
-        <label>QFU départ (°) (001–360)
-          <input id="depQfu" type="text" placeholder="—"/>
+        <label>QFU départ (°)
+          <input id="depQfu" type="text" placeholder="001–360"/>
         </label>
         <label>TODA (m)
-          <input id="depToda" type="number" min="0" placeholder=""/>
+          <input id="depToda" type="text" inputmode="numeric" />
         </label>
       </div>
 
-      <!-- Ligne vent : Direction (VRB option), Vitesse, Secteur, OAT, Rafales -->
+      <!-- NOUVEL ORDRE : Direction, Vitesse, Rafales -->
       <div class="grid3" style="margin-top:10px">
         <label>Vent — Direction (° ou "VRB")
-          <input list="dirOptions" id="depWindDir" type="text" inputmode="text" value="000"/>
-          <datalist id="dirOptions"><option value="VRB"></option></datalist>
+          <input id="depWindDir" list="dirOptions" type="text" inputmode="latin" placeholder="VRB ou 000" value="000" />
         </label>
         <label>Vent — Vitesse (kt)
           <input id="depWindKt" type="number" min="0" step="1" value="0"/>
         </label>
-        <label>Secteur VRB (optionnel)
-          <div class="vrbRow">
-            <input id="depVrbFrom" type="text" placeholder="FROM 001–360"/>
-            <div class="vrbCellLabel"><span>V</span></div>
-            <input id="depVrbTo" type="text" placeholder="TO 001–360"/>
-          </div>
+        <label>Rafales (kt)
+          <input id="depWindGust" type="number" min="0" step="1" value="0"/>
         </label>
       </div>
-      <div class="grid3" style="margin-top:10px">
+
+      <!-- Puis : Secteur VRB, OAT -->
+      <div class="grid2" style="margin-top:10px">
+        <label>Secteur VRB (optionnel)
+          <div class="vrbFlex">
+            <input id="depVrbFrom" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="FROM"/>
+            <span class="vrbSep">V</span>
+            <input id="depVrbTo" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="TO"/>
+          </div>
+        </label>
         <label>OAT (°C)
           <input id="depOat" type="number" value="15"/>
         </label>
-        <label>Rafales (kt)
-          <input id="depGust" type="number" min="0" step="1" value="0"/>
-        </label>
-        <div></div>
       </div>
 
-      <!-- Cartouches vent -->
       <div class="grid3" style="margin-top:10px">
-        <div class="field"><div class="k">Vent de face</div><div class="v"><span id="depHwFace">0</span> kt</div></div>
-        <div class="field xw" id="depXwField"><div class="k">Vent de travers</div><div class="v"><span id="depXw">0</span> kt</div></div>
-        <div class="field"><div class="k">Vent arrière</div><div class="v"><span id="depTw">0</span> kt</div></div>
+        <div class="field"><div class="k">Vent de face</div><div class="v"><span id="depHwFace">—</span> kt</div></div>
+        <div id="depXwCard" class="field"><div class="k">Vent de travers</div><div class="v"><span id="depXw">—</span> kt</div></div>
+        <div class="field"><div class="k">Vent arrière</div><div class="v"><span id="depTw">—</span> kt</div></div>
       </div>
 
       <!-- Carénages + Surface -->
-      <div class="two-col-line" style="margin-top:12px; align-items:start">
-        <div style="text-align:center">
-          <div class="muted" style="margin-bottom:6px">Carénages de roues</div>
-          <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
-            <button id="spatsWith" class="btn toggle on" type="button">Avec</button>
-            <button id="spatsWithout" class="btn toggle" type="button">Sans</button>
+      <div class="rowline">
+        <div class="group centered">
+          <label>Carénages de roues</label>
+          <div class="buttons">
+            <button id="spatsWith" class="btn toggle on">Avec</button>
+            <button id="spatsWithout" class="btn toggle">Sans</button>
           </div>
         </div>
-        <div style="text-align:center">
-          <div class="muted" style="margin-bottom:6px">Surface piste</div>
-          <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
-            <button id="depSurfHard" class="btn toggle on" type="button">Dur</button>
-            <button id="depSurfGrass" class="btn toggle grass" type="button">Herbe</button>
+        <div class="group centered">
+          <label>Surface piste</label>
+          <div class="buttons">
+            <button id="depSurfHard" class="btn toggle on">Dur</button>
+            <button id="depSurfGrass" class="btn toggle grass">Herbe</button>
           </div>
         </div>
       </div>
 
-      <div class="grid2" style="margin-top:10px">
+      <div class="grid2" style="margin-top:12px">
         <label>Masse au décollage (kg)
           <input id="depTow" type="number" value="900"/>
         </label>
@@ -198,75 +182,74 @@
         </label>
       </div>
 
-      <button id="btnCalcDep" class="btn primary block" type="button" style="margin-top:14px">
-        Calculer les performances décollage
-      </button>
-
-      <div class="muted note" id="depMetarMsg"></div>
+      <button id="btnCalcDep" class="btn primary block" style="margin-top:14px">Calculer les performances décollage</button>
     </section>
 
     <!-- Arrivée -->
     <section class="card">
       <h2 class="center">Terrain d'arrivée</h2>
 
-      <div class="inline-field">
+      <div class="inline">
         <label>ICAO arrivée
           <input id="arrIcao" inputmode="latin" maxlength="4" placeholder="LFxx" />
         </label>
-        <button id="btnArrMetar" class="btn mini" type="button">Charger METAR</button>
+        <button id="btnArrMetar" class="btn">Charger METAR</button>
       </div>
+      <div id="arrMetarMsg" class="muted note"></div>
 
       <div class="grid2" style="margin-top:10px">
-        <label>QFU arrivée (°) (001–360)
-          <input id="arrQfu" type="text" placeholder="—"/>
+        <label>QFU arrivée (°)
+          <input id="arrQfu" type="text" placeholder="001–360"/>
         </label>
         <label>LDA (m)
-          <input id="arrLda" type="number" min="0" placeholder=""/>
+          <input id="arrLda" type="text" inputmode="numeric" />
         </label>
       </div>
 
+      <!-- NOUVEL ORDRE : Direction, Vitesse, Rafales -->
       <div class="grid3" style="margin-top:10px">
         <label>Vent — Direction (° ou "VRB")
-          <input list="dirOptions" id="arrWindDir" type="text" inputmode="text" value="000"/>
+          <input id="arrWindDir" list="dirOptions" type="text" inputmode="latin" placeholder="VRB ou 000" value="000" />
         </label>
         <label>Vent — Vitesse (kt)
           <input id="arrWindKt" type="number" min="0" step="1" value="0"/>
         </label>
-        <label>Secteur VRB (optionnel)
-          <div class="vrbRow">
-            <input id="arrVrbFrom" type="text" placeholder="FROM 001–360"/>
-            <div class="vrbCellLabel"><span>V</span></div>
-            <input id="arrVrbTo" type="text" placeholder="TO 001–360"/>
-          </div>
+        <label>Rafales (kt)
+          <input id="arrWindGust" type="number" min="0" step="1" value="0"/>
         </label>
       </div>
-      <div class="grid3" style="margin-top:10px">
+
+      <!-- Puis : Secteur VRB, OAT -->
+      <div class="grid2" style="margin-top:10px">
+        <label>Secteur VRB (optionnel)
+          <div class="vrbFlex">
+            <input id="arrVrbFrom" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="FROM"/>
+            <span class="vrbSep">V</span>
+            <input id="arrVrbTo" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="TO"/>
+          </div>
+        </label>
         <label>OAT (°C)
           <input id="arrOat" type="number" value="15"/>
         </label>
-        <label>Rafales (kt)
-          <input id="arrGust" type="number" min="0" step="1" value="0"/>
-        </label>
-        <div></div>
       </div>
 
-      <!-- Type de freinage (à la place de Surface piste dans ce bloc) -->
-      <div style="text-align:center;margin-top:12px">
-        <div class="muted" style="margin-bottom:6px">Type de freinage</div>
-        <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
-          <button id="arrModerate" class="btn toggle on" type="button">Freinage modéré (dur/herbe)</button>
-          <button id="arrNoBrake" class="btn toggle grass" type="button">Sans frein sur herbe</button>
+      <div class="grid3" style="margin-top:10px">
+        <div class="field"><div class="k">Vent de face</div><div class="v"><span id="arrHwFace">—</span> kt</div></div>
+        <div id="arrXwCard" class="field"><div class="k">Vent de travers</div><div class="v"><span id="arrXw">—</span> kt</div></div>
+        <div class="field"><div class="k">Vent arrière</div><div class="v"><span id="arrTw">—</span> kt</div></div>
+      </div>
+
+      <div class="grid1" style="margin-top:10px">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+          <label>Type de freinage</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
+            <button id="arrModerate" class="btn toggle on">Freinage modéré (dur/herbe)</button>
+            <button id="arrNoBrake" class="btn toggle grass">Sans frein sur herbe</button>
+          </div>
         </div>
       </div>
 
-      <!-- Cartouches vent -->
-      <div class="grid3" style="margin-top:10px">
-        <div class="field"><div class="k">Vent de face</div><div class="v"><span id="arrHwFace">0</span> kt</div></div>
-        <div class="field xw" id="arrXwField"><div class="k">Vent de travers</div><div class="v"><span id="arrXw">0</span> kt</div></div>
-        <div class="field"><div class="k">Vent arrière</div><div class="v"><span id="arrTw">0</span> kt</div></div>
-      </div>
-
-      <div class="grid2" style="margin-top:10px">
+      <div class="grid2" style="margin-top:12px">
         <label>Masse à l'atterrissage (kg)
           <input id="arrLdw" type="number" value="900"/>
         </label>
@@ -275,15 +258,10 @@
         </label>
       </div>
 
-      <button id="btnCalcArr" class="btn primary block" type="button" style="margin-top:14px">
-        Calculer les performances atterrissage
-      </button>
-
-      <div class="muted note" id="arrMetarMsg"></div>
+      <button id="btnCalcArr" class="btn primary block" style="margin-top:14px">Calculer les performances atterrissage</button>
     </section>
   </div>
 
-  <!-- Résultats -->
   <div class="row" style="margin-top:16px">
     <div class="card">
       <div class="header">
@@ -303,9 +281,9 @@
         <div class="field"><div class="k">Facteur vent</div><div id="toWindF" class="v">—</div></div>
         <div class="field"><div class="k">Carénages</div><div id="toSpat" class="v">—</div></div>
         <div class="field"><div class="k">Facteur supplémentaire</div><div id="toExtra" class="v">—</div></div>
-        <div class="field"><div class="k">Résultat sans marge des <span id="sftyPct1">—</span>%</div><div id="toRes" class="v">—</div></div>
+        <div class="field"><div class="k" id="toResLabel">Résultat</div><div id="toRes" class="v">—</div></div>
       </div>
-      <div class="muted note" id="toExplain" style="margin-top:6px"></div>
+      <div id="toExplain" class="muted mini-note"></div>
     </div>
 
     <div class="card">
@@ -325,21 +303,26 @@
         <div class="field"><div class="k">Roulement (sans marge)</div><div id="ldgBaseRoll" class="v">—</div></div>
         <div class="field"><div class="k">Facteur vent</div><div id="ldgWindF" class="v">—</div></div>
         <div class="field"><div class="k">Facteur supplémentaire</div><div id="ldgExtra" class="v">—</div></div>
-        <div class="field"><div class="k">Résultat sans marge des <span id="sftyPct2">—</span>%</div><div id="ldgRes" class="v">—</div></div>
+        <div class="field"><div class="k" id="ldgResLabel">Résultat</div><div id="ldgRes" class="v">—</div></div>
       </div>
-      <div class="muted note" id="ldgExplain" style="margin-top:6px"></div>
+      <div id="ldgExplain" class="muted mini-note"></div>
     </div>
   </div>
 
-  <div class="footer">Source : « Manuel de vol respectif de chaque avion — Aéroclub de Beauvais-Tillé »</div>
-  <div class="footer">Développé par Hugo DERUELLE avec l'aide de l'IA</div>
+  <div class="muted center" style="margin-top:12px;font-size:11px">
+    <div>Source : Manuel de vol respectif de chaque avion - Aéroclub de Beauvais-Tillé</div>
+    <div>Développé par Hugo DERUELLE avec l'aide de l'IA</div>
+  </div>
 </div>
 
-<!-- Impression brute -->
+<datalist id="dirOptions">
+  <option value="VRB"></option>
+</datalist>
+
 <section id="printRaw"><pre id="rawPre"></pre></section>
 
 <script>
-  /* ===================== DONNÉES perfs (inchangées) ===================== */
+  /* ===================== DONNÉES (inchangé) ===================== */
   const TO_DR400={0:{temps:{minus20:-5,isa:15,plus20:35},hard:{kg700:{roll:[130,145,165],pass:[285,315,345]},kg900:{roll:[225,235,285],pass:[480,535,590]}},grass:{kg700:{roll:[165,185,215],pass:[320,355,395]},kg900:{roll:[315,360,410],pass:[570,640,715]}}},4000:{temps:{minus20:-13,isa:7,plus20:27},hard:{kg700:{roll:[175,195,220],pass:[375,415,460]},kg900:{roll:[305,345,390],pass:[645,720,800]}},grass:{kg700:{roll:[230,265,300],pass:[430,485,540]},kg900:{roll:[460,530,615],pass:[800,905,1025]}}},8000:{temps:{minus20:-21,isa:-1,plus20:19},hard:{kg700:{roll:[235,265,300],pass:[500,560,620]},kg900:{roll:[425,475,535],pass:[890,1000,1125]}},grass:{kg700:{roll:[330,380,440],pass:[595,675,760]},kg900:{roll:[700,820,960],pass:[1165,1350,1550]}}}};
   const LDG_DR400={0:{temps:{minus20:-5,isa:15,plus20:35},moderate:{kg700:{roll:[145,155,165],pass:[365,385,400]},kg900:{roll:[185,200,210],pass:[435,460,485]}},nobrake_grass:{kg700:{roll:[215,230,250],pass:[435,460,485]},kg900:{roll:[280,300,325],pass:[530,560,590]} }},4000:{temps:{minus20:-13,isa:7,plus20:27},moderate:{kg700:{roll:[160,175,185],pass:[395,420,440]},kg900:{roll:[205,225,240],pass:[475,505,535]}},nobrake_grass:{kg700:{roll:[240,260,285],pass:[475,505,530]},kg900:{roll:[310,335,360],pass:[580,615,655]}}},8000:{temps:{minus20:-21,isa:-1,plus20:19},moderate:{kg700:{roll:[180,195,210],pass:[430,460,485]},kg900:{roll:[235,250,270],pass:[525,555,590]}},nobrake_grass:{kg700:{roll:[275,290,315],pass:[525,555,590]},kg900:{roll:[350,375,405],pass:[640,680,725]}}}};
   const DR300_TEMPS=[0,15,30,45];
@@ -357,57 +340,309 @@
 
   /* ===================== UTILITAIRES ===================== */
   const $=s=>document.querySelector(s);
-  const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
   const lerp=(x0,y0,x1,y1,x)=> y0 + (y1-y0)*((x-x0)/(x1-x0||1));
   const pad3=n=>String(Math.round(n)).padStart(3,'0');
-  const degNorm360 = d => ((d%360)+360)%360; // 0..359
+  const clamp01=v=>Math.max(0,Math.min(1,v));
+  const toRad=d=>d*Math.PI/180;
+  const cosd=d=>Math.cos(toRad(d));
+  const sind=d=>Math.sin(toRad(d));
 
-  function setChip(el, state){
-    el.className='chip '+(state==='ok'?'ok':state==='bad'?'bad':'neutral');
-    el.textContent=(state==='ok'?'OK':(state==='bad'?'KO':'—'));
+  /* ===================== ÉTAT / UI ===================== */
+  let landingMode='moderate', withSpats=true, profile='DR400', depSurface='hard';
+  const propByAircraft={'F-GCAL (120cv)':'Sensenich','F-BXEK (120cv)':'Sensenich','F-BTKG (120cv)':'Sensenich','F-BTXS (120cv)':'Sensenich','F-BTBS (120cv)':'Mac Cauley','F-BTBJ (108cv)':'Mac Cauley'};
+  $('#aircraftSel').addEventListener('change', ()=>{
+    const ac=$('#aircraftSel').value;
+    $('#propeller').value=propByAircraft[ac]||'';
+    profile=(ac.startsWith('F-BTKG')||ac.startsWith('F-BTXS'))?'DR300':'DR400';
+    updateWindDisplay('dep'); updateWindDisplay('arr');
+  });
+  // carénages
+  $('#spatsWith').onclick=()=>{withSpats=true;$('#spatsWith').classList.add('on');$('#spatsWithout').classList.remove('on');};
+  $('#spatsWithout').onclick=()=>{withSpats=false;$('#spatsWithout').classList.add('on');$('#spatsWith').classList.remove('on');};
+  // surface départ
+  $('#depSurfHard').onclick=()=>{depSurface='hard';$('#depSurfHard').classList.add('on');$('#depSurfGrass').classList.remove('on');};
+  $('#depSurfGrass').onclick=()=>{depSurface='grass';$('#depSurfGrass').classList.add('on');$('#depSurfHard').classList.remove('on');};
+  // freinage
+  $('#arrModerate').onclick=()=>{landingMode='moderate';$('#arrModerate').classList.add('on');$('#arrNoBrake').classList.remove('on');};
+  $('#arrNoBrake').onclick=()=>{landingMode='nobrake_grass';$('#arrNoBrake').classList.add('on');$('#arrModerate').classList.remove('on');};
+
+  // Sécuriser safety >= 0 + libellé dynamique
+  function updateResLabels(){
+    const s = Math.max(0, parseFloat($('#safety').value||'0')||0);
+    $('#safety').value = String(s);
+    $('#toResLabel').textContent = `Résultat sans marge des ${s}%`;
+    $('#ldgResLabel').textContent = `Résultat sans marge des ${s}%`;
   }
+  $('#safety').addEventListener('input', updateResLabels);
+  updateResLabels();
 
   function sanitizeIcao(el){el.value=(el.value||'').toUpperCase().replace(/[^A-Z]/g,'').slice(0,4)}
+  ['depIcao','arrIcao'].forEach(id=>{ const el=$('#'+id); el.addEventListener('input',()=>sanitizeIcao(el)); el.addEventListener('blur',()=>sanitizeIcao(el)); });
 
-  // === QFU & Secteur VRB: saisie comme QFU (001–360), padding à la validation, wrap ↑/↓ ===
-  function bindQFU(id){
+  // QFU format 001–360
+  function normQFU(val){ let n=parseInt(String(val).replace(/\D/g,''),10); if(isNaN(n)) return null; n=Math.max(1,Math.min(360,n)); return n; }
+  function display3(n){ return n===null?'':pad3(n); }
+  ['depQfu','arrQfu'].forEach(id=>{
     const el=$('#'+id);
-    const toInt=(s)=>{const m=s.replace(/\D/g,''); return m?parseInt(m,10):NaN;}
-    const clamp360=(v)=>{if(!isFinite(v))return null; v=Math.round(v); if(v<1||v>360)return null; return v;}
-    el.addEventListener('input',()=>{ /* libre pendant saisie */ });
-    const format=()=>{
-      const v=clamp360(toInt(el.value));
-      if(v===null){ el.value=''; return null; }
-      el.value=pad3(v);
-      return v;
-    };
-    el.addEventListener('blur',format);
-    el.addEventListener('change',format);
-    el.addEventListener('keydown',e=>{
-      if(e.key==='ArrowUp'||e.key==='ArrowDown'){
-        e.preventDefault();
-        let v=toInt(el.value); if(!isFinite(v)) v=1;
-        v += (e.key==='ArrowUp'?+1:-1);
-        if(v<1) v=360; if(v>360) v=1;
-        el.value=String(v); // pas de pad instantané
-      }
+    el.addEventListener('blur',()=>{ const n=normQFU(el.value); el.value=display3(n); updateWindDisplay(id.startsWith('dep')?'dep':'arr'); });
+    el.addEventListener('input',()=>{ updateWindDisplay(id.startsWith('dep')?'dep':'arr'); });
+  });
+
+  // TODA/LDA: pas de négatif, LDA max 4 chiffres
+  $('#depToda').addEventListener('input',()=>{ let s=$('#depToda').value.replace(/\D/g,''); if(s==='') return; let v=parseInt(s,10); if(!isFinite(v)||v<0)v=0; $('#depToda').value=String(v); });
+  $('#arrLda').addEventListener('input',()=>{ let s=$('#arrLda').value.replace(/\D/g,'').slice(0,4); $('#arrLda').value=s; });
+
+  /* ===================== METAR (AVWX) ===================== */
+  const AVWX_TOKEN='q45JCSdkFjeZqHUyvawV2iaFm80CYmlPP6kC3XS8VNs';
+  async function fetchMetar(icao){
+    if(!icao || icao.length!==4) throw new Error('ICAO invalide');
+    const url=`https://avwx.rest/api/metar/${icao}`;
+    const resp=await fetch(url,{ headers:{ Authorization:'Bearer '+AVWX_TOKEN, Accept:'application/json' }});
+    if(!resp.ok) throw new Error('HTTP '+resp.status);
+    return await resp.json();
+  }
+  function parseSectorFromRaw(raw){ const m = raw && raw.match(/(\d{3})V(\d{3})/); return m ? {from:parseInt(m[1],10), to:parseInt(m[2],10)} : null; }
+  function parseVarSector(data){
+    const from=data?.variable_direction?.from, to=data?.variable_direction?.to;
+    if(typeof from==='number' && typeof to==='number') return {from, to};
+    return parseSectorFromRaw(data?.raw);
+  }
+  function applyMetar(side,data){
+    const dirRepr=(data?.wind_direction?.repr ?? '');
+    const dirVal =(data?.wind_direction?.value ?? null);
+    const spdVal =Math.max(0,Math.round(data?.wind_speed?.value ?? 0));
+    const gustVal=Math.max(0,Math.round(data?.wind_gust?.value ?? 0));
+    const oatVal =Math.round(data?.temperature?.value ?? 15);
+    const sector=parseVarSector(data);
+
+    const dirEl=$('#'+side+'WindDir');
+    if(dirRepr==='VRB'){dirEl.value='VRB';}
+    else if(dirVal!==null){dirEl.value=pad3(dirVal);}
+
+    $('#'+side+'WindKt').value=String(spdVal);
+    $('#'+side+'WindGust').value=String(gustVal||0);
+    $('#'+side+'Oat').value=String(oatVal);
+
+    if(sector){
+      $('#'+side+'VrbFrom').value=pad3(sector.from);
+      $('#'+side+'VrbTo').value=pad3(sector.to);
+    } else {
+      $('#'+side+'VrbFrom').value=''; $('#'+side+'VrbTo').value='';
+    }
+
+    const msgEl = document.getElementById(side==='dep'?'depMetarMsg':'arrMetarMsg');
+    msgEl.textContent = `METAR chargé : ${data?.raw || '—'}`;
+
+    updateWindDisplay(side);
+  }
+  async function loadMetarFor(side){
+    const icao=(($('#'+side+'Icao').value)||'').toUpperCase();
+    const msgEl=document.getElementById(side==='dep'?'depMetarMsg':'arrMetarMsg');
+    msgEl.textContent='Chargement METAR…';
+    try{ const data=await fetchMetar(icao); applyMetar(side,data); }
+    catch(e){ msgEl.textContent='METAR indisponible ('+(e.message||'erreur')+')'; }
+  }
+  document.getElementById('btnDepMetar').addEventListener('click',()=>loadMetarFor('dep'));
+  document.getElementById('btnArrMetar').addEventListener('click',()=>loadMetarFor('arr'));
+
+  /* ===================== AFFICHAGE COMPOSANTES (fidèle METAR) ===================== */
+  function normAngleField(el){
+    let v=el.value.trim(); if(!v){el.value='';return null;}
+    let n=parseInt(v.replace(/\D/g,''),10);
+    if(isNaN(n)){el.value='';return null;}
+    n=Math.max(1,Math.min(360,n)); el.value=pad3(n); return n;
+  }
+  function dirForDisplay(dirField, sector){
+    const t=(dirField||'').trim().toUpperCase();
+    if(t==='VRB'){
+      const f=normAngleField(document.getElementById(sector.fromId));
+      const to=normAngleField(document.getElementById(sector.toId));
+      if(!f || !to) return null;
+      let a=f, b=to;
+      let diff=((b-a+540)%360)-180;
+      let mid=(a+diff/2+360)%360;
+      if(mid===0) mid=360;
+      return mid;
+    }
+    if(!t) return null;
+    let n=parseInt(t.replace(/\D/g,''),10);
+    if(isNaN(n)) return null;
+    n=Math.max(1,Math.min(360,n));
+    return n;
+  }
+  function compsFrom(qfuDisp, dirDisp, kt){
+    if(qfuDisp===null || dirDisp===null) return null;
+    const q = (qfuDisp%360);
+    const d = (dirDisp%360);
+    const ang=Math.abs(((d - q + 540) % 360) - 180);
+    const hwSigned = kt * cosd(ang);
+    const xw = Math.abs(kt * sind(ang));
+    return { face: Math.max(0, hwSigned), tail: Math.max(0, -hwSigned), xw, ang };
+  }
+
+  function crosswindLimitColor(side){
+    // Si un secteur est saisi, on colore avec le pire cas (rafale / angle le plus proche de 90)
+    const qfu = normQFU($('#'+side+'Qfu').value);
+    if(qfu===null){ setXwColor(side,null); return; }
+    const kt = parseInt($('#'+side+'WindKt').value||'0',10)||0;
+    const gust = parseInt($('#'+side+'WindGust').value||'0',10)||0;
+    const V = Math.max(0, kt), G = Math.max(V, gust);
+    const f = normAngleField($('#'+side+'VrbFrom'));
+    const t = normAngleField($('#'+side+'VrbTo'));
+    if(f && t){
+      // pire angle dans le secteur (≈ 90° du QFU)
+      const xwWorst = maxXwindInSector(qfu, f, t, G);
+      setXwColor(side, xwWorst);
+    }else{
+      // pas de secteur : on reste sur l’affichage actuel (direction moyenne, sans rafale)
+      const dirDisp = dirForDisplay($('#'+side+'WindDir').value, {fromId:side+'VrbFrom', toId:side+'VrbTo'});
+      const c = (dirDisp!==null)? compsFrom(qfu, dirDisp, V) : null;
+      setXwColor(side, c?c.xw:null);
+    }
+  }
+  function setXwColor(side, xwVal){
+    const card = document.getElementById(side+'XwCard');
+    card.classList.remove('warn-yellow','warn-red');
+    if(typeof xwVal==='number'){
+      if(xwVal>=22){ card.classList.add('warn-red'); }
+      else if(xwVal>=18){ card.classList.add('warn-yellow'); }
+    }
+  }
+  function maxXwindInSector(qfu, from, to, speed){
+    // Échantillonne bords et angle le + proche de 90° depuis qfu
+    const candidates=[];
+    function ang(a,b){ return Math.abs(((a-b+540)%360)-180); }
+    const a1=from%360, a2=to%360;
+    candidates.push(a1,a2);
+    // cible = qfu±90
+    candidates.push((qfu+90)%360);
+    candidates.push((qfu+270)%360);
+    // on garde ceux inclus dans l’arc court [from..to]
+    function inSector(d){
+      let A=a1,B=a2;
+      // arc direct de A vers B (en passant par le plus court)
+      const diff=((B-A+360)%360);
+      const diffD=((d-A+360)%360);
+      return diffD<=diff;
+    }
+    const uniq=[...new Set(candidates)].filter(inSector);
+    let max=0;
+    uniq.forEach(dir=>{
+      const a=ang(dir,qfu);
+      const xw = Math.abs(speed * sind(a));
+      if(xw>max) max=xw;
     });
-  }
-  function readQFU(id){ // retourne null si vide/invalide, sinon 1..360
-    const s=$('#'+id).value||'';
-    const n=parseInt(s.replace(/\D/g,''),10);
-    return (isFinite(n)&&n>=1&&n<=360)? n : null;
-  }
-  function bindSector(id){ bindQFU(id); } // même règles que QFU
+    return max;
+    }
 
-  // Vent basique
-  function windComponents(qfu,windDir,windKt){
-    const diff=degNorm360(windDir-qfu);
-    const rad=diff*Math.PI/180;
-    return{headwind:windKt*Math.cos(rad),crosswind:windKt*Math.sin(rad)};
+  function updateWindDisplay(side){
+    const qfuIn=$('#'+side+'Qfu').value;
+    const qfu = normQFU(qfuIn);
+    const dirStr=$('#'+side+'WindDir').value||'';
+    const kt=parseInt($('#'+side+'WindKt').value||'0',10)||0;
+    const dirDisp = dirForDisplay(dirStr, {fromId:side+'VrbFrom', toId:side+'VrbTo'});
+
+    if(qfu===null || dirDisp===null || !kt){
+      $('#'+side+'HwFace').textContent='—';
+      $('#'+side+'Xw').textContent='—';
+      $('#'+side+'Tw').textContent='—';
+      setXwColor(side,null);
+      if(side==='dep'){ $('#todaMini').textContent=$('#depToda').value?$('#depToda').value+' m':'—'; }
+      else{ $('#ldaMini').textContent=($('#arrLda').value?$('#arrLda').value+' m':'—'); }
+      return;
+    }
+
+    const c = compsFrom(qfu, dirDisp, kt);
+    $('#'+side+'HwFace').textContent = Math.round(c.face);
+    $('#'+side+'Xw').textContent    = Math.round(c.xw);
+    $('#'+side+'Tw').textContent    = Math.round(c.tail);
+
+    crosswindLimitColor(side);
+
+    if(side==='dep'){ $('#todaMini').textContent=$('#depToda').value?$('#depToda').value+' m':'—'; }
+    else{ $('#ldaMini').textContent=($('#arrLda').value?$('#arrLda').value+' m':'—'); }
   }
 
-  // Interp DR400 (ISA-based)
+  ['depWindDir','arrWindDir','depWindKt','arrWindKt','depVrbFrom','arrVrbFrom','depVrbTo','arrVrbTo','depWindGust','arrWindGust','depOat','arrOat','depToda','arrLda']
+  .forEach(id=>{
+    $('#'+id).addEventListener('input',()=>updateWindDisplay(id.startsWith('dep')?'dep':'arr'));
+    $('#'+id).addEventListener('blur',()=>{
+      if(id.includes('Vrb')) normAngleField(document.getElementById(id));
+      if(id.endsWith('WindDir')){
+        const el=document.getElementById(id);
+        const t=el.value.trim().toUpperCase();
+        if(t && t!=='VRB'){ let n=parseInt(t.replace(/\D/g,''),10); if(!isNaN(n)){ n=Math.max(1,Math.min(360,n)); el.value=pad3(n);} }
+      }
+      updateWindDisplay(id.startsWith('dep')?'dep':'arr');
+    });
+  });
+
+  /* ===================== RÈGLE “LE PLUS CONTRAIGNANT” (vent moyen vs secteur) ===================== */
+  function worstBetweenMeanAndSector(qfu, meanDirOrVRB, kt, gust, sectorFrom, sectorTo){
+    const V=Math.max(0,kt|0), G=Math.max(V,gust|0);
+    if(qfu===null) return {headwindForFactor:0, explain:'QFU manquant'};
+    const q=(qfu%360);
+    function comps(dir, speed){
+      const d = Math.abs(((dir-q+540)%360)-180);
+      const hwSigned = speed * Math.cos(toRad(d));
+      const xw = Math.abs(speed * Math.sin(toRad(d)));
+      return {d, hwSigned, xw, dir, speed};
+    }
+
+    const candidates=[]; // on choisira le plus défavorable pour la distance (headwind minimal)
+
+    // A) Vent moyen (si non VRB)
+    const t=(meanDirOrVRB||'').trim().toUpperCase();
+    if(t && t!=='VRB'){
+      let n=parseInt(t.replace(/\D/g,''),10);
+      if(!isNaN(n)){ n=Math.max(1,Math.min(360,n));
+        const ang=Math.abs(((n-q+540)%360)-180);
+        const sp = (ang>90)? G : V; // si composante arrière → on regarde la rafale
+        candidates.push({src:'moyen', ...comps(n,sp), note:(ang>90?`moyen ${pad3(n)}°: angle ${Math.round(ang)}° → rafale/max (${G} kt)`: `moyen ${pad3(n)}°: angle ${Math.round(ang)}° → vitesse moyenne (${V} kt)`)});
+      }
+    }
+
+    // B) Secteur (si saisi) — on applique ta règle
+    if(sectorFrom && sectorTo){
+      const from=sectorFrom%360, to=sectorTo%360;
+      // génère bords + angle proche de 180 (arrière) et proche de 90 (max travers)
+      const dirs=[from,to, (from+(((to-from+360)%360)/2))%360, (q+180)%360, (q+90)%360, (q+270)%360];
+      const uniq=[...new Set(dirs)];
+      // détermine si un angle arrière est possible dans le secteur
+      const sectorHasTail = sectorHasAngle(from,to, a=> Math.abs(((a-q+540)%360)-180) > 90);
+      uniq.forEach(d=>{
+        const ang=Math.abs(((d-q+540)%360)-180);
+        const sp = sectorHasTail ? G : V; // si arrière possible → on utilise rafale/max
+        candidates.push({src:'secteur', ...comps(d,sp), note:(sectorHasTail?`secteur ${pad3(from)}V${pad3(to)}: passage arrière possible → rafale/max (${G} kt) sur ${pad3(d)}°`:`secteur ${pad3(from)}V${pad3(to)}: pas d’arrière → bord défavorable (${pad3(d)}°) à vitesse min (${V} kt)`)});
+      });
+    }
+
+    if(candidates.length===0){
+      // VRB sans secteur : cas arrière théorique à 180° avec rafale
+      const c=comps((q+180)%360, G);
+      return {headwindForFactor:c.hwSigned, explain:`VRB sans secteur : cas arrière à 180° → rafale/max (${G} kt)`};
+    }
+
+    // Choix le plus contraignant = headwind minimal (le plus négatif = plus de vent arrière)
+    let worst=candidates[0];
+    candidates.forEach(c=>{ if(c.hwSigned < worst.hwSigned) worst=c; });
+
+    return {headwindForFactor:worst.hwSigned, explain:worst.note};
+  }
+
+  function sectorHasAngle(from,to,pred){
+    // parcourt l’arc court from→to
+    const step=5; // résolution suffisante
+    let a=from%360, b=to%360;
+    const span=((b-a+360)%360);
+    for(let t=0;t<=span;t+=step){
+      const d=(a+t)%360;
+      if(pred(d)) return true;
+    }
+    return false;
+  }
+
+  /* ===================== INTERPOLATIONS ===================== */
   function interpTemp(rowTemps,arr,oat){
     const xs=[rowTemps.minus20,rowTemps.isa,rowTemps.plus20],ys=arr;
     if(oat<=xs[0])return ys[0]; if(oat>=xs[2])return ys[2];
@@ -417,36 +652,21 @@
   function interpTO_DR400(altFt,oat,massKg,surface,kind){
     const low=altFt<=0?0:altFt>=8000?8000:(altFt<=4000?0:4000);
     const high=altFt<=0?0:altFt>=8000?8000:(altFt<=4000?4000:8000);
-    const alpha=clamp((massKg-700)/(900-700),0,1);
-    const valAt=alt=>{
-      const t=TO_DR400[alt];
-      const v700=interpTemp(t.temps,t[surface].kg700[kind],oat);
-      const v900=interpTemp(t.temps,t[surface].kg900[kind],oat);
-      return lerp(0,v700,1,v900,alpha);
-    };
-    if(low===high)return valAt(low);
-    return lerp(low,valAt(low),high,valAt(high),altFt);
+    const alpha=clamp01((massKg-700)/(900-700));
+    const valAt=alt=>{const t=TO_DR400[alt]; const v700=interpTemp(t.temps,t[surface].kg700[kind],oat); const v900=interpTemp(t.temps,t[surface].kg900[kind],oat); return lerp(0,v700,1,v900,alpha);};
+    if(low===high)return valAt(low); return lerp(low,valAt(low),high,valAt(high),altFt);
   }
   function interpLDG_DR400(altFt,oat,massKg,mode,kind){
     const low=altFt<=0?0:altFt>=8000?8000:(altFt<=4000?0:4000);
     const high=altFt<=0?0:altFt>=8000?8000:(altFt<=4000?4000:8000);
-    const alpha=clamp((massKg-700)/(900-700),0,1);
-    const valAt=alt=>{
-      const t=LDG_DR400[alt];
-      const v700=interpTemp(t.temps,t[mode].kg700[kind],oat);
-      const v900=interpTemp(t.temps,t[mode].kg900[kind],oat);
-      return lerp(0,v700,1,v900,alpha);
-    };
-    if(low===high)return valAt(low);
-    return lerp(low,valAt(low),high,valAt(high),altFt);
+    const alpha=clamp01((massKg-700)/(900-700));
+    const valAt=alt=>{const t=LDG_DR400[alt]; const v700=interpTemp(t.temps,t[mode].kg700[kind],oat); const v900=interpTemp(t.temps,t[mode].kg900[kind],oat); return lerp(0,v700,1,v900,alpha);};
+    if(low===high)return valAt(low); return lerp(low,valAt(low),high,valAt(high),altFt);
   }
-  // DR300 (grid)
   function interpGridDR300(surface,kind,altFt,oat,massKg){
     const surf=TO_DR300[surface], temps=DR300_TEMPS, alts=surf.alts;
-    function interpRow(row){
-      const ys=row,x=oat;
-      if(x<=temps[0])return ys[0];
-      if(x>=temps[3])return ys[3];
+    function interpRow(row){const ys=row,x=oat;
+      if(x<=temps[0])return ys[0]; if(x>=temps[3])return ys[3];
       if(x<=temps[1])return lerp(temps[0],ys[0],temps[1],ys[1],x);
       if(x<=temps[2])return lerp(temps[1],ys[1],temps[2],ys[2],x);
       return lerp(temps[2],ys[2],temps[3],ys[3],x);
@@ -464,367 +684,150 @@
     return val*TO_DR300.massScale(massKg);
   }
 
-  // Facteurs vent (perfs)
-  function headwindFactorFace(hw){
-    const pts=[{x:0,y:1.00},{x:10,y:0.78},{x:20,y:0.63},{x:30,y:0.52}],x=clamp(hw,0,30);
-    if(x===0)return 1;
-    for(let i=0;i<pts.length-1;i++){
-      const p0=pts[i],p1=pts[i+1];
-      if(x>=p0.x&&x<=p1.x)return lerp(p0.x,p0.y,p1.x,p1.y,x);
-    }
-    return pts.at(-1).y;
-  }
-  function windDistanceFactor(headwind){
-    if(headwind>=0)return headwindFactorFace(headwind);
-    const tw=Math.abs(headwind),steps=Math.ceil(tw/2);
-    return 1+0.10*steps;
-  }
-
-  /* ===================== LOGIQUE UI / ÉTAT ===================== */
-  let depSurface='hard',arrSurface='hard',landingMode='moderate',withSpats=true, profile='DR400';
-
-  const propByAircraft={
-    'F-GCAL (120cv)':'Sensenich',
-    'F-BXEK (120cv)':'Sensenich',
-    'F-BTKG (120cv)':'Sensenich',
-    'F-BTXS (120cv)':'Sensenich',
-    'F-BTBS (120cv)':'Mac Cauley',
-    'F-BTBJ (108cv)':'Mac Cauley'
-  };
-  function onAircraftChange(){
-    const ac=$('#aircraftSel').value;
-    $('#propeller').value=propByAircraft[ac]||'';
-    profile = (ac.startsWith('F-BTKG') || ac.startsWith('F-BTXS')) ? 'DR300' : 'DR400';
-    // compute “display only” chips if QFU existe
-    updateWindDisplay('dep'); updateWindDisplay('arr');
-  }
-  $('#aircraftSel').addEventListener('change', onAircraftChange);
-  onAircraftChange();
-
-  // Bind ICAO
-  ['depIcao','arrIcao'].forEach(id=>{
-    const el=$('#'+id);
-    el.addEventListener('input',()=>{sanitizeIcao(el)});
-  });
-
-  // Toggle boutons
-  $('#depSurfHard').onclick=()=>{depSurface='hard';$('#depSurfHard').classList.add('on');$('#depSurfGrass').classList.remove('on')};
-  $('#depSurfGrass').onclick=()=>{depSurface='grass';$('#depSurfGrass').classList.add('on');$('#depSurfHard').classList.remove('on')};
-  $('#arrModerate').onclick=()=>{landingMode='moderate';$('#arrModerate').classList.add('on');$('#arrNoBrake').classList.remove('on')};
-  $('#arrNoBrake').onclick=()=>{landingMode='nobrake_grass';$('#arrNoBrake').classList.add('on');$('#arrModerate').classList.remove('on')};
-  $('#spatsWith').onclick=()=>{withSpats=true;$('#spatsWith').classList.add('on');$('#spatsWithout').classList.remove('on')};
-  $('#spatsWithout').onclick=()=>{withSpats=false;$('#spatsWithout').classList.add('on');$('#spatsWith').classList.remove('on')};
-
-  // QFU & secteurs bind
-  bindQFU('depQfu'); bindQFU('arrQfu');
-  bindSector('depVrbFrom'); bindSector('depVrbTo');
-  bindSector('arrVrbFrom'); bindSector('arrVrbTo');
-
-  // Vitesse & Rafales ≥ 0
-  function bindNonNegInt(id){
-    const el=$('#'+id);
-    const norm=()=>{let v=Math.round(Number(el.value)); if(!isFinite(v)||v<0)v=0; el.value=String(v);}
-    el.addEventListener('input',norm);
-    el.addEventListener('blur',norm);
-  }
-  ['depWindKt','depGust','arrWindKt','arrGust','depOat','arrOat','depToda','arrLda','depTow','arrLdw','depExtraTO','arrExtraLDG','safety'].forEach(bindNonNegInt);
-
-  // Direction texte : autorise "VRB" sinon 000-350… (on laisse libre ici, tu peux saisir)
-  function bindDirText(id){
-    const el=$('#'+id);
-    el.addEventListener('input',()=>{ /* libre (VRB ou chiffres) */ });
-  }
-  bindDirText('depWindDir'); bindDirText('arrWindDir');
-
-  // === METAR — AVWX ===
-  const AVWX_TOKEN = 'q45JCSdkFjeZqHUyvawV2iaFm80CYmlPP6kC3XS8VNs';
-  async function fetchJson(url){
-    const resp=await fetch(url,{headers:{Authorization:'BEARER '+AVWX_TOKEN}});
-    if(!resp.ok) throw new Error('HTTP '+resp.status);
-    return await resp.json();
-  }
-  function parseAndApplyMetar(side, data){
-    const raw = data?.raw || '';
-    const dirRepr = data?.wind_direction?.repr || '';
-    const dirVal  = (data?.wind_direction?.value ?? null);
-    const spd     = Math.max(0, Math.round(data?.wind_speed?.value ?? 0));
-    const gust    = Math.max(0, Math.round(data?.wind_gust?.value ?? 0));
-    const oat     = Math.round(data?.temperature?.value ?? 15);
-
-    const dirEl = $('#'+side+'WindDir');
-    if(dirRepr==='VRB') dirEl.value='VRB';
-    else if(dirVal!==null) dirEl.value=pad3(dirVal);
-
-    $('#'+side+'WindKt').value=String(spd);
-    $('#'+side+'Gust').value=String(gust||0);
-    $('#'+side+'Oat').value=String(oat);
-
-    // Secteur variable s'il existe (e.g. 280V350)
-    const varFrom = data?.wind_variable_direction?.start ?? null;
-    const varTo   = data?.wind_variable_direction?.end ?? null;
-    if(varFrom!==null && varTo!==null){
-      $('#'+side+'VrbFrom').value = pad3(varFrom);
-      $('#'+side+'VrbTo').value   = pad3(varTo);
-    }
-
-    const msgEl = (side==='dep')? $('#depMetarMsg') : $('#arrMetarMsg');
-    msgEl.textContent = `METAR chargé : ${raw}`;
-
-    // mettre à jour l’affichage instantané si QFU saisi
-    updateWindDisplay(side);
-  }
-  async function loadMetarFor(side){
-    const icao = ($('#'+side+'Icao').value||'').toUpperCase();
-    const msgEl = (side==='dep')? $('#depMetarMsg') : $('#arrMetarMsg');
-    msgEl.textContent = 'Chargement METAR…';
-    try{
-      const data = await fetchJson(`https://avwx.rest/api/metar/${icao}`);
-      parseAndApplyMetar(side,data);
-    }catch(e){
-      msgEl.textContent='METAR indisponible ('+(e.message||'erreur')+')';
-    }
-  }
-  $('#btnDepMetar').addEventListener('click', ()=>loadMetarFor('dep'));
-  $('#btnArrMetar').addEventListener('click', ()=>loadMetarFor('arr'));
-
-  // === Affichage des 3 cartouches (sans règle de perf) ===
-  function updateWindDisplay(side){
-    const qfu = readQFU(side==='dep'?'depQfu':'arrQfu');
-    if(qfu===null){ // pas de QFU → on n’affiche rien
-      $('#'+side+'HwFace').textContent='—';
-      $('#'+side+'Xw').textContent='—';
-      $('#'+side+'Tw').textContent='—';
-      (side==='dep'?$('#depXwField'):$('#arrXwField')).classList.remove('warn','bad');
-      return;
-    }
-    const dir = $('#'+side+'WindDir').value.trim().toUpperCase();
-    const spd = +($('#'+side+'WindKt').value||0);
-    const gust= +($('#'+side+'Gust').value||0);
-    const sFromRaw=$('#'+side+'VrbFrom').value, sToRaw=$('#'+side+'VrbTo').value;
-    const sFrom=parseInt((sFromRaw||'').replace(/\D/g,''),10);
-    const sTo  =parseInt((sToRaw||'').replace(/\D/g,''),10);
-    const hasSector = isFinite(sFrom)&&sFrom>=1&&sFrom<=360 && isFinite(sTo)&&sTo>=1&&sTo<=360;
-    const xwEl = (side==='dep'?$('#depXwField'):$('#arrXwField'));
-    xwEl.classList.remove('warn','bad');
-
-    // “Affichage”:
-    // - si secteur saisi → montrer plage (min–max face) et max travers / max arrière avec vitesse instantanée (sans rafale)
-    // - sinon, calcul unique sur direction saisie (ou VRB→0)
-    if(hasSector){
-      // Échantillonne le secteur (tous les 5°) pour un affichage simple
-      const step=5;
-      const list=[];
-      const start=sFrom, end=sTo;
-      // gestion secteur enroulé
-      const len = ((end - start + 360) % 360) || 360;
-      for(let a=0;a<=len;a+=step){
-        const hdg = degNorm360(start + a);
-        const c = windComponents(qfu,hdg,spd);
-        list.push(c);
-      }
-      const minFace = Math.min(...list.map(c=>Math.max(0,c.headwind)));
-      const maxFace = Math.max(...list.map(c=>Math.max(0,c.headwind)));
-      const maxX    = Math.max(...list.map(c=>Math.abs(c.crosswind)));
-      const maxTail = Math.max(...list.map(c=>Math.max(0,-c.headwind)));
-
-      $('#'+side+'HwFace').textContent = `${Math.round(minFace)}–${Math.round(maxFace)}`;
-      $('#'+side+'Xw').textContent     = Math.round(maxX);
-      $('#'+side+'Tw').textContent     = Math.round(maxTail);
-
-      // Couleur travers avec pire angle & rafale (color only)
-      const worstXWithGust = Math.max(maxX, maxX * (gust>spd && spd>0 ? gust/spd : 1));
-      if(worstXWithGust>22) xwEl.classList.add('bad');
-      else if(worstXWithGust>=18) xwEl.classList.add('warn');
+  /* ===================== FACTEUR VENT PERFS ===================== */
+  function windDistanceFactor(head){
+    if(head>=0){
+      const pts=[{x:0,y:1.00},{x:10,y:0.78},{x:20,y:0.63},{x:30,y:0.52}],x=Math.max(0,Math.min(30,head));
+      if(x===0)return 1;
+      for(let i=0;i<pts.length-1;i++){const p0=pts[i],p1=pts[i+1];if(x>=p0.x&&x<=p1.x)return p0.y+(p1.y-p0.y)*((x-p0.x)/(p1.x-p0.x))}
+      return pts.at(-1).y;
     }else{
-      // Pas de secteur
-      if(dir==='VRB'){
-        $('#'+side+'HwFace').textContent='—';
-        $('#'+side+'Xw').textContent='—';
-        $('#'+side+'Tw').textContent='—';
-      }else{
-        const d = parseInt(dir.replace(/\D/g,''),10);
-        if(isFinite(d)){
-          const c=windComponents(qfu,d,spd);
-          $('#'+side+'HwFace').textContent = Math.round(Math.max(0,c.headwind));
-          $('#'+side+'Xw').textContent     = Math.round(Math.abs(c.crosswind));
-          $('#'+side+'Tw').textContent     = Math.round(Math.max(0,-c.headwind));
-          // couleur avec rafale si pire angle = direction unique
-          const baseX=Math.abs(c.crosswind);
-          const withG = (gust>spd && spd>0) ? baseX*(gust/spd) : baseX;
-          if(withG>22) xwEl.classList.add('bad');
-          else if(withG>=18) xwEl.classList.add('warn');
-        }else{
-          $('#'+side+'HwFace').textContent='—';
-          $('#'+side+'Xw').textContent='—';
-          $('#'+side+'Tw').textContent='—';
-        }
-      }
+      const tw=Math.abs(head),steps=Math.ceil(tw/2);
+      return 1+0.10*steps;
     }
   }
 
-  // Rafraîchir cartouches quand on change ces champs
-  ['depQfu','depWindDir','depWindKt','depVrbFrom','depVrbTo','depGust',
-   'arrQfu','arrWindDir','arrWindKt','arrVrbFrom','arrVrbTo','arrGust'
-  ].forEach(id=>$('#'+id).addEventListener('input', ()=>updateWindDisplay(id.startsWith('dep')?'dep':'arr')));
+  /* ===================== CALCUL BOUTONS ===================== */
+  function setChip(el,state){el.className='chip '+(state==='ok'?'ok':state==='bad'?'bad':'neutral');el.textContent=state==='ok'?'OK':'KO'}
 
-  /* ===================== CALCUL DES PERFS ===================== */
-
-  function computeWindFactorForPerf(side){ // applique TA règle VRB/gust
-    const qfu = readQFU(side==='dep'?'depQfu':'arrQfu');
-    if(qfu===null) return {factor:1, explain:'QFU manquant'};
-    const dirStr=$('#'+side+'WindDir').value.trim().toUpperCase();
-    const spd=+($('#'+side+'WindKt').value||0);
-    const gust=+($('#'+side+'Gust').value||0);
-    const sFrom=parseInt(($('#'+side+'VrbFrom').value||'').replace(/\D/g,''),10);
-    const sTo  =parseInt(($('#'+side+'VrbTo').value||'').replace(/\D/g,''),10);
-    const hasSector=(isFinite(sFrom)&&sFrom>=1&&sFrom<=360 && isFinite(sTo)&&sTo>=1&&sTo<=360);
-
-    let usedHeadwind=0, explain='';
-
-    const crossLimit=22;
-
-    function headwindAt(dirDeg, v){ return windComponents(qfu,dirDeg,v).headwind; }
-    function xwAt(dirDeg, v){ return Math.abs(windComponents(qfu,dirDeg,v).crosswind); }
-
-    if(dirStr!=='VRB' && !hasSector){
-      // Vent non variable : pas d’usage des rafales, sauf si composante arrière
-      const d=parseInt(dirStr.replace(/\D/g,''),10);
-      if(!isFinite(d)) return {factor:1, explain:'Direction invalide'};
-      const hw= headwindAt(d, spd);
-      if(hw<0){
-        const twMax = Math.abs(headwindAt(d, Math.max(spd,gust||spd)));
-        usedHeadwind = -twMax; // négatif = arrière
-        explain = `Vent arrière détecté → usage valeur max/rafale pour la pénalité.`;
-      }else{
-        usedHeadwind = hw; // de face → facteur bénéfique
-        explain = `Vent non variable de face → pas de rafale utilisée.`;
-      }
-    }else{
-      // Vent variable (VRB ou secteur saisi)
-      // 1) Vérifier si un des angles possibles donne du vent arrière
-      const angles = [];
-      if(hasSector){
-        const start=sFrom, end=sTo;
-        const len = ((end - start + 360) % 360) || 360;
-        for(let a=0;a<=len;a+=5) angles.push(degNorm360(start+a));
-      }else if(dirStr==='VRB'){
-        for(let a=0;a<360;a+=5) angles.push(a);
-      }else{
-        const d=parseInt(dirStr.replace(/\D/g,''),10);
-        if(isFinite(d)) angles.push(d);
-      }
-
-      let worstTail=0, anyTail=false;
-      let minHead=Infinity, maxCross=0;
-      angles.forEach(a=>{
-        const hwFace = headwindAt(a, spd);
-        minHead = Math.min(minHead, Math.max(0,hwFace));
-        const tail = Math.max(0, -hwFace);
-        if(tail>0){ anyTail=true; worstTail=Math.max(worstTail, Math.max(tail, Math.max(0,-headwindAt(a, Math.max(spd,gust||spd))))); }
-        maxCross = Math.max(maxCross, xwAt(a, Math.max(spd,gust||spd)));
-      });
-
-      if(anyTail){
-        usedHeadwind = -worstTail;
-        explain = `Vent variable avec cas arrière → on prend la composante arrière maximale (rafale incluse).`;
-      }else{
-        // Pas de dos : prendre le vent le plus défavorable à la distance (i.e. le moins de face) et “le plus travers”
-        usedHeadwind = minHead; // bénéfice minimal
-        explain = `Vent variable sans cas arrière → on prend la composante de face minimale (sans rafale) et le plus de travers pour la limite.`;
-      }
-
-      // (La limite de vent de travers est traitée visuellement dans les cartouches)
-      if(maxCross>crossLimit) explain += ` Limite vent de travers potentiellement dépassée (pire angle/rafale).`;
-    }
-
-    const factor = windDistanceFactor(usedHeadwind);
-    return {factor, explain:`Règle appliquée : ${explain}`};
-  }
-
-  function computeBaseTO(surface, alt, oat, mass){
-    if(profile==='DR300'){
-      return {
-        pass: interpGridDR300(surface,'pass',alt,oat,mass),
-        roll: interpGridDR300(surface,'roll',alt,oat,mass),
-      };
-    }else{
-      return {
-        pass: interpTO_DR400(alt,oat,mass,surface,'pass'),
-        roll: interpTO_DR400(alt,oat,mass,surface,'roll'),
-      };
-    }
-  }
   function computeDepPerf(){
-    const qfu=readQFU('depQfu'); if(qfu===null){ // protection visuelle
+    const qfu=normQFU($('#depQfu').value);
+    if(qfu===null){
       setChip($('#toChip'),'neutral'); $('#toKpi').className='kpi';
-      ['toBasePass','toBaseRoll','toWindF','toSpat','toExtra','toRes','toKpiVal'].forEach(id=>$('#'+id).textContent='—');
-      $('#toExplain').textContent='Veuillez saisir un QFU (001–360) pour calculer les performances décollage.';
+      ['toBasePass','toBaseRoll','toWindF','toSpat','toExtra','toRes'].forEach(id=>$('#'+id).textContent='—');
+      $('#toExplain').textContent='';
       return;
     }
-    const alt=+($('#depAlt').value||0), oat=+($('#depOat').value||15), mass=+($('#depTow').value||900),
-          extra=+($('#depExtraTO').value||1), toda=+($('#depToda').value||0), safety=Math.max(0, +($('#safety').value||30));
-    const base=computeBaseTO(depSurface,alt,oat,mass);
+    const depAlt=+($('#depAlt')?.value||0), depOat=+($('#depOat').value||0),
+          depExtra=+($('#depExtraTO').value||1), depTow=+($('#depTow').value||900),
+          depToda=+($('#depToda').value||0), safety=Math.max(0,+($('#safety').value||30));
+    // “plus contraignant” entre vent moyen et secteur (règle demandée)
+    const meanDir=$('#depWindDir').value;
+    const kt=+($('#depWindKt').value||0), gust=+($('#depWindGust').value||0);
+    const sf=normAngleField($('#depVrbFrom')), st=normAngleField($('#depVrbTo'));
+    const w=worstBetweenMeanAndSector(qfu, meanDir, kt, gust, sf, st);
+
+    let baseTO_pass, baseTO_roll;
+    if(profile==='DR300'){
+      baseTO_pass=interpGridDR300(depSurface,'pass',depAlt,depOat,depTow);
+      baseTO_roll=interpGridDR300(depSurface,'roll',depAlt,depOat,depTow);
+    }else{
+      baseTO_pass=interpTO_DR400(depAlt,depOat,depTow,depSurface,'pass');
+      baseTO_roll=interpTO_DR400(depAlt,depOat,depTow,depSurface,'roll');
+    }
+
+    const depWindF=windDistanceFactor(w.headwindForFactor||0);
     const spatsF=withSpats?1.00:1.03;
-    const windF = computeWindFactorForPerf('dep');
-    const res = Math.round(base.pass * windF.factor * extra * spatsF);
-    const resM = Math.round(res * (1 + safety/100));
+    const toCalc=Math.round(baseTO_pass*depWindF*depExtra*spatsF);
+    const toMargin=Math.round(toCalc*(1+safety/100));
 
-    $('#toBasePass').textContent=Math.round(base.pass)+' m';
-    $('#toBaseRoll').textContent=Math.round(base.roll)+' m';
-    $('#toWindF').textContent=windF.factor.toFixed(2)+'×';
-    $('#toSpat').textContent=`${spatsF.toFixed(2)}×`+(spatsF===1?' (avec carénages)':' (sans carénages)');
-    $('#toExtra').textContent=extra.toFixed(2)+'×';
-    $('#toRes').textContent=res+' m';
-    $('#sftyPct1').textContent=String(safety);
-    $('#todaMini').textContent=toda? (toda+' m') : '—';
-    $('#toExplain').textContent=windF.explain;
+    $('#toBasePass').textContent=Math.round(baseTO_pass)+' m';
+    $('#toBaseRoll').textContent=Math.round(baseTO_roll)+' m';
+    $('#toWindF').textContent=depWindF.toFixed(2)+'×';
+    $('#toSpat').textContent=`${spatsF.toFixed(2)}×`+(spatsF===1?' (carénages présents)':' (sans carénages)');
+    $('#toExtra').textContent=depExtra.toFixed(2)+'×';
+    $('#toRes').textContent=toCalc+' m';
+    $('#todaMini').textContent=$('#depToda').value?$('#depToda').value+' m':'—';
 
-    const st=(toda? (resM<=toda?'ok':'bad'):'neutral');
-    setChip($('#toChip'),st);
-    $('#toKpi').className='kpi '+(st==='ok'?'ok':st==='bad'?'bad':'');
-    $('#toKpiVal').textContent=resM+' m';
+    const stTO=(depToda? (toMargin<=depToda?'ok':'bad'):'neutral');
+    setChip($('#toChip'),stTO); $('#toKpi').className='kpi '+(stTO==='ok'?'ok':stTO==='bad'?'bad':'');
+    $('#toKpiVal').textContent=toMargin+' m';
+
+    $('#toExplain').textContent = `Règle vent : ${w.explain || '—'}. Facteur vent = ${depWindF.toFixed(2)}× (composante utilisée ${Math.round(w.headwindForFactor||0)} kt). Surface=${depSurface==='hard'?'Dur':'Herbe'} · Carénages=${withSpats?'Avec':'Sans'}.`;
   }
 
   function computeArrPerf(){
-    const qfu=readQFU('arrQfu'); if(qfu===null){
+    const qfu=normQFU($('#arrQfu').value);
+    if(qfu===null){
       setChip($('#ldgChip'),'neutral'); $('#ldgKpi').className='kpi';
-      ['ldgBasePass','ldgBaseRoll','ldgWindF','ldgExtra','ldgRes','ldgKpiVal'].forEach(id=>$('#'+id).textContent='—');
-      $('#ldgExplain').textContent='Veuillez saisir un QFU (001–360) pour calculer les performances atterrissage.';
+      ['ldgBasePass','ldgBaseRoll','ldgWindF','ldgExtra','ldgRes'].forEach(id=>$('#'+id).textContent='—');
+      $('#ldgExplain').textContent='';
       return;
     }
-    const alt=+($('#arrAlt').value||0), oat=+($('#arrOat').value||15), mass=+($('#arrLdw').value||900),
-          extra=+($('#arrExtraLDG').value||1), lda=+($('#arrLda').value||0), safety=Math.max(0, +($('#safety').value||30));
+    const arrAlt=+($('#arrAlt').value||0), arrOat=+($('#arrOat').value||0),
+          arrExtra=+($('#arrExtraLDG').value||1), arrLdw=+($('#arrLdw').value||900),
+          arrLda=+($('#arrLda').value||0), safety=Math.max(0,+($('#safety').value||30));
+    const meanDir=$('#arrWindDir').value;
+    const kt=+($('#arrWindKt').value||0), gust=+($('#arrWindGust').value||0);
+    const sf=normAngleField($('#arrVrbFrom')), st=normAngleField($('#arrVrbTo'));
+    const w=worstBetweenMeanAndSector(qfu, meanDir, kt, gust, sf, st);
 
-    const basePass = interpLDG_DR400(alt,oat,mass,landingMode,'pass');
-    const baseRoll = interpLDG_DR400(alt,oat,mass,landingMode,'roll');
-    const windF = computeWindFactorForPerf('arr');
-    const res = Math.round(basePass * windF.factor * extra);
-    const resM = Math.round(res * (1 + safety/100));
+    const baseLDG_pass=interpLDG_DR400(arrAlt,arrOat,arrLdw,landingMode,'pass');
+    const baseLDG_roll=interpLDG_DR400(arrAlt,arrOat,arrLdw,landingMode,'roll');
+    const arrWindF=windDistanceFactor(w.headwindForFactor||0);
+    const ldgCalc=Math.round(baseLDG_pass*arrWindF*arrExtra);
+    const ldgMargin=Math.round(ldgCalc*(1+safety/100));
 
-    $('#ldgBasePass').textContent=Math.round(basePass)+' m';
-    $('#ldgBaseRoll').textContent=Math.round(baseRoll)+' m';
-    $('#ldgWindF').textContent=windF.factor.toFixed(2)+'×';
-    $('#ldgExtra').textContent=extra.toFixed(2)+'×';
-    $('#ldgRes').textContent=res+' m';
-    $('#sftyPct2').textContent=String(safety);
-    $('#ldaMini').textContent=lda? (lda+' m') : '—';
-    $('#ldgExplain').textContent=windF.explain;
+    $('#ldgBasePass').textContent=Math.round(baseLDG_pass)+' m';
+    $('#ldgBaseRoll').textContent=Math.round(baseLDG_roll)+' m';
+    $('#ldgWindF').textContent=arrWindF.toFixed(2)+'×';
+    $('#ldgExtra').textContent=arrExtra.toFixed(2)+'×';
+    $('#ldgRes').textContent=ldgCalc+' m';
+    $('#ldaMini').textContent=$('#arrLda').value?$('#arrLda').value+' m':'—';
 
-    const st=(lda? (resM<=lda?'ok':'bad'):'neutral');
-    setChip($('#ldgChip'),st);
-    $('#ldgKpi').className='kpi '+(st==='ok'?'ok':st==='bad'?'bad':'');
-    $('#ldgKpiVal').textContent=resM+' m';
+    const stLDG=(arrLda? (ldgMargin<=arrLda?'ok':'bad'):'neutral');
+    setChip($('#ldgChip'),stLDG); $('#ldgKpi').className='kpi '+(stLDG==='ok'?'ok':stLDG==='bad'?'bad':'');
+    $('#ldgKpiVal').textContent=ldgMargin+' m';
+
+    $('#ldgExplain').textContent = `Règle vent : ${w.explain || '—'}. Facteur vent = ${arrWindF.toFixed(2)}× (composante utilisée ${Math.round(w.headwindForFactor||0)} kt). Type de freinage=${landingMode==='moderate'?'Freinage modéré':'Sans frein herbe'}.`;
   }
 
-  // Boutons “Calculer”
-  document.getElementById('btnCalcDep')?.addEventListener('click',(e)=>{e.preventDefault(); computeDepPerf();});
-  document.getElementById('btnCalcArr')?.addEventListener('click',(e)=>{e.preventDefault(); computeArrPerf();});
+  document.getElementById('btnCalcDep').addEventListener('click', computeDepPerf);
+  document.getElementById('btnCalcArr').addEventListener('click', computeArrPerf);
 
-  // Recalcul affichage vent si QFU changé
-  ['depQfu','arrQfu'].forEach(id=>$('#'+id).addEventListener('input', ()=>updateWindDisplay(id==='depQfu'?'dep':'arr')));
+  /* ===================== IMPRESSION (raccourci) ===================== */
+  function buildRawReport(){
+    const safety=Math.max(0,+($('#safety').value||30));
+    const aircraft=$('#aircraftSel').value;
+    const prop=$('#propeller').value;
+    const spats=$('#spatsWith').classList.contains('on')?'Avec carénages':'Sans carénages (+3% TO)';
+    const D={ icao:($('#depIcao').value||'').toUpperCase(), qfu:+($('#depQfu').value||0), toda:+($('#depToda').value||0),
+              alt:+($('#depAlt')?.value||0), oat:+($('#depOat').value||0),
+              wdir:($('#depWindDir').value||'').toUpperCase(), wkt:+($('#depWindKt').value||0) };
+    const A={ icao:($('#arrIcao').value||'').toUpperCase(), qfu:+($('#arrQfu').value||0), lda:+($('#arrLda').value||0),
+              alt:+($('#arrAlt').value||0), oat:+($('#arrOat').value||0),
+              wdir:($('#arrWindDir').value||'').toUpperCase(), wkt:+($('#arrWindKt').value||0) };
+    const ts=new Date().toLocaleString('fr-FR');
+    return [
+      `CALCULCATEUR DE PERFORMANCES`,
+      `Horodatage : ${ts}`,
+      ``,
+      `[Paramètres généraux]`,
+      `  Avion : ${aircraft}    Hélice : ${prop}    Profil : ${profile}`,
+      `  Marge sécurité : ${safety}%`,
+      `  Carénages : ${spats}`,
+      ``,
+      `[Départ]`,
+      `  ICAO : ${D.icao}    QFU : ${pad3(D.qfu||0)}°`,
+      `  Élévation : ${D.alt} ft    OAT : ${D.oat} °C`,
+      `  Vent : ${D.wdir}/${Math.round(D.wkt)} kt`,
+      ``,
+      `[Arrivée]`,
+      `  ICAO : ${A.icao}    QFU : ${pad3(A.qfu||0)}°`,
+      `  Élévation : ${A.alt} ft    OAT : ${A.oat} °C`,
+      `  Vent : ${A.wdir}/${Math.round(A.wkt)} kt`,
+      ``,
+      `Source : Manuel de vol respectif de chaque avion - Aéroclub de Beauvais-Tillé`,
+      `Développé par Hugo DERUELLE avec l'aide de l'IA`,
+    ].join('\n');
+  }
+  window.addEventListener('beforeprint', ()=>{document.getElementById('rawPre').textContent = buildRawReport();});
 
-  // Premier affichage
-  updateWindDisplay('dep'); updateWindDisplay('arr');
+  // init
+  (function init(){
+    const ac=$('#aircraftSel').value; $('#propeller').value=propByAircraft[ac]||'';
+    updateWindDisplay('dep'); updateWindDisplay('arr'); updateResLabels();
+  })();
 </script>
 </body>
 </html>
