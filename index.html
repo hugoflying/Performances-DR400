@@ -754,7 +754,7 @@
       $('#ldgExplain').textContent='';
       return;
     }
-    const arrAlt=+($('#arrAlt').value||0), arrOat=+($('#arrOat').value||0),
+    const arrAlt=+($('#arrAlt')?.value||0), arrOat=+($('#arrOat').value||0),
           arrExtra=+($('#arrExtraLDG').value||1), arrLdw=+($('#arrLdw').value||900),
           arrLda=+($('#arrLda').value||0), safety=Math.max(0,+($('#safety').value||30));
     const meanDir=$('#arrWindDir').value;
