@@ -440,57 +440,82 @@
   $('#arrLda').addEventListener('input',()=>{ let s=$('#arrLda').value.replace(/\D/g,'').slice(0,4); $('#arrLda').value=s; });
 
   /* ===================== METAR (AVWX) ===================== */
-  const AVWX_TOKEN='q45JCSdkFjeZqHUyvawV2iaFm80CYmlPP6kC3XS8VNs';
-  async function fetchMetar(icao){
-    if(!icao || icao.length!==4) throw new Error('ICAO invalide');
-    const url=`https://avwx.rest/api/metar/${icao}`;
-    const resp=await fetch(url,{ headers:{ Authorization:'Bearer '+AVWX_TOKEN, Accept:'application/json' }});
-    if(!resp.ok) throw new Error('HTTP '+resp.status);
-    return await resp.json();
-  }
-  function parseSectorFromRaw(raw){ const m = raw && raw.match(/(\d{3})V(\d{3})/); return m ? {from:parseInt(m[1],10), to:parseInt(m[2],10)} : null; }
-  function parseVarSector(data){
-    const from=data?.variable_direction?.from, to=data?.variable_direction?.to;
-    if(typeof from==='number' && typeof to==='number') return {from, to};
-    return parseSectorFromRaw(data?.raw);
-  }
-  function applyMetar(side,data){
-    const dirRepr=(data?.wind_direction?.repr ?? '');
-    const dirVal =(data?.wind_direction?.value ?? null);
-    const spdVal =Math.max(0,Math.round(data?.wind_speed?.value ?? 0));
-    const gustVal=Math.max(0,Math.round(data?.wind_gust?.value ?? 0));
-    const oatVal =Math.round(data?.temperature?.value ?? 15);
-    const sector=parseVarSector(data);
+/* ===================== METAR (AVWX) ===================== */
+const AVWX_TOKEN='q45JCSdkFjeZqHUyvawV2iaFm80CYmlPP6kC3XS8VNs';
 
-    const dirEl=$('#'+side+'WindDir');
-    if(dirRepr==='VRB'){dirEl.value='VRB';}
-    else if(dirVal!==null){dirEl.value=pad3(dirVal);}
+async function fetchJson(url){
+  const resp = await fetch(url, {
+    headers:{ Authorization:'Bearer '+AVWX_TOKEN, Accept:'application/json' }
+  });
+  if(!resp.ok) throw new Error('HTTP '+resp.status);
+  return await resp.json();
+}
+async function fetchMetar(icao){
+  return fetchJson(`https://avwx.rest/api/metar/${icao}`);
+}
+async function fetchStation(icao){
+  return fetchJson(`https://avwx.rest/api/station/${icao}`);
+}
+// METAR le plus proche à partir de coordonnées (fallback)
+async function fetchNearestMetarByCoords(lat, lon){
+  const ll = `${Number(lat).toFixed(5)},${Number(lon).toFixed(5)}`;
+  return fetchJson(`https://avwx.rest/api/metar/${ll}?nearest=true`);
+}
 
-    $('#'+side+'WindKt').value=String(spdVal);
-    $('#'+side+'WindGust').value=String(gustVal||0);
-    $('#'+side+'Oat').value=String(oatVal);
+// essaie d’abord METAR du terrain, sinon prend le + proche autour de la station
+async function loadMetarFor(side){
+  const icao = (document.getElementById(side+'Icao').value||'').toUpperCase();
+  const msgEl = document.getElementById(side==='dep'?'depMetarMsg':'arrMetarMsg');
+  msgEl.textContent = 'Chargement METAR…';
 
-    if(sector){
-      $('#'+side+'VrbFrom').value=pad3(sector.from);
-      $('#'+side+'VrbTo').value=pad3(sector.to);
-    } else {
-      $('#'+side+'VrbFrom').value=''; $('#'+side+'VrbTo').value='';
+  try{
+    // On récupère la station d’abord (pour élévation + coords)
+    const station = await fetchStation(icao);
+    // Élévation : renseigner si dispo (n’écrase pas une valeur >0 déjà présente)
+    const elevFt = station?.elevation_ft;
+    const altInput = document.getElementById(side+'Alt');
+    const currentAlt = parseInt(altInput?.value||'0',10) || 0;
+    if(typeof elevFt === 'number' && elevFt > 0 && currentAlt <= 0){
+      altInput.value = String(Math.round(elevFt));
     }
 
-    const msgEl = document.getElementById(side==='dep'?'depMetarMsg':'arrMetarMsg');
-    msgEl.textContent = `METAR chargé : ${data?.raw || '—'}`;
+    // 1) Tenter METAR du terrain demandé
+    let metar, usedIcao = icao, isNearest = false, distTxt = '';
+    try{
+      metar = await fetchMetar(icao);
+    }catch(_e){
+      // 2) Fallback : plus proche autour des coords de la station
+      if(typeof station?.latitude === 'number' && typeof station?.longitude === 'number'){
+        metar = await fetchNearestMetarByCoords(station.latitude, station.longitude);
+        isNearest = true;
+        usedIcao = metar?.station || metar?.icao || usedIcao;
+        const d = metar?.meta?.distance, u = metar?.meta?.units;
+        if(typeof d === 'number' && u){ distTxt = ` (~${d} ${u})`; }
+      }else{
+        throw _e; // pas de coords pour chercher un voisin → re-lance l’erreur initiale
+      }
+    }
 
+    // Appliquer le METAR (remplit Direction/Vit/Rafales/VRB/OAT & recalc vent affiché)
+    applyMetar(side, metar);
+
+    // Message : METAR brut + origine
+    const raw = metar?.raw || '—';
+    msgEl.textContent = isNearest
+      ? `METAR chargé (proche : ${usedIcao}${distTxt}) : ${raw}`
+      : `METAR chargé : ${raw}`;
+
+    // Mettre à jour l’affichage des composantes (au cas où QFU/secteurs présents)
     updateWindDisplay(side);
+
+  }catch(e){
+    msgEl.textContent = 'METAR indisponible ('+(e.message||'erreur')+')';
   }
-  async function loadMetarFor(side){
-    const icao=(($('#'+side+'Icao').value)||'').toUpperCase();
-    const msgEl=document.getElementById(side==='dep'?'depMetarMsg':'arrMetarMsg');
-    msgEl.textContent='Chargement METAR…';
-    try{ const data=await fetchMetar(icao); applyMetar(side,data); }
-    catch(e){ msgEl.textContent='METAR indisponible ('+(e.message||'erreur')+')'; }
-  }
-  document.getElementById('btnDepMetar').addEventListener('click',()=>loadMetarFor('dep'));
-  document.getElementById('btnArrMetar').addEventListener('click',()=>loadMetarFor('arr'));
+}
+
+// Boutons
+document.getElementById('btnDepMetar').addEventListener('click',()=>loadMetarFor('dep'));
+document.getElementById('btnArrMetar').addEventListener('click',()=>loadMetarFor('arr'));
 
   /* ===================== AFFICHAGE COMPOSANTES (fidèle METAR) ===================== */
   function normAngleField(el){
