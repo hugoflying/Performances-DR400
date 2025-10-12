@@ -520,11 +520,10 @@
     try{
       // On récupère la station d’abord (pour élévation + coords)
       const station = await fetchStation(icao);
-      // Élévation : renseigner si dispo (n’écrase pas une valeur >0 déjà présente)
+      // Élévation : toujours écraser par l’élévation publiée du terrain saisi
       const elevFt = station?.elevation_ft;
       const altInput = document.getElementById(side+'Alt');
-      const currentAlt = parseInt(altInput?.value||'0',10) || 0;
-      if(typeof elevFt === 'number' && elevFt > 0 && currentAlt <= 0){
+      if (typeof elevFt === 'number' && elevFt > 0 && altInput) {
         altInput.value = String(Math.round(elevFt));
       }
 
