@@ -646,11 +646,11 @@
   }
 
 function updateWindDisplay(side){
-  const qfuIn=$('#'+side+'Qfu').value;
-  const qfu = normQFU(qfuIn);
-  const dirStr=$('#'+side+'WindDir').value||'';
-  const kt=parseInt($('#'+side+'WindKt').value||'0',10)||0;
-  const gust=parseInt($('#'+side+'WindGust').value||'0',10)||0;
+  const qfuIn = $('#'+side+'Qfu').value;
+  const qfu   = normQFU(qfuIn);
+  const dirStr= $('#'+side+'WindDir').value || '';
+  const kt    = parseInt($('#'+side+'WindKt').value||'0',10)||0;
+  const gust  = parseInt($('#'+side+'WindGust').value||'0',10)||0;
 
   const dirDisp = dirForDisplay(dirStr, {fromId:side+'VrbFrom', toId:side+'VrbTo'});
 
@@ -671,18 +671,21 @@ function updateWindDisplay(side){
   $('#'+side+'HwFace').textContent = Math.round(c.face);
   $('#'+side+'Tw').textContent     = Math.round(c.tail);
 
-  // Affichage “1 ligne” : vent moyen (vent max sur secteur)
+  const xwEl = document.getElementById(side+'Xw');
+
+  // Affichage 2 lignes si secteur saisi : 
+  // ligne 1 = vent moyen, ligne 2 = "max kt sur XXXVXXX"
   if (f && t){
     const V = Math.max(0, kt);
     const G = Math.max(V, gust);
     const xwWorst = maxXwindInSector(qfu, f, t, G);
-    const sectorStr = `${Number(f)}v${Number(t)}`; // minuscule 'v' et sans zéros en tête
-    const line = `${Math.round(c.xw)} kt (${Math.round(xwWorst)} kt sur ${sectorStr})`;
-    document.getElementById(side+'Xw').textContent = line;
+    const sectorStr = `${pad3(f)}V${pad3(t)}`;   // toujours XXXVXXX
+    xwEl.innerHTML = `${Math.round(c.xw)} kt<br>${Math.round(xwWorst)} kt sur ${sectorStr}`;
   } else {
-    document.getElementById(side+'Xw').textContent = `${Math.round(c.xw)} kt`;
+    xwEl.textContent = `${Math.round(c.xw)} kt`;
   }
 
+  // Couleur selon le pire cas (avec rafale & angle le plus travers si secteur)
   crosswindLimitColor(side);
 
   if(side==='dep'){ $('#todaMini').textContent=$('#depToda').value?$('#depToda').value+' m':'—'; }
