@@ -571,24 +571,24 @@
     if(isNaN(n)){el.value='';return null;}
     n=Math.max(1,Math.min(360,n)); el.value=pad3(n); return n;
   }
-  function dirForDisplay(dirField, sector){
-    const t=(dirField||'').trim().toUpperCase();
-    if(t==='VRB'){
-      const f=normAngleField(document.getElementById(sector.fromId));
-      const to=normAngleField(document.getElementById(sector.toId));
-      if(!f || !to) return null;
-      let a=f, b=to;
-      let diff=((b-a+540)%360)-180;
-      let mid=(a+diff/2+360)%360;
-      if(mid===0) mid=360;
-      return mid;
-    }
-    if(!t) return null;
-    let n=parseInt(t.replace(/\D/g,''),10);
-    if(isNaN(n)) return null;
-    n=Math.max(1,Math.min(360,n));
-    return n;
+ function dirForDisplay(dirField, sector){
+  const t=(dirField||'').trim().toUpperCase();
+  if(t==='VRB'){
+    const f=parseAngleLoose(document.getElementById(sector.fromId).value);
+    const to=parseAngleLoose(document.getElementById(sector.toId).value);
+    if(!f || !to) return null;
+    let a=f, b=to;
+    let diff=((b-a+540)%360)-180;
+    let mid=(a+diff/2+360)%360;
+    if(mid===0) mid=360;
+    return mid;
   }
+  if(!t) return null;
+  let n=parseInt(t.replace(/\D/g,''),10);
+  if(isNaN(n)) return null;
+  n=Math.max(1,Math.min(360,n));
+  return n;
+}
   function compsFrom(qfuDisp, dirDisp, kt){
     if(qfuDisp===null || dirDisp===null) return null;
     const q = (qfuDisp%360);
