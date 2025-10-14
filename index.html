@@ -74,7 +74,7 @@
     .hidden{display:none}
     .kpi{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin:8px 0}
     .kpi .left{display:flex;flex-direction:column}
-    .kpi .title{font-size:12px;color:var(--muted)}
+    .kpi .title{font-size:12px;color:var(--muted);letter-spacing:.02em}
     .kpi .value{font-size:26px;font-weight:800;line-height:1.1}
     .kpi .sub{font-size:12px;color:var(--muted)}
     .kpi.ok{background:#ecfdf5;border-color:#86efac}
@@ -195,7 +195,7 @@
 
       <div class="grid3" style="margin-top:10px">
         <div class="field"><div class="k">Vent de face</div><div class="v"><span id="depHwFace">—</span> kt</div></div>
-        <div id="depXwCard" class="field"><div class="k">Vent de travers</div><div class="v"><span id="depXw">—</span> kt</div></div>
+        <div id="depXwCard" class="field"><div class="k">Vent de travers</div><div class="v" id="depXw">—</div></div>
         <div class="field"><div class="k">Vent arrière</div><div class="v"><span id="depTw">—</span> kt</div></div>
       </div>
 
@@ -282,7 +282,7 @@
 
       <div class="grid3" style="margin-top:10px">
         <div class="field"><div class="k">Vent de face</div><div class="v"><span id="arrHwFace">—</span> kt</div></div>
-        <div id="arrXwCard" class="field"><div class="k">Vent de travers</div><div class="v"><span id="arrXw">—</span> kt</div></div>
+        <div id="arrXwCard" class="field"><div class="k">Vent de travers</div><div class="v" id="arrXw">—</div></div>
         <div class="field"><div class="k">Vent arrière</div><div class="v"><span id="arrTw">—</span> kt</div></div>
       </div>
 
@@ -473,7 +473,7 @@
     return parseSectorFromRaw(data?.raw);
   }
 
-  // --- Appliquer les champs METAR dans l’UI (puis recalcul de l’affichage vent) ---
+  // --- Appliquer les champs METAR dans l’UI ---
   function applyMetar(side, data){
     // Direction / VRB
     const dirRepr = (data?.wind_direction?.repr ?? '').toUpperCase();
@@ -518,7 +518,7 @@
     msgEl.textContent = 'Chargement METAR…';
 
     try{
-      // On récupère la station d’abord (pour élévation + coords)
+      // Station (élévation + coords)
       const station = await fetchStation(icao);
       // Élévation : toujours écraser par l’élévation publiée du terrain saisi
       const elevFt = station?.elevation_ft;
@@ -527,12 +527,12 @@
         altInput.value = String(Math.round(elevFt));
       }
 
-      // 1) Tenter METAR du terrain demandé
+      // 1) METAR du terrain demandé
       let metar, usedIcao = icao, isNearest = false, distTxt = '';
       try{
         metar = await fetchMetar(icao);
       }catch(_e){
-        // 2) Fallback : plus proche autour des coords de la station
+        // 2) Fallback : plus proche autour des coords
         if(typeof station?.latitude === 'number' && typeof station?.longitude === 'number'){
           metar = await fetchNearestMetarByCoords(station.latitude, station.longitude);
           isNearest = true;
@@ -540,20 +540,19 @@
           const d = metar?.meta?.distance, u = metar?.meta?.units;
           if(typeof d === 'number' && u){ distTxt = ` (~${d} ${u})`; }
         }else{
-          throw _e; // pas de coords pour chercher un voisin → re-lance l’erreur initiale
+          throw _e;
         }
       }
 
-      // Appliquer le METAR (remplit Direction/Vit/Rafales/VRB/OAT & recalc vent affiché)
+      // Appliquer METAR dans l’UI
       applyMetar(side, metar);
 
-      // Message : METAR brut + origine
+      // Message : brut + origine
       const raw = metar?.raw || '—';
       msgEl.textContent = isNearest
         ? `METAR chargé (proche : ${usedIcao}${distTxt}) : ${raw}`
         : `METAR chargé : ${raw}`;
 
-      // Mettre à jour l’affichage des composantes (au cas où QFU/secteurs présents)
       updateWindDisplay(side);
 
     }catch(e){
@@ -601,7 +600,6 @@
   }
 
   function crosswindLimitColor(side){
-    // Si un secteur est saisi, on colore avec le pire cas (rafale / angle le plus proche de 90)
     const qfu = normQFU($('#'+side+'Qfu').value);
     if(qfu===null){ setXwColor(side,null); return; }
     const kt = parseInt($('#'+side+'WindKt').value||'0',10)||0;
@@ -610,11 +608,9 @@
     const f = normAngleField($('#'+side+'VrbFrom'));
     const t = normAngleField($('#'+side+'VrbTo'));
     if(f && t){
-      // pire angle dans le secteur (≈ 90° du QFU)
       const xwWorst = maxXwindInSector(qfu, f, t, G);
       setXwColor(side, xwWorst);
     }else{
-      // pas de secteur : on reste sur l’affichage actuel (direction moyenne, sans rafale)
       const dirDisp = dirForDisplay($('#'+side+'WindDir').value, {fromId:side+'VrbFrom', toId:side+'VrbTo'});
       const c = (dirDisp!==null)? compsFrom(qfu, dirDisp, V) : null;
       setXwColor(side, c?c.xw:null);
@@ -629,18 +625,12 @@
     }
   }
   function maxXwindInSector(qfu, from, to, speed){
-    // Échantillonne bords et angle le + proche de 90° depuis qfu
     const candidates=[];
     function ang(a,b){ return Math.abs(((a-b+540)%360)-180); }
     const a1=from%360, a2=to%360;
-    candidates.push(a1,a2);
-    // cible = qfu±90
-    candidates.push((qfu+90)%360);
-    candidates.push((qfu+270)%360);
-    // on garde ceux inclus dans l’arc court [from..to]
+    candidates.push(a1,a2,(qfu+90)%360,(qfu+270)%360);
     function inSector(d){
       let A=a1,B=a2;
-      // arc direct de A vers B (en passant par le plus court)
       const diff=((B-A+360)%360);
       const diffD=((d-A+360)%360);
       return diffD<=diff;
@@ -653,18 +643,23 @@
       if(xw>max) max=xw;
     });
     return max;
-    }
+  }
 
   function updateWindDisplay(side){
     const qfuIn=$('#'+side+'Qfu').value;
     const qfu = normQFU(qfuIn);
     const dirStr=$('#'+side+'WindDir').value||'';
     const kt=parseInt($('#'+side+'WindKt').value||'0',10)||0;
+    const gust=parseInt($('#'+side+'WindGust').value||'0',10)||0;
+
     const dirDisp = dirForDisplay(dirStr, {fromId:side+'VrbFrom', toId:side+'VrbTo'});
+
+    const f = normAngleField($('#'+side+'VrbFrom'));
+    const t = normAngleField($('#'+side+'VrbTo'));
 
     if(qfu===null || dirDisp===null || !kt){
       $('#'+side+'HwFace').textContent='—';
-      $('#'+side+'Xw').textContent='—';
+      $('#'+side+'Xw').innerHTML='—';
       $('#'+side+'Tw').textContent='—';
       setXwColor(side,null);
       if(side==='dep'){ $('#todaMini').textContent=$('#depToda').value?$('#depToda').value+' m':'—'; }
@@ -674,8 +669,20 @@
 
     const c = compsFrom(qfu, dirDisp, kt);
     $('#'+side+'HwFace').textContent = Math.round(c.face);
-    $('#'+side+'Xw').textContent    = Math.round(c.xw);
-    $('#'+side+'Tw').textContent    = Math.round(c.tail);
+    $('#'+side+'Tw').textContent     = Math.round(c.tail);
+
+    // Affichage “2 lignes” si secteur variable saisi
+    if (f && t){
+      const V = Math.max(0, kt);
+      const G = Math.max(V, gust);
+      const xwWorst = maxXwindInSector(qfu, f, t, G);
+      const line1 = `${Math.round(c.xw)} kt`; // vent moyen
+      const line2 = `<span class="muted" style="font-size:12px">${Math.round(xwWorst)} kt possible sur secteur ${pad3(f)}V${pad3(t)}</span>`;
+      document.getElementById(side+'Xw').innerHTML = `${line1}<br>${line2}`;
+    }else{
+      // pas de secteur : affichage simple
+      document.getElementById(side+'Xw').innerHTML = `${Math.round(c.xw)} kt`;
+    }
 
     crosswindLimitColor(side);
 
@@ -709,41 +716,37 @@
       return {d, hwSigned, xw, dir, speed};
     }
 
-    const candidates=[]; // on choisira le plus défavorable pour la distance (headwind minimal)
+    const candidates=[];
 
-    // A) Vent moyen (si non VRB)
+    // Vent moyen (si non VRB)
     const t=(meanDirOrVRB||'').trim().toUpperCase();
     if(t && t!=='VRB'){
       let n=parseInt(t.replace(/\D/g,''),10);
       if(!isNaN(n)){ n=Math.max(1,Math.min(360,n));
         const ang=Math.abs(((n-q+540)%360)-180);
-        const sp = (ang>90)? G : V; // si composante arrière → on regarde la rafale
+        const sp = (ang>90)? G : V;
         candidates.push({src:'moyen', ...comps(n,sp), note:(ang>90?`moyen ${pad3(n)}°: angle ${Math.round(ang)}° → rafale/max (${G} kt)`: `moyen ${pad3(n)}°: angle ${Math.round(ang)}° → vitesse moyenne (${V} kt)`)});
       }
     }
 
-    // B) Secteur (si saisi) — on applique ta règle
+    // Secteur
     if(sectorFrom && sectorTo){
       const from=sectorFrom%360, to=sectorTo%360;
-      // génère bords + angle proche de 180 (arrière) et proche de 90 (max travers)
       const dirs=[from,to, (from+(((to-from+360)%360)/2))%360, (q+180)%360, (q+90)%360, (q+270)%360];
       const uniq=[...new Set(dirs)];
-      // détermine si un angle arrière est possible dans le secteur
       const sectorHasTail = sectorHasAngle(from,to, a=> Math.abs(((a-q+540)%360)-180) > 90);
       uniq.forEach(d=>{
         const ang=Math.abs(((d-q+540)%360)-180);
-        const sp = sectorHasTail ? G : V; // si arrière possible → on utilise rafale/max
+        const sp = sectorHasTail ? G : V;
         candidates.push({src:'secteur', ...comps(d,sp), note:(sectorHasTail?`secteur ${pad3(from)}V${pad3(to)}: passage arrière possible → rafale/max (${G} kt) sur ${pad3(d)}°`:`secteur ${pad3(from)}V${pad3(to)}: pas d’arrière → bord défavorable (${pad3(d)}°) à vitesse min (${V} kt)`)});
       });
     }
 
     if(candidates.length===0){
-      // VRB sans secteur : cas arrière théorique à 180° avec rafale
       const c=comps((q+180)%360, G);
       return {headwindForFactor:c.hwSigned, explain:`VRB sans secteur : cas arrière à 180° → rafale/max (${G} kt)`};
     }
 
-    // Choix le plus contraignant = headwind minimal (le plus négatif = plus de vent arrière)
     let worst=candidates[0];
     candidates.forEach(c=>{ if(c.hwSigned < worst.hwSigned) worst=c; });
 
@@ -751,8 +754,7 @@
   }
 
   function sectorHasAngle(from,to,pred){
-    // parcourt l’arc court from→to
-    const step=5; // résolution suffisante
+    const step=5;
     let a=from%360, b=to%360;
     const span=((b-a+360)%360);
     for(let t=0;t<=span;t+=step){
@@ -831,7 +833,6 @@
     const depAlt=+($('#depAlt')?.value||0), depOat=+($('#depOat').value||0),
           depExtra=+($('#depExtraTO').value||1), depTow=+($('#depTow').value||900),
           depToda=+($('#depToda').value||0), safety=Math.max(0,+($('#safety').value||30));
-    // “plus contraignant” entre vent moyen et secteur (règle demandée)
     const meanDir=$('#depWindDir').value;
     const kt=+($('#depWindKt').value||0), gust=+($('#depWindGust').value||0);
     const sf=normAngleField($('#depVrbFrom')), st=normAngleField($('#depVrbTo'));
