@@ -49,6 +49,12 @@
     .btn.block{width:100%;text-align:center;padding:12px 14px;border-radius:14px}
     label{display:block;font-size:12px;color:var(--muted)}
     input,select{width:100%;margin-top:6px;padding:10px;border-radius:12px;border:1px solid var(--line);background:#fff}
+    /* Style d'erreur pour les champs VRB hors [001–360] */
+    input.input-error{
+      border-color:#ef4444 !important;
+      box-shadow:inset 0 0 0 2px rgba(239,68,68,.12);
+    }
+
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
     .grid1{display:grid;grid-template-columns:1fr;gap:12px}
@@ -195,7 +201,7 @@
 
       <div class="grid3" style="margin-top:10px">
         <div class="field"><div class="k">Vent de face</div><div class="v"><span id="depHwFace">—</span> kt</div></div>
-        <div id="depXwCard" class="field"><div class="k">Vent de travers</div><div class="v" id="depXw">—</div></div>
+        <div id="depXwCard" class="field"><div class="k">Vent de travers</div><div class="v"><span id="depXw">—</span> kt</div></div>
         <div class="field"><div class="k">Vent arrière</div><div class="v"><span id="depTw">—</span> kt</div></div>
       </div>
 
@@ -282,7 +288,7 @@
 
       <div class="grid3" style="margin-top:10px">
         <div class="field"><div class="k">Vent de face</div><div class="v"><span id="arrHwFace">—</span> kt</div></div>
-        <div id="arrXwCard" class="field"><div class="k">Vent de travers</div><div class="v" id="arrXw">—</div></div>
+        <div id="arrXwCard" class="field"><div class="k">Vent de travers</div><div class="v"><span id="arrXw">—</span> kt</div></div>
         <div class="field"><div class="k">Vent arrière</div><div class="v"><span id="arrTw">—</span> kt</div></div>
       </div>
 
@@ -394,6 +400,23 @@
   const cosd=d=>Math.cos(toRad(d));
   const sind=d=>Math.sin(toRad(d));
 
+  /* ====== Parse/Validation non-intrusive pour secteurs VRB ====== */
+  function parseAngleLoose(str){
+    const s=(str||'').trim();
+    const n=parseInt(s.replace(/\D/g,''),10);
+    if(isNaN(n)) return null;
+    if(n<1 || n>360) return null;
+    return n;
+  }
+  function validateVrbInputs(side){
+    const fromEl=document.getElementById(side+'VrbFrom');
+    const toEl  =document.getElementById(side+'VrbTo');
+    const fOk = !fromEl.value || parseAngleLoose(fromEl.value)!==null;
+    const tOk = !toEl.value   || parseAngleLoose(toEl.value)!==null;
+    fromEl.classList.toggle('input-error', !fOk);
+    toEl.classList.toggle('input-error',   !tOk);
+  }
+
   /* ===================== ÉTAT / UI ===================== */
   let landingMode='moderate', withSpats=true, profile='DR400', depSurface='hard';
   const propByAircraft={'F-GCAL (120cv)':'Sensenich','F-BXEK (120cv)':'Sensenich','F-BTKG (120cv)':'Sensenich','F-BTXS (120cv)':'Sensenich','F-BTBS (120cv)':'Mac Cauley','F-BTBJ (108cv)':'Mac Cauley'};
@@ -473,7 +496,7 @@
     return parseSectorFromRaw(data?.raw);
   }
 
-  // --- Appliquer les champs METAR dans l’UI ---
+  // --- Appliquer les champs METAR dans l’UI (puis recalcul de l’affichage vent) ---
   function applyMetar(side, data){
     // Direction / VRB
     const dirRepr = (data?.wind_direction?.repr ?? '').toUpperCase();
@@ -518,7 +541,7 @@
     msgEl.textContent = 'Chargement METAR…';
 
     try{
-      // Station (élévation + coords)
+      // On récupère la station d’abord (pour élévation + coords)
       const station = await fetchStation(icao);
       // Élévation : toujours écraser par l’élévation publiée du terrain saisi
       const elevFt = station?.elevation_ft;
@@ -527,12 +550,12 @@
         altInput.value = String(Math.round(elevFt));
       }
 
-      // 1) METAR du terrain demandé
+      // 1) Tenter METAR du terrain demandé
       let metar, usedIcao = icao, isNearest = false, distTxt = '';
       try{
         metar = await fetchMetar(icao);
       }catch(_e){
-        // 2) Fallback : plus proche autour des coords
+        // 2) Fallback : plus proche autour des coords de la station
         if(typeof station?.latitude === 'number' && typeof station?.longitude === 'number'){
           metar = await fetchNearestMetarByCoords(station.latitude, station.longitude);
           isNearest = true;
@@ -540,19 +563,20 @@
           const d = metar?.meta?.distance, u = metar?.meta?.units;
           if(typeof d === 'number' && u){ distTxt = ` (~${d} ${u})`; }
         }else{
-          throw _e;
+          throw _e; // pas de coords pour chercher un voisin → re-lance l’erreur initiale
         }
       }
 
-      // Appliquer METAR dans l’UI
+      // Appliquer le METAR (remplit Direction/Vit/Rafales/VRB/OAT & recalc vent affiché)
       applyMetar(side, metar);
 
-      // Message : brut + origine
+      // Message : METAR brut + origine
       const raw = metar?.raw || '—';
       msgEl.textContent = isNearest
         ? `METAR chargé (proche : ${usedIcao}${distTxt}) : ${raw}`
         : `METAR chargé : ${raw}`;
 
+      // Mettre à jour l’affichage des composantes (au cas où QFU/secteurs présents)
       updateWindDisplay(side);
 
     }catch(e){
@@ -565,30 +589,24 @@
   document.getElementById('btnArrMetar').addEventListener('click',()=>loadMetarFor('arr'));
 
   /* ===================== AFFICHAGE COMPOSANTES (fidèle METAR) ===================== */
-  function normAngleField(el){
-    let v=el.value.trim(); if(!v){el.value='';return null;}
-    let n=parseInt(v.replace(/\D/g,''),10);
-    if(isNaN(n)){el.value='';return null;}
-    n=Math.max(1,Math.min(360,n)); el.value=pad3(n); return n;
+  function dirForDisplay(dirField, sector){
+    const t=(dirField||'').trim().toUpperCase();
+    if(t==='VRB'){
+      const f=parseAngleLoose(document.getElementById(sector.fromId).value);
+      const to=parseAngleLoose(document.getElementById(sector.toId).value);
+      if(!f || !to) return null;
+      let a=f, b=to;
+      let diff=((b-a+540)%360)-180;
+      let mid=(a+diff/2+360)%360;
+      if(mid===0) mid=360;
+      return mid;
+    }
+    if(!t) return null;
+    let n=parseInt(t.replace(/\D/g,''),10);
+    if(isNaN(n)) return null;
+    n=Math.max(1,Math.min(360,n));
+    return n;
   }
- function dirForDisplay(dirField, sector){
-  const t=(dirField||'').trim().toUpperCase();
-  if(t==='VRB'){
-    const f=parseAngleLoose(document.getElementById(sector.fromId).value);
-    const to=parseAngleLoose(document.getElementById(sector.toId).value);
-    if(!f || !to) return null;
-    let a=f, b=to;
-    let diff=((b-a+540)%360)-180;
-    let mid=(a+diff/2+360)%360;
-    if(mid===0) mid=360;
-    return mid;
-  }
-  if(!t) return null;
-  let n=parseInt(t.replace(/\D/g,''),10);
-  if(isNaN(n)) return null;
-  n=Math.max(1,Math.min(360,n));
-  return n;
-}
   function compsFrom(qfuDisp, dirDisp, kt){
     if(qfuDisp===null || dirDisp===null) return null;
     const q = (qfuDisp%360);
@@ -600,17 +618,20 @@
   }
 
   function crosswindLimitColor(side){
+    // Si un secteur est saisi, on colore avec le pire cas (rafale / angle le plus proche de 90)
     const qfu = normQFU($('#'+side+'Qfu').value);
     if(qfu===null){ setXwColor(side,null); return; }
     const kt = parseInt($('#'+side+'WindKt').value||'0',10)||0;
     const gust = parseInt($('#'+side+'WindGust').value||'0',10)||0;
     const V = Math.max(0, kt), G = Math.max(V, gust);
-    const f = normAngleField($('#'+side+'VrbFrom'));
-    const t = normAngleField($('#'+side+'VrbTo'));
+    const f = parseAngleLoose(document.getElementById(side+'VrbFrom').value);
+    const t = parseAngleLoose(document.getElementById(side+'VrbTo').value);
     if(f && t){
+      // pire angle dans le secteur (≈ 90° du QFU)
       const xwWorst = maxXwindInSector(qfu, f, t, G);
       setXwColor(side, xwWorst);
     }else{
+      // pas de secteur : on reste sur l’affichage actuel (direction moyenne, sans rafale)
       const dirDisp = dirForDisplay($('#'+side+'WindDir').value, {fromId:side+'VrbFrom', toId:side+'VrbTo'});
       const c = (dirDisp!==null)? compsFrom(qfu, dirDisp, V) : null;
       setXwColor(side, c?c.xw:null);
@@ -625,10 +646,15 @@
     }
   }
   function maxXwindInSector(qfu, from, to, speed){
+    // Échantillonne bords et angle le + proche de 90° depuis qfu
     const candidates=[];
     function ang(a,b){ return Math.abs(((a-b+540)%360)-180); }
     const a1=from%360, a2=to%360;
-    candidates.push(a1,a2,(qfu+90)%360,(qfu+270)%360);
+    candidates.push(a1,a2);
+    // cible = qfu±90
+    candidates.push((qfu+90)%360);
+    candidates.push((qfu+270)%360);
+    // on garde ceux inclus dans l’arc court [from..to]
     function inSector(d){
       let A=a1,B=a2;
       const diff=((B-A+360)%360);
@@ -645,64 +671,56 @@
     return max;
   }
 
-function updateWindDisplay(side){
-  const qfuIn = $('#'+side+'Qfu').value;
-  const qfu   = normQFU(qfuIn);
-  const dirStr= $('#'+side+'WindDir').value || '';
-  const kt    = parseInt($('#'+side+'WindKt').value||'0',10)||0;
-  const gust  = parseInt($('#'+side+'WindGust').value||'0',10)||0;
+  function updateWindDisplay(side){
+    const qfuIn=$('#'+side+'Qfu').value;
+    const qfu = normQFU(qfuIn);
+    const dirStr=$('#'+side+'WindDir').value||'';
+    const kt=parseInt($('#'+side+'WindKt').value||'0',10)||0;
+    const dirDisp = dirForDisplay(dirStr, {fromId:side+'VrbFrom', toId:side+'VrbTo'});
 
-  const dirDisp = dirForDisplay(dirStr, {fromId:side+'VrbFrom', toId:side+'VrbTo'});
+    // validation visuelle VRB
+    validateVrbInputs(side);
 
-  const f = normAngleField($('#'+side+'VrbFrom'));
-  const t = normAngleField($('#'+side+'VrbTo'));
+    if(qfu===null || dirDisp===null || !kt){
+      $('#'+side+'HwFace').textContent='—';
+      $('#'+side+'Xw').textContent='—';
+      $('#'+side+'Tw').textContent='—';
+      setXwColor(side,null);
+      if(side==='dep'){ $('#todaMini').textContent=$('#depToda').value?$('#depToda').value+' m':'—'; }
+      else{ $('#ldaMini').textContent=($('#arrLda').value?$('#arrLda').value+' m':'—'); }
+      return;
+    }
 
-  if(qfu===null || dirDisp===null || !kt){
-    $('#'+side+'HwFace').textContent='—';
-    $('#'+side+'Xw').textContent='—';
-    $('#'+side+'Tw').textContent='—';
-    setXwColor(side,null);
+    const c = compsFrom(qfu, dirDisp, kt);
+    $('#'+side+'HwFace').textContent = Math.round(c.face);
+    $('#'+side+'Xw').textContent    = Math.round(c.xw);
+    $('#'+side+'Tw').textContent    = Math.round(c.tail);
+
+    crosswindLimitColor(side);
+
     if(side==='dep'){ $('#todaMini').textContent=$('#depToda').value?$('#depToda').value+' m':'—'; }
     else{ $('#ldaMini').textContent=($('#arrLda').value?$('#arrLda').value+' m':'—'); }
-    return;
   }
-
-  const c = compsFrom(qfu, dirDisp, kt);
-  $('#'+side+'HwFace').textContent = Math.round(c.face);
-  $('#'+side+'Tw').textContent     = Math.round(c.tail);
-
-  const xwEl = document.getElementById(side+'Xw');
-
-  // Affichage 2 lignes si secteur saisi : 
-  // ligne 1 = vent moyen, ligne 2 = "max kt sur XXXVXXX"
-  if (f && t){
-    const V = Math.max(0, kt);
-    const G = Math.max(V, gust);
-    const xwWorst = maxXwindInSector(qfu, f, t, G);
-    const sectorStr = `${pad3(f)}V${pad3(t)}`;   // toujours XXXVXXX
-    xwEl.innerHTML = `${Math.round(c.xw)} kt<br>${Math.round(xwWorst)} kt sur ${sectorStr}`;
-  } else {
-    xwEl.textContent = `${Math.round(c.xw)} kt`;
-  }
-
-  // Couleur selon le pire cas (avec rafale & angle le plus travers si secteur)
-  crosswindLimitColor(side);
-
-  if(side==='dep'){ $('#todaMini').textContent=$('#depToda').value?$('#depToda').value+' m':'—'; }
-  else{ $('#ldaMini').textContent=($('#arrLda').value?$('#arrLda').value+' m':'—'); }
-}
 
   ['depWindDir','arrWindDir','depWindKt','arrWindKt','depVrbFrom','arrVrbFrom','depVrbTo','arrVrbTo','depWindGust','arrWindGust','depOat','arrOat','depToda','arrLda']
   .forEach(id=>{
-    $('#'+id).addEventListener('input',()=>updateWindDisplay(id.startsWith('dep')?'dep':'arr'));
+    $('#'+id).addEventListener('input',()=>{
+      const side = id.startsWith('dep') ? 'dep' : 'arr';
+      if(id.includes('Vrb')) validateVrbInputs(side);
+      updateWindDisplay(side);
+    });
     $('#'+id).addEventListener('blur',()=>{
-      if(id.includes('Vrb')) normAngleField(document.getElementById(id));
+      const side = id.startsWith('dep') ? 'dep' : 'arr';
       if(id.endsWith('WindDir')){
         const el=document.getElementById(id);
         const t=el.value.trim().toUpperCase();
-        if(t && t!=='VRB'){ let n=parseInt(t.replace(/\D/g,''),10); if(!isNaN(n)){ n=Math.max(1,Math.min(360,n)); el.value=pad3(n);} }
+        if(t && t!=='VRB'){
+          let n=parseInt(t.replace(/\D/g,''),10);
+          if(!isNaN(n)){ n=Math.max(1,Math.min(360,n)); el.value=pad3(n); }
+        }
       }
-      updateWindDisplay(id.startsWith('dep')?'dep':'arr');
+      if(id.includes('Vrb')) validateVrbInputs(side);
+      updateWindDisplay(side);
     });
   });
 
@@ -718,37 +736,41 @@ function updateWindDisplay(side){
       return {d, hwSigned, xw, dir, speed};
     }
 
-    const candidates=[];
+    const candidates=[]; // on choisira le plus défavorable pour la distance (headwind minimal)
 
-    // Vent moyen (si non VRB)
+    // A) Vent moyen (si non VRB)
     const t=(meanDirOrVRB||'').trim().toUpperCase();
     if(t && t!=='VRB'){
       let n=parseInt(t.replace(/\D/g,''),10);
       if(!isNaN(n)){ n=Math.max(1,Math.min(360,n));
         const ang=Math.abs(((n-q+540)%360)-180);
-        const sp = (ang>90)? G : V;
+        const sp = (ang>90)? G : V; // si composante arrière → on regarde la rafale
         candidates.push({src:'moyen', ...comps(n,sp), note:(ang>90?`moyen ${pad3(n)}°: angle ${Math.round(ang)}° → rafale/max (${G} kt)`: `moyen ${pad3(n)}°: angle ${Math.round(ang)}° → vitesse moyenne (${V} kt)`)});
       }
     }
 
-    // Secteur
+    // B) Secteur (si saisi) — on applique ta règle
     if(sectorFrom && sectorTo){
       const from=sectorFrom%360, to=sectorTo%360;
+      // génère bords + angle proche de 180 (arrière) et proche de 90 (max travers)
       const dirs=[from,to, (from+(((to-from+360)%360)/2))%360, (q+180)%360, (q+90)%360, (q+270)%360];
       const uniq=[...new Set(dirs)];
+      // détermine si un angle arrière est possible dans le secteur
       const sectorHasTail = sectorHasAngle(from,to, a=> Math.abs(((a-q+540)%360)-180) > 90);
       uniq.forEach(d=>{
         const ang=Math.abs(((d-q+540)%360)-180);
-        const sp = sectorHasTail ? G : V;
+        const sp = sectorHasTail ? G : V; // si arrière possible → on utilise rafale/max
         candidates.push({src:'secteur', ...comps(d,sp), note:(sectorHasTail?`secteur ${pad3(from)}V${pad3(to)}: passage arrière possible → rafale/max (${G} kt) sur ${pad3(d)}°`:`secteur ${pad3(from)}V${pad3(to)}: pas d’arrière → bord défavorable (${pad3(d)}°) à vitesse min (${V} kt)`)});
       });
     }
 
     if(candidates.length===0){
+      // VRB sans secteur : cas arrière théorique à 180° avec rafale
       const c=comps((q+180)%360, G);
       return {headwindForFactor:c.hwSigned, explain:`VRB sans secteur : cas arrière à 180° → rafale/max (${G} kt)`};
     }
 
+    // Choix le plus contraignant = headwind minimal (le plus négatif = plus de vent arrière)
     let worst=candidates[0];
     candidates.forEach(c=>{ if(c.hwSigned < worst.hwSigned) worst=c; });
 
@@ -756,7 +778,8 @@ function updateWindDisplay(side){
   }
 
   function sectorHasAngle(from,to,pred){
-    const step=5;
+    // parcourt l’arc court from→to
+    const step=5; // résolution suffisante
     let a=from%360, b=to%360;
     const span=((b-a+360)%360);
     for(let t=0;t<=span;t+=step){
@@ -835,9 +858,10 @@ function updateWindDisplay(side){
     const depAlt=+($('#depAlt')?.value||0), depOat=+($('#depOat').value||0),
           depExtra=+($('#depExtraTO').value||1), depTow=+($('#depTow').value||900),
           depToda=+($('#depToda').value||0), safety=Math.max(0,+($('#safety').value||30));
+    // “plus contraignant” entre vent moyen et secteur (règle demandée)
     const meanDir=$('#depWindDir').value;
     const kt=+($('#depWindKt').value||0), gust=+($('#depWindGust').value||0);
-    const sf=normAngleField($('#depVrbFrom')), st=normAngleField($('#depVrbTo'));
+    const sf=parseAngleLoose($('#depVrbFrom').value), st=parseAngleLoose($('#depVrbTo').value);
     const w=worstBetweenMeanAndSector(qfu, meanDir, kt, gust, sf, st);
 
     let baseTO_pass, baseTO_roll;
@@ -866,7 +890,7 @@ function updateWindDisplay(side){
     setChip($('#toChip'),stTO); $('#toKpi').className='kpi '+(stTO==='ok'?'ok':stTO==='bad'?'bad':'');
     $('#toKpiVal').textContent=toMargin+' m';
 
-    $('#toExplain').textContent = `Règle vent : ${w.explain || '—'}. Facteur vent = ${depWindF.toFixed(2)}× (composante utilisée ${Math.round(w.headwindForFactor||0)} kt). Surface=${depSurface==='hard'?'Dur':'Herbe'} · Carénages=${withSpats?'Avec':'Sans'}.`;
+    $('#toExplain').textContent = `Règle vent : ${w.explain || '—'}. Facteur vent = ${depWindF.toFixed(2)}× (composante utilisée ${Math.round(w.headwindForFactor||0)} kt). Surface=${depSurface==='hard'?'Dur':'Herbe'} · Carénages=${withSpats?'Avec':'Sans'} · Élévation ${depAlt} ft.`;
   }
 
   function computeArrPerf(){
@@ -882,7 +906,7 @@ function updateWindDisplay(side){
           arrLda=+($('#arrLda').value||0), safety=Math.max(0,+($('#safety').value||30));
     const meanDir=$('#arrWindDir').value;
     const kt=+($('#arrWindKt').value||0), gust=+($('#arrWindGust').value||0);
-    const sf=normAngleField($('#arrVrbFrom')), st=normAngleField($('#arrVrbTo'));
+    const sf=parseAngleLoose($('#arrVrbFrom').value), st=parseAngleLoose($('#arrVrbTo').value);
     const w=worstBetweenMeanAndSector(qfu, meanDir, kt, gust, sf, st);
 
     const baseLDG_pass=interpLDG_DR400(arrAlt,arrOat,arrLdw,landingMode,'pass');
@@ -902,7 +926,7 @@ function updateWindDisplay(side){
     setChip($('#ldgChip'),stLDG); $('#ldgKpi').className='kpi '+(stLDG==='ok'?'ok':stLDG==='bad'?'bad':'');
     $('#ldgKpiVal').textContent=ldgMargin+' m';
 
-    $('#ldgExplain').textContent = `Règle vent : ${w.explain || '—'}. Facteur vent = ${arrWindF.toFixed(2)}× (composante utilisée ${Math.round(w.headwindForFactor||0)} kt). Type de freinage=${landingMode==='moderate'?'Freinage modéré':'Sans frein herbe'}.`;
+    $('#ldgExplain').textContent = `Règle vent : ${w.explain || '—'}. Facteur vent = ${arrWindF.toFixed(2)}× (composante utilisée ${Math.round(w.headwindForFactor||0)} kt). Type de freinage=${landingMode==='moderate'?'Freinage modéré':'Sans frein herbe'} · Élévation ${arrAlt} ft.`;
   }
 
   document.getElementById('btnCalcDep').addEventListener('click', computeDepPerf);
