@@ -645,50 +645,49 @@
     return max;
   }
 
-  function updateWindDisplay(side){
-    const qfuIn=$('#'+side+'Qfu').value;
-    const qfu = normQFU(qfuIn);
-    const dirStr=$('#'+side+'WindDir').value||'';
-    const kt=parseInt($('#'+side+'WindKt').value||'0',10)||0;
-    const gust=parseInt($('#'+side+'WindGust').value||'0',10)||0;
+function updateWindDisplay(side){
+  const qfuIn=$('#'+side+'Qfu').value;
+  const qfu = normQFU(qfuIn);
+  const dirStr=$('#'+side+'WindDir').value||'';
+  const kt=parseInt($('#'+side+'WindKt').value||'0',10)||0;
+  const gust=parseInt($('#'+side+'WindGust').value||'0',10)||0;
 
-    const dirDisp = dirForDisplay(dirStr, {fromId:side+'VrbFrom', toId:side+'VrbTo'});
+  const dirDisp = dirForDisplay(dirStr, {fromId:side+'VrbFrom', toId:side+'VrbTo'});
 
-    const f = normAngleField($('#'+side+'VrbFrom'));
-    const t = normAngleField($('#'+side+'VrbTo'));
+  const f = normAngleField($('#'+side+'VrbFrom'));
+  const t = normAngleField($('#'+side+'VrbTo'));
 
-    if(qfu===null || dirDisp===null || !kt){
-      $('#'+side+'HwFace').textContent='—';
-      $('#'+side+'Xw').innerHTML='—';
-      $('#'+side+'Tw').textContent='—';
-      setXwColor(side,null);
-      if(side==='dep'){ $('#todaMini').textContent=$('#depToda').value?$('#depToda').value+' m':'—'; }
-      else{ $('#ldaMini').textContent=($('#arrLda').value?$('#arrLda').value+' m':'—'); }
-      return;
-    }
-
-    const c = compsFrom(qfu, dirDisp, kt);
-    $('#'+side+'HwFace').textContent = Math.round(c.face);
-    $('#'+side+'Tw').textContent     = Math.round(c.tail);
-
-    // Affichage “2 lignes” si secteur variable saisi
-    if (f && t){
-      const V = Math.max(0, kt);
-      const G = Math.max(V, gust);
-      const xwWorst = maxXwindInSector(qfu, f, t, G);
-      const line1 = `${Math.round(c.xw)} kt`; // vent moyen
-      const line2 = `<span class="muted" style="font-size:12px">${Math.round(xwWorst)} kt possible sur secteur ${pad3(f)}V${pad3(t)}</span>`;
-      document.getElementById(side+'Xw').innerHTML = `${line1}<br>${line2}`;
-    }else{
-      // pas de secteur : affichage simple
-      document.getElementById(side+'Xw').innerHTML = `${Math.round(c.xw)} kt`;
-    }
-
-    crosswindLimitColor(side);
-
+  if(qfu===null || dirDisp===null || !kt){
+    $('#'+side+'HwFace').textContent='—';
+    $('#'+side+'Xw').textContent='—';
+    $('#'+side+'Tw').textContent='—';
+    setXwColor(side,null);
     if(side==='dep'){ $('#todaMini').textContent=$('#depToda').value?$('#depToda').value+' m':'—'; }
     else{ $('#ldaMini').textContent=($('#arrLda').value?$('#arrLda').value+' m':'—'); }
+    return;
   }
+
+  const c = compsFrom(qfu, dirDisp, kt);
+  $('#'+side+'HwFace').textContent = Math.round(c.face);
+  $('#'+side+'Tw').textContent     = Math.round(c.tail);
+
+  // Affichage “1 ligne” : vent moyen (vent max sur secteur)
+  if (f && t){
+    const V = Math.max(0, kt);
+    const G = Math.max(V, gust);
+    const xwWorst = maxXwindInSector(qfu, f, t, G);
+    const sectorStr = `${Number(f)}v${Number(t)}`; // minuscule 'v' et sans zéros en tête
+    const line = `${Math.round(c.xw)} kt (${Math.round(xwWorst)} kt sur ${sectorStr})`;
+    document.getElementById(side+'Xw').textContent = line;
+  } else {
+    document.getElementById(side+'Xw').textContent = `${Math.round(c.xw)} kt`;
+  }
+
+  crosswindLimitColor(side);
+
+  if(side==='dep'){ $('#todaMini').textContent=$('#depToda').value?$('#depToda').value+' m':'—'; }
+  else{ $('#ldaMini').textContent=($('#arrLda').value?$('#arrLda').value+' m':'—'); }
+}
 
   ['depWindDir','arrWindDir','depWindKt','arrWindKt','depVrbFrom','arrVrbFrom','depVrbTo','arrVrbTo','depWindGust','arrWindGust','depOat','arrOat','depToda','arrLda']
   .forEach(id=>{
