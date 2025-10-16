@@ -6,21 +6,9 @@
   <title>CALCULCATEUR DE PERFORMANCES</title>
   <style>
     :root{
-      --bg:#e9ecf3;            /* fond plus foncé */
-      --card:#fff;
-      --ink:#0f172a;
-      --muted:#6b7280;
-      --ok:#16a34a;
-      --warn:#f59e0b;
-      --bad:#dc2626;
-      --line:#e5e7eb;
-      --primary:#0b3b86;       /* bleu bannière plus foncé */
-      --primaryText:#ffffff;
-      --green:#16a34a;
-      --chipNeutral:#f3f4f6;
-      --bg:#e5e7eb;
-      --card:#fff;--ink:#0f172a;--muted:#6b7280;--ok:#16a34a;--bad:#dc2626;
-      --line:#d1d5db;--primary:#2563eb;--green:#16a34a;
+      --bg:#e9ecf3; --card:#fff; --ink:#0f172a; --muted:#6b7280;
+      --ok:#16a34a; --warn:#f59e0b; --bad:#dc2626;
+      --line:#d1d5db; --primary:#0b3b86; --primaryText:#ffffff; --green:#16a34a;
       --warn-yellow-bg:#fff7ed; --warn-yellow-border:#fbbf24;
       --warn-red-bg:#fef2f2; --warn-red-border:#ef4444;
       --banner:#081a4f;
@@ -28,56 +16,34 @@
     *{box-sizing:border-box}
     html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue","Noto Sans",Arial}
 
-    /* Bandeau titre */
     .banner{background:var(--primary);color:var(--primaryText);padding:14px 16px;margin:0 0 12px 0}
     .banner h1{font-size:clamp(22px,3.5vw,30px);margin:0;text-align:center;letter-spacing:.02em}
 
-    h1{font-size:clamp(22px,3.5vw,30px);margin:0;text-align:center;letter-spacing:.02em}
     h2{font-size:18px;margin:0 0 .6rem 0}
-    .center{text-align:center}
     .container{max-width:1200px;margin:0 auto;padding:16px}
-    .row{display:grid;grid-template-columns:1fr;gap:16px}
-    @media(min-width:1200px){.row{grid-template-columns:repeat(2,1fr)}}
     .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
-    .btn{border:1px solid var(--line);background:#fff;padding:10px 14px;border-radius:12px;cursor:pointer}
     .btn{border:1px solid var(--line);background:#fff;padding:9px 12px;border-radius:12px;cursor:pointer}
     .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
     .btn.toggle.on{background:var(--primary);color:#fff;border-color:var(--primary)}
     .btn.toggle.on.grass{background:var(--green)!important;border-color:var(--green)!important;color:#fff!important}
-    .btn.block{display:block;width:100%;text-align:center}
-
     .btn.block{width:100%;text-align:center;padding:12px 14px;border-radius:14px}
     label{display:block;font-size:12px;color:var(--muted)}
     input,select{width:100%;margin-top:6px;padding:10px;border-radius:12px;border:1px solid var(--line);background:#fff}
-    /* Style d'erreur pour les champs VRB hors [001–360] */
-    input.input-error{
-      border-color:#ef4444 !important;
-      box-shadow:inset 0 0 0 2px rgba(239,68,68,.12);
-    }
-
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-    .grid1{display:grid;grid-template-columns:1fr;gap:12px}
-    .two-col-line{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .inline-field{display:flex;gap:8px;align-items:flex-end}
-    .inline-field > label{flex:1}
-    .mini{padding:8px 10px;border-radius:10px;font-size:12px}
-
     .inline{display:flex;gap:8px;align-items:flex-end}
     .inline > label{flex:1}
-    .field{border:1px solid var(--line);border-radius:12px;background:#f8fafc;padding:10px}
-    .field .k{font-size:12px;color:var(--muted)}
-    .field .v{margin-top:4px;font-weight:600}
 
-    .field.warn-yellow{background:var(--warn-yellow-bg);border-color:var(--warn-yellow-border)}
-    .field.warn-red{background:var(--warn-red-bg);border-color:var(--warn-red-border)}
+    .rowline{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;margin-top:10px}
+    .rowline .group{display:flex;flex-direction:column;gap:8px;flex-basis:48%;align-items:center}
+    .group .buttons{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+    .group.centered>label{text-align:center}
+
     .header{display:flex;gap:12px;align-items:center;justify-content:space-between}
     .muted{color:var(--muted)}
     .note{font-size:12px;margin-top:6px}
-    .footer{font-size:11px;color:var(--muted);margin:18px 0 6px 0;text-align:center}
-
     .mini-note{font-size:11px}
-    .hidden{display:none}
+
     .kpi{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin:8px 0}
     .kpi .left{display:flex;flex-direction:column}
     .kpi .title{font-size:12px;color:var(--muted);letter-spacing:.02em}
@@ -85,32 +51,31 @@
     .kpi .sub{font-size:12px;color:var(--muted)}
     .kpi.ok{background:#ecfdf5;border-color:#86efac}
     .kpi.bad{background:#fef2f2;border-color:#fecaca}
-
     .chip{padding:6px 10px;border-radius:999px;border:1px solid;font-weight:800}
     .chip.ok{background:#dcfce7;color:#14532d;border-color:#86efac}
     .chip.bad{background:#fee2e2;color:#7f1d1d;border-color:#fca5a5}
-    .chip.neutral{background:var(--chipNeutral);color:#374151;border-color:#e5e7eb}
-
-    /* Crosswind colorization */
-    .xw{background:#f8fafc}
-    .xw.warn{background:#fff7ed;border-color:#fde68a} /* >=18 kt */
-    .xw.bad{background:#fef2f2;border-color:#fecaca}  /* >22 kt */
-
-    /* FROM/TO “cells” */
-    .vrbRow{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:end}
-    .vrbCellLabel{display:flex;justify-content:center;align-items:center;font-size:12px;color:var(--muted);padding:6px 8px}
-    .vrbCellLabel span{text-align:center;width:100%}
-
     .chip.neutral{background:#f3f4f6;color:#374151;border-color:#e5e7eb}
-    #printRaw{display:none}
+
+    .field{border:1px solid var(--line);border-radius:12px;background:#f8fafc;padding:10px}
+    .field .k{font-size:12px;color:var(--muted)}
+    .field .v{margin-top:4px;font-weight:600;white-space:pre-line}
+
+    /* Crosswind alert colors */
+    .warn-yellow{background:var(--warn-yellow-bg)!important;border-color:var(--warn-yellow-border)!important}
+    .warn-red{background:var(--warn-red-bg)!important;border-color:var(--warn-red-border)!important}
+
+    /* VRB FROM/TO helper */
     .vrbFlex{display:flex;gap:8px;align-items:center}
     .vrbFlex input{flex:1}
     .vrbSep{font-weight:700;color:#6b7280}
-    .banner{background:var(--banner);color:#fff;border-radius:14px;padding:14px 16px;margin-bottom:8px}
-    .rowline{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;margin-top:10px}
-    .rowline .group{display:flex;flex-direction:column;gap:8px;flex-basis:48%;align-items:center}
-    .group .buttons{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
-    .group.centered>label{text-align:center}
+    .invalid{border-color:var(--bad)!important}
+
+    /* Responsive grid of the four main cards (Dep, Perf Dep, Arr, Perf Arr) */
+    .gridResponsive{display:grid;grid-template-columns:1fr;gap:16px}
+    @media(min-width:900px){ /* tablette + PC */
+      .gridResponsive{grid-template-columns:repeat(2,1fr)}
+    }
+
     @media print{
       #appRoot{display:none!important}
       #printRaw{display:block!important;padding:20mm;color:#000}
@@ -141,24 +106,27 @@
       <label>Hélice
         <input id="propeller" value="Sensenich" readonly />
       </label>
-      <label>Marge sécurité (%)
-        <input id="safety" type="number" value="30" min="0"/>
-      </label>
+      <div class="inline">
+        <label style="flex:1">Marge sécurité (%)
+          <input id="safety" type="number" value="30" min="0"/>
+        </label>
+        <button id="btnPrint" class="btn" style="align-self:flex-end;min-width:130px">Imprimer</button>
+      </div>
     </div>
   </section>
 
-  <div class="row" style="margin-top:12px">
+  <!-- ==== Les 4 cartes dans l'ordre voulu sur mobile/tablette ==== -->
+  <div class="gridResponsive" style="margin-top:12px">
     <!-- Départ -->
-    <section class="card">
+    <section class="card" id="cardDep">
       <h2 class="center">Terrain de départ</h2>
-
       <div class="inline">
         <label style="flex:0.6">ICAO départ
           <input id="depIcao" inputmode="latin" maxlength="4" placeholder="LFxx" />
         </label>
-         <label style="flex:0.6">Élévation (ft)
-           <input id="depAlt" type="number" min="0" step="10" value="0" />
-         </label>
+        <label style="flex:0.6">Élévation (ft)
+          <input id="depAlt" type="number" min="0" step="10" value="0" />
+        </label>
         <button id="btnDepMetar" class="btn" style="flex:0.4">Charger METAR</button>
       </div>
       <div id="depMetarMsg" class="muted note"></div>
@@ -172,7 +140,6 @@
         </label>
       </div>
 
-      <!-- NOUVEL ORDRE : Direction, Vitesse, Rafales -->
       <div class="grid3" style="margin-top:10px">
         <label>Vent — Direction (° ou "VRB")
           <input id="depWindDir" list="dirOptions" type="text" inputmode="latin" placeholder="VRB ou 000" value="000" />
@@ -185,13 +152,12 @@
         </label>
       </div>
 
-      <!-- Puis : Secteur VRB, OAT -->
       <div class="grid2" style="margin-top:10px">
         <label>Secteur VRB (optionnel)
           <div class="vrbFlex">
-            <input id="depVrbFrom" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="FROM"/>
+            <input id="depVrbFrom" type="text" inputmode="numeric" placeholder="FROM"/>
             <span class="vrbSep">V</span>
-            <input id="depVrbTo" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="TO"/>
+            <input id="depVrbTo" type="text" inputmode="numeric" placeholder="TO"/>
           </div>
         </label>
         <label>OAT (°C)
@@ -201,11 +167,13 @@
 
       <div class="grid3" style="margin-top:10px">
         <div class="field"><div class="k">Vent de face</div><div class="v"><span id="depHwFace">—</span> kt</div></div>
-        <div id="depXwCard" class="field"><div class="k">Vent de travers</div><div class="v"><span id="depXw">—</span> kt</div></div>
+        <div id="depXwCard" class="field">
+          <div class="k">Vent de travers</div>
+          <div class="v" id="depXw">—</div>
+        </div>
         <div class="field"><div class="k">Vent arrière</div><div class="v"><span id="depTw">—</span> kt</div></div>
       </div>
 
-      <!-- Carénages + Surface -->
       <div class="rowline">
         <div class="group centered">
           <label>Carénages de roues</label>
@@ -235,10 +203,33 @@
       <button id="btnCalcDep" class="btn primary block" style="margin-top:14px">Calculer les performances décollage</button>
     </section>
 
-    <!-- Arrivée -->
-    <section class="card">
-      <h2 class="center">Terrain d'arrivée</h2>
+    <!-- Décollage : performances -->
+    <section class="card" id="cardDepPerf">
+      <div class="header">
+        <h2 class="center" style="width:100%">Décollage : performances calculées</h2>
+        <span id="toChip" class="chip neutral">—</span>
+      </div>
+      <div id="toKpi" class="kpi">
+        <div class="left">
+          <span class="title">Requis (marge incluse)</span>
+          <span class="value" id="toKpiVal">— m</span>
+          <span class="sub">TODA dispo : <span id="todaMini">—</span></span>
+        </div>
+      </div>
+      <div class="grid2" style="margin-top:8px">
+        <div class="field"><div class="k">Roulement (sans marge)</div><div id="toBaseRoll" class="v">—</div></div>
+        <div class="field"><div class="k">Passage des 15m (sans marge)</div><div id="toBasePass" class="v">—</div></div>
+        <div class="field"><div class="k">Facteur vent</div><div id="toWindF" class="v">—</div></div>
+        <div class="field"><div class="k">Carénages</div><div id="toSpat" class="v">—</div></div>
+        <div class="field"><div class="k">Facteur supplémentaire</div><div id="toExtra" class="v">—</div></div>
+        <div class="field"><div class="k" id="toResLabel">Résultat</div><div id="toRes" class="v">—</div></div>
+      </div>
+      <div id="toExplain" class="muted mini-note"></div>
+    </section>
 
+    <!-- Arrivée -->
+    <section class="card" id="cardArr">
+      <h2 class="center">Terrain d'arrivée</h2>
       <div class="inline">
         <label style="flex:0.6">ICAO arrivée
           <input id="arrIcao" inputmode="latin" maxlength="4" placeholder="LFxx" />
@@ -259,7 +250,6 @@
         </label>
       </div>
 
-      <!-- NOUVEL ORDRE : Direction, Vitesse, Rafales -->
       <div class="grid3" style="margin-top:10px">
         <label>Vent — Direction (° ou "VRB")
           <input id="arrWindDir" list="dirOptions" type="text" inputmode="latin" placeholder="VRB ou 000" value="000" />
@@ -272,13 +262,12 @@
         </label>
       </div>
 
-      <!-- Puis : Secteur VRB, OAT -->
       <div class="grid2" style="margin-top:10px">
         <label>Secteur VRB (optionnel)
           <div class="vrbFlex">
-            <input id="arrVrbFrom" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="FROM"/>
+            <input id="arrVrbFrom" type="text" inputmode="numeric" placeholder="FROM"/>
             <span class="vrbSep">V</span>
-            <input id="arrVrbTo" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="TO"/>
+            <input id="arrVrbTo" type="text" inputmode="numeric" placeholder="TO"/>
           </div>
         </label>
         <label>OAT (°C)
@@ -288,7 +277,10 @@
 
       <div class="grid3" style="margin-top:10px">
         <div class="field"><div class="k">Vent de face</div><div class="v"><span id="arrHwFace">—</span> kt</div></div>
-        <div id="arrXwCard" class="field"><div class="k">Vent de travers</div><div class="v"><span id="arrXw">—</span> kt</div></div>
+        <div id="arrXwCard" class="field">
+          <div class="k">Vent de travers</div>
+          <div class="v" id="arrXw">—</div>
+        </div>
         <div class="field"><div class="k">Vent arrière</div><div class="v"><span id="arrTw">—</span> kt</div></div>
       </div>
 
@@ -313,33 +305,9 @@
 
       <button id="btnCalcArr" class="btn primary block" style="margin-top:14px">Calculer les performances atterrissage</button>
     </section>
-  </div>
 
-  <div class="row" style="margin-top:16px">
-    <div class="card">
-      <div class="header">
-        <h2 class="center" style="width:100%">Décollage : performances calculées</h2>
-        <span id="toChip" class="chip neutral">—</span>
-      </div>
-      <div id="toKpi" class="kpi">
-        <div class="left">
-          <span class="title">Requis (marge incluse)</span>
-          <span class="value" id="toKpiVal">— m</span>
-          <span class="sub">TODA dispo : <span id="todaMini">—</span></span>
-        </div>
-      </div>
-      <div class="grid2" style="margin-top:8px">
-        <div class="field"><div class="k">Passage des 15m (sans marge)</div><div id="toBasePass" class="v">—</div></div>
-        <div class="field"><div class="k">Roulement (sans marge)</div><div id="toBaseRoll" class="v">—</div></div>
-        <div class="field"><div class="k">Facteur vent</div><div id="toWindF" class="v">—</div></div>
-        <div class="field"><div class="k">Carénages</div><div id="toSpat" class="v">—</div></div>
-        <div class="field"><div class="k">Facteur supplémentaire</div><div id="toExtra" class="v">—</div></div>
-        <div class="field"><div class="k" id="toResLabel">Résultat</div><div id="toRes" class="v">—</div></div>
-      </div>
-      <div id="toExplain" class="muted mini-note"></div>
-    </div>
-
-    <div class="card">
+    <!-- Atterrissage : performances -->
+    <section class="card" id="cardArrPerf">
       <div class="header">
         <h2 class="center" style="width:100%">Atterrissage : performances calculées</h2>
         <span id="ldgChip" class="chip neutral">—</span>
@@ -352,14 +320,14 @@
         </div>
       </div>
       <div class="grid2" style="margin-top:8px">
-        <div class="field"><div class="k">Passage des 15m (sans marge)</div><div id="ldgBasePass" class="v">—</div></div>
         <div class="field"><div class="k">Roulement (sans marge)</div><div id="ldgBaseRoll" class="v">—</div></div>
+        <div class="field"><div class="k">Passage des 15m (sans marge)</div><div id="ldgBasePass" class="v">—</div></div>
         <div class="field"><div class="k">Facteur vent</div><div id="ldgWindF" class="v">—</div></div>
         <div class="field"><div class="k">Facteur supplémentaire</div><div id="ldgExtra" class="v">—</div></div>
         <div class="field"><div class="k" id="ldgResLabel">Résultat</div><div id="ldgRes" class="v">—</div></div>
       </div>
       <div id="ldgExplain" class="muted mini-note"></div>
-    </div>
+    </section>
   </div>
 
   <div class="muted center" style="margin-top:12px;font-size:11px">
@@ -368,11 +336,8 @@
   </div>
 </div>
 
-<datalist id="dirOptions">
-  <option value="VRB"></option>
-</datalist>
-
-<section id="printRaw"><pre id="rawPre"></pre></section>
+<datalist id="dirOptions"><option value="VRB"></option></datalist>
+<section id="printRaw" style="display:none"><pre id="rawPre"></pre></section>
 
 <script>
   /* ===================== DONNÉES (inchangé) ===================== */
@@ -396,29 +361,11 @@
   const lerp=(x0,y0,x1,y1,x)=> y0 + (y1-y0)*((x-x0)/(x1-x0||1));
   const pad3=n=>String(Math.round(n)).padStart(3,'0');
   const clamp01=v=>Math.max(0,Math.min(1,v));
-  const toRad=d=>d*Math.PI/180;
-  const cosd=d=>Math.cos(toRad(d));
-  const sind=d=>Math.sin(toRad(d));
-
-  /* ====== Parse/Validation non-intrusive pour secteurs VRB ====== */
-  function parseAngleLoose(str){
-    const s=(str||'').trim();
-    const n=parseInt(s.replace(/\D/g,''),10);
-    if(isNaN(n)) return null;
-    if(n<1 || n>360) return null;
-    return n;
-  }
-  function validateVrbInputs(side){
-    const fromEl=document.getElementById(side+'VrbFrom');
-    const toEl  =document.getElementById(side+'VrbTo');
-    const fOk = !fromEl.value || parseAngleLoose(fromEl.value)!==null;
-    const tOk = !toEl.value   || parseAngleLoose(toEl.value)!==null;
-    fromEl.classList.toggle('input-error', !fOk);
-    toEl.classList.toggle('input-error',   !tOk);
-  }
+  const toRad=d=>d*Math.PI/180, cosd=d=>Math.cos(toRad(d)), sind=d=>Math.sin(toRad(d));
 
   /* ===================== ÉTAT / UI ===================== */
   let landingMode='moderate', withSpats=true, profile='DR400', depSurface='hard';
+
   const propByAircraft={'F-GCAL (120cv)':'Sensenich','F-BXEK (120cv)':'Sensenich','F-BTKG (120cv)':'Sensenich','F-BTXS (120cv)':'Sensenich','F-BTBS (120cv)':'Mac Cauley','F-BTBJ (108cv)':'Mac Cauley'};
   $('#aircraftSel').addEventListener('change', ()=>{
     const ac=$('#aircraftSel').value;
@@ -426,6 +373,7 @@
     profile=(ac.startsWith('F-BTKG')||ac.startsWith('F-BTXS'))?'DR300':'DR400';
     updateWindDisplay('dep'); updateWindDisplay('arr');
   });
+
   // carénages
   $('#spatsWith').onclick=()=>{withSpats=true;$('#spatsWith').classList.add('on');$('#spatsWithout').classList.remove('on');};
   $('#spatsWithout').onclick=()=>{withSpats=false;$('#spatsWithout').classList.add('on');$('#spatsWith').classList.remove('on');};
@@ -440,8 +388,8 @@
   function updateResLabels(){
     const s = Math.max(0, parseFloat($('#safety').value||'0')||0);
     $('#safety').value = String(s);
-    $('#toResLabel').textContent = `Résultat sans marge des ${s}%`;
-    $('#ldgResLabel').textContent = `Résultat sans marge des ${s}%`;
+    $('#toResLabel').textContent = `Résultat`;
+    $('#ldgResLabel').textContent = `Résultat`;
   }
   $('#safety').addEventListener('input', updateResLabels);
   updateResLabels();
@@ -458,7 +406,7 @@
     el.addEventListener('input',()=>{ updateWindDisplay(id.startsWith('dep')?'dep':'arr'); });
   });
 
-  // TODA/LDA: pas de négatif, LDA max 4 chiffres
+  // TODA/LDA
   $('#depToda').addEventListener('input',()=>{ let s=$('#depToda').value.replace(/\D/g,''); if(s==='') return; let v=parseInt(s,10); if(!isFinite(v)||v<0)v=0; $('#depToda').value=String(v); });
   $('#arrLda').addEventListener('input',()=>{ let s=$('#arrLda').value.replace(/\D/g,'').slice(0,4); $('#arrLda').value=s; });
 
@@ -466,134 +414,132 @@
   const AVWX_TOKEN='q45JCSdkFjeZqHUyvawV2iaFm80CYmlPP6kC3XS8VNs';
 
   async function fetchJson(url){
-    const resp = await fetch(url, {
-      headers:{ Authorization:'Bearer '+AVWX_TOKEN, Accept:'application/json' }
-    });
+    const resp = await fetch(url, { headers:{ Authorization:'Bearer '+AVWX_TOKEN, Accept:'application/json' } });
     if(!resp.ok) throw new Error('HTTP '+resp.status);
     return await resp.json();
   }
-  async function fetchMetar(icao){
-    return fetchJson(`https://avwx.rest/api/metar/${icao}`);
-  }
-  async function fetchStation(icao){
-    return fetchJson(`https://avwx.rest/api/station/${icao}`);
-  }
-  // METAR le plus proche à partir de coordonnées (fallback)
+  async function fetchMetar(icao){ return fetchJson(`https://avwx.rest/api/metar/${icao}`); }
+  async function fetchStation(icao){ return fetchJson(`https://avwx.rest/api/station/${icao}`); }
   async function fetchNearestMetarByCoords(lat, lon){
     const ll = `${Number(lat).toFixed(5)},${Number(lon).toFixed(5)}`;
     return fetchJson(`https://avwx.rest/api/metar/${ll}?nearest=true`);
   }
 
-  // --- Helpers pour extraire le secteur variable ---
-  function parseSectorFromRaw(raw){
-    const m = raw && raw.match(/(\d{3})V(\d{3})/);
-    return m ? {from:parseInt(m[1],10), to:parseInt(m[2],10)} : null;
-  }
+  function parseSectorFromRaw(raw){ const m = raw && raw.match(/(\d{3})V(\d{3})/); return m ? {from:parseInt(m[1],10), to:parseInt(m[2],10)} : null; }
   function parseVarSector(data){
-    const from = data?.variable_direction?.from;
-    const to   = data?.variable_direction?.to;
-    if (typeof from === 'number' && typeof to === 'number') return {from, to};
+    const from=data?.variable_direction?.from, to=data?.variable_direction?.to;
+    if(typeof from==='number' && typeof to==='number') return {from, to};
     return parseSectorFromRaw(data?.raw);
   }
 
-  // --- Appliquer les champs METAR dans l’UI (puis recalcul de l’affichage vent) ---
   function applyMetar(side, data){
-    // Direction / VRB
-    const dirRepr = (data?.wind_direction?.repr ?? '').toUpperCase();
-    const dirVal  = (data?.wind_direction?.value ?? null);
-    const dirEl   = document.getElementById(side+'WindDir');
-    if (dirRepr === 'VRB') {
-      dirEl.value = 'VRB';
-    } else if (dirVal !== null) {
-      dirEl.value = pad3(dirVal);
-    }
+    const dirRepr=(data?.wind_direction?.repr ?? '').toUpperCase();
+    const dirVal =(data?.wind_direction?.value ?? null);
+    const spdVal =Math.max(0,Math.round(data?.wind_speed?.value ?? 0));
+    const gustVal=Math.max(0,Math.round(data?.wind_gust?.value ?? 0));
+    const oatVal =Math.round(data?.temperature?.value ?? 15);
+    const sector=parseVarSector(data);
 
-    // Vitesse / Rafales / OAT
-    const spdVal  = Math.max(0, Math.round(data?.wind_speed?.value ?? 0));
-    const gustVal = Math.max(0, Math.round(data?.wind_gust?.value ?? 0));
-    const oatVal  = Math.round(data?.temperature?.value ?? 15);
-    document.getElementById(side+'WindKt').value   = String(spdVal);
-    document.getElementById(side+'WindGust').value = String(gustVal);
-    document.getElementById(side+'Oat').value      = String(oatVal);
+    const dirEl=$('#'+side+'WindDir');
+    if(dirRepr==='VRB'){dirEl.value='VRB';}
+    else if(dirVal!==null){dirEl.value=pad3(dirVal);}
 
-    // Secteur variable (FROM / TO) si présent
-    const sector = parseVarSector(data);
-    if (sector) {
-      const fromEl = document.getElementById(side+'VrbFrom');
-      const toEl   = document.getElementById(side+'VrbTo');
-      if (fromEl) fromEl.value = pad3(sector.from);
-      if (toEl)   toEl.value   = pad3(sector.to);
+    $('#'+side+'WindKt').value=String(spdVal);
+    $('#'+side+'WindGust').value=String(gustVal||0);
+    $('#'+side+'Oat').value=String(oatVal);
+
+    if(sector){
+      $('#'+side+'VrbFrom').value=pad3(sector.from);
+      $('#'+side+'VrbTo').value=pad3(sector.to);
     } else {
-      const fromEl = document.getElementById(side+'VrbFrom');
-      const toEl   = document.getElementById(side+'VrbTo');
-      if (fromEl) fromEl.value = '';
-      if (toEl)   toEl.value   = '';
+      $('#'+side+'VrbFrom').value=''; $('#'+side+'VrbTo').value='';
     }
 
-    // Met à jour l’affichage Vent de face / travers / arrière
     updateWindDisplay(side);
   }
 
-  // essaie d’abord METAR du terrain, sinon prend le + proche autour de la station
   async function loadMetarFor(side){
-    const icao = (document.getElementById(side+'Icao').value||'').toUpperCase();
+    const icao = ($('#'+side+'Icao').value||'').toUpperCase();
     const msgEl = document.getElementById(side==='dep'?'depMetarMsg':'arrMetarMsg');
     msgEl.textContent = 'Chargement METAR…';
 
     try{
-      // On récupère la station d’abord (pour élévation + coords)
       const station = await fetchStation(icao);
-      // Élévation : toujours écraser par l’élévation publiée du terrain saisi
       const elevFt = station?.elevation_ft;
       const altInput = document.getElementById(side+'Alt');
-      if (typeof elevFt === 'number' && elevFt > 0 && altInput) {
-        altInput.value = String(Math.round(elevFt));
-      }
+      if (typeof elevFt === 'number' && elevFt > 0 && altInput) { altInput.value = String(Math.round(elevFt)); }
 
-      // 1) Tenter METAR du terrain demandé
       let metar, usedIcao = icao, isNearest = false, distTxt = '';
-      try{
-        metar = await fetchMetar(icao);
-      }catch(_e){
-        // 2) Fallback : plus proche autour des coords de la station
+      try{ metar = await fetchMetar(icao); }
+      catch(_e){
         if(typeof station?.latitude === 'number' && typeof station?.longitude === 'number'){
           metar = await fetchNearestMetarByCoords(station.latitude, station.longitude);
           isNearest = true;
           usedIcao = metar?.station || metar?.icao || usedIcao;
           const d = metar?.meta?.distance, u = metar?.meta?.units;
           if(typeof d === 'number' && u){ distTxt = ` (~${d} ${u})`; }
-        }else{
-          throw _e; // pas de coords pour chercher un voisin → re-lance l’erreur initiale
-        }
+        }else{ throw _e; }
       }
 
-      // Appliquer le METAR (remplit Direction/Vit/Rafales/VRB/OAT & recalc vent affiché)
       applyMetar(side, metar);
-
-      // Message : METAR brut + origine
       const raw = metar?.raw || '—';
       msgEl.textContent = isNearest
         ? `METAR chargé (proche : ${usedIcao}${distTxt}) : ${raw}`
         : `METAR chargé : ${raw}`;
 
-      // Mettre à jour l’affichage des composantes (au cas où QFU/secteurs présents)
       updateWindDisplay(side);
-
     }catch(e){
       msgEl.textContent = 'METAR indisponible ('+(e.message||'erreur')+')';
     }
   }
+  $('#btnDepMetar').addEventListener('click',()=>loadMetarFor('dep'));
+  $('#btnArrMetar').addEventListener('click',()=>loadMetarFor('arr'));
 
-  // Boutons
-  document.getElementById('btnDepMetar').addEventListener('click',()=>loadMetarFor('dep'));
-  document.getElementById('btnArrMetar').addEventListener('click',()=>loadMetarFor('arr'));
+  /* ===================== VALIDATION SECTEUR VRB ===================== */
+  const MULTI10 = v => v%10===0;
+  function format3(el){
+    let v=(el.value||'').replace(/\D/g,'');
+    if(!v){ el.value=''; return null; }
+    let n=parseInt(v,10);
+    if(!isFinite(n)) { el.value=''; return null; }
+    n = Math.max(1, Math.min(360, n));
+    el.value = pad3(n);
+    return n;
+  }
+  function vrbRange(from, to){
+    // amplitude sur l'arc court
+    const diff = ((to - from + 360) % 360);
+    return diff; // 0..359 (arc direct)
+  }
+  function validateVrb(side){
+    const fEl = $('#'+side+'VrbFrom'), tEl = $('#'+side+'VrbTo');
+    const kt = parseInt($('#'+side+'WindKt').value||'0',10) || 0;
+    let ok = true;
 
-  /* ===================== AFFICHAGE COMPOSANTES (fidèle METAR) ===================== */
+    fEl.classList.remove('invalid'); tEl.classList.remove('invalid');
+
+    // si vide des deux côtés, pas de validation à faire
+    if(!fEl.value && !tEl.value) return true;
+
+    const f = format3(fEl), t = format3(tEl);
+    if(!f || !t){ ok=false; }
+    if(ok && (!MULTI10(f) || !MULTI10(t))){ ok=false; }
+    if(ok){
+      const span = vrbRange(f,t); // 0..359
+      // règles : 60° ≤ variation < 180° ET vent > 3 kt pour autoriser un secteur
+      if(!(span >= 60 && span < 180 && kt > 3)){ ok=false; }
+    }
+
+    if(!ok){ fEl.classList.add('invalid'); tEl.classList.add('invalid'); }
+    return ok;
+  }
+
+  /* ===================== AFFICHAGE COMPOSANTES ===================== */
   function dirForDisplay(dirField, sector){
     const t=(dirField||'').trim().toUpperCase();
     if(t==='VRB'){
-      const f=parseAngleLoose(document.getElementById(sector.fromId).value);
-      const to=parseAngleLoose(document.getElementById(sector.toId).value);
+      const f = format3(document.getElementById(sector.fromId));
+      const to = format3(document.getElementById(sector.toId));
       if(!f || !to) return null;
       let a=f, b=to;
       let diff=((b-a+540)%360)-180;
@@ -617,75 +563,78 @@
     return { face: Math.max(0, hwSigned), tail: Math.max(0, -hwSigned), xw, ang };
   }
 
-  function crosswindLimitColor(side){
-    // Si un secteur est saisi, on colore avec le pire cas (rafale / angle le plus proche de 90)
-    const qfu = normQFU($('#'+side+'Qfu').value);
-    if(qfu===null){ setXwColor(side,null); return; }
-    const kt = parseInt($('#'+side+'WindKt').value||'0',10)||0;
-    const gust = parseInt($('#'+side+'WindGust').value||'0',10)||0;
-    const V = Math.max(0, kt), G = Math.max(V, gust);
-    const f = parseAngleLoose(document.getElementById(side+'VrbFrom').value);
-    const t = parseAngleLoose(document.getElementById(side+'VrbTo').value);
-    if(f && t){
-      // pire angle dans le secteur (≈ 90° du QFU)
-      const xwWorst = maxXwindInSector(qfu, f, t, G);
-      setXwColor(side, xwWorst);
-    }else{
-      // pas de secteur : on reste sur l’affichage actuel (direction moyenne, sans rafale)
-      const dirDisp = dirForDisplay($('#'+side+'WindDir').value, {fromId:side+'VrbFrom', toId:side+'VrbTo'});
-      const c = (dirDisp!==null)? compsFrom(qfu, dirDisp, V) : null;
-      setXwColor(side, c?c.xw:null);
-    }
+  function inSectorShortArc(angle, from, to){
+    const span=((to-from+360)%360);
+    const rel=((angle-from+360)%360);
+    return rel<=span;
   }
-  function setXwColor(side, xwVal){
-    const card = document.getElementById(side+'XwCard');
-    card.classList.remove('warn-yellow','warn-red');
-    if(typeof xwVal==='number'){
-      if(xwVal>=22){ card.classList.add('warn-red'); }
-      else if(xwVal>=18){ card.classList.add('warn-yellow'); }
-    }
-  }
-  function maxXwindInSector(qfu, from, to, speed){
-    // Échantillonne bords et angle le + proche de 90° depuis qfu
-    const candidates=[];
-    function ang(a,b){ return Math.abs(((a-b+540)%360)-180); }
-    const a1=from%360, a2=to%360;
-    candidates.push(a1,a2);
-    // cible = qfu±90
-    candidates.push((qfu+90)%360);
-    candidates.push((qfu+270)%360);
-    // on garde ceux inclus dans l’arc court [from..to]
-    function inSector(d){
-      let A=a1,B=a2;
-      const diff=((B-A+360)%360);
-      const diffD=((d-A+360)%360);
-      return diffD<=diff;
-    }
-    const uniq=[...new Set(candidates)].filter(inSector);
+  function worstXwindInSector(qfu, from, to, speed){
+    // Évalue bords + qfu±90 (angles de travers max) si dans le secteur
+    const cand=[from%360, to%360, (qfu+90)%360, (qfu+270)%360];
     let max=0;
-    uniq.forEach(dir=>{
-      const a=ang(dir,qfu);
-      const xw = Math.abs(speed * sind(a));
-      if(xw>max) max=xw;
-    });
+    for(const dir of [...new Set(cand)]){
+      if(inSectorShortArc(dir, from%360, to%360)){
+        const ang=Math.abs(((dir - (qfu%360) + 540)%360)-180);
+        const xw=Math.abs(speed*sind(ang));
+        if(xw>max) max=xw;
+      }
+    }
     return max;
   }
 
+  function crosswindLimitColor(side, xwForColor){
+    const card = document.getElementById(side+'XwCard');
+    card.classList.remove('warn-yellow','warn-red');
+    if(typeof xwForColor==='number'){
+      if(xwForColor>=22){ card.classList.add('warn-red'); }
+      else if(xwForColor>=18){ card.classList.add('warn-yellow'); }
+    }
+  }
+
+  function updateCrosswindCell(side, qfu, dirDisp, kt){
+    const xwSpan = document.getElementById(side+'Xw');
+    const card = document.getElementById(side+'XwCard');
+    const gust = parseInt($('#'+side+'WindGust').value||'0',10) || 0;
+    const G = Math.max(kt, gust);
+
+    // Secteur présent et VALIDE ?
+    const fEl=$('#'+side+'VrbFrom'), tEl=$('#'+side+'VrbTo');
+    const fVal=fEl.value.trim(), tVal=tEl.value.trim();
+    const hasSector = !!(fVal && tVal) && validateVrb(side);
+
+    if(!qfu || !dirDisp || !kt){
+      xwSpan.textContent='—';
+      crosswindLimitColor(side, null);
+      return;
+    }
+
+    // Vent moyen → ligne 1
+    const mean = compsFrom(qfu, dirDisp, kt);
+    const meanX = Math.round(mean.xw);
+
+    if(hasSector){
+      const f = parseInt(fEl.value,10), t = parseInt(tEl.value,10);
+      const worstX = Math.round(worstXwindInSector(qfu, f, t, G));
+      xwSpan.innerHTML = `${meanX} kt\n${worstX} kt sur ${pad3(f)}V${pad3(t)}`;
+      crosswindLimitColor(side, worstX);
+    }else{
+      xwSpan.textContent = `${meanX}`;
+      crosswindLimitColor(side, meanX);
+    }
+  }
+
   function updateWindDisplay(side){
-    const qfuIn=$('#'+side+'Qfu').value;
-    const qfu = normQFU(qfuIn);
+    // invalid VRB → juste bordure et pas de composantes si direction “VRB”
+    const qfu = normQFU($('#'+side+'Qfu').value);
     const dirStr=$('#'+side+'WindDir').value||'';
     const kt=parseInt($('#'+side+'WindKt').value||'0',10)||0;
     const dirDisp = dirForDisplay(dirStr, {fromId:side+'VrbFrom', toId:side+'VrbTo'});
-
-    // validation visuelle VRB
-    validateVrbInputs(side);
 
     if(qfu===null || dirDisp===null || !kt){
       $('#'+side+'HwFace').textContent='—';
       $('#'+side+'Xw').textContent='—';
       $('#'+side+'Tw').textContent='—';
-      setXwColor(side,null);
+      crosswindLimitColor(side,null);
       if(side==='dep'){ $('#todaMini').textContent=$('#depToda').value?$('#depToda').value+' m':'—'; }
       else{ $('#ldaMini').textContent=($('#arrLda').value?$('#arrLda').value+' m':'—'); }
       return;
@@ -693,38 +642,40 @@
 
     const c = compsFrom(qfu, dirDisp, kt);
     $('#'+side+'HwFace').textContent = Math.round(c.face);
-    $('#'+side+'Xw').textContent    = Math.round(c.xw);
-    $('#'+side+'Tw').textContent    = Math.round(c.tail);
+    $('#'+side+'Tw').textContent     = Math.round(c.tail);
 
-    crosswindLimitColor(side);
+    updateCrosswindCell(side, qfu, dirDisp, kt);
 
     if(side==='dep'){ $('#todaMini').textContent=$('#depToda').value?$('#depToda').value+' m':'—'; }
     else{ $('#ldaMini').textContent=($('#arrLda').value?$('#arrLda').value+' m':'—'); }
   }
 
-  ['depWindDir','arrWindDir','depWindKt','arrWindKt','depVrbFrom','arrVrbFrom','depVrbTo','arrVrbTo','depWindGust','arrWindGust','depOat','arrOat','depToda','arrLda']
-  .forEach(id=>{
-    $('#'+id).addEventListener('input',()=>{
-      const side = id.startsWith('dep') ? 'dep' : 'arr';
-      if(id.includes('Vrb')) validateVrbInputs(side);
-      updateWindDisplay(side);
-    });
-    $('#'+id).addEventListener('blur',()=>{
-      const side = id.startsWith('dep') ? 'dep' : 'arr';
-      if(id.endsWith('WindDir')){
-        const el=document.getElementById(id);
-        const t=el.value.trim().toUpperCase();
-        if(t && t!=='VRB'){
-          let n=parseInt(t.replace(/\D/g,''),10);
-          if(!isNaN(n)){ n=Math.max(1,Math.min(360,n)); el.value=pad3(n); }
+  // Entrées qui déclenchent mise à jour
+  ['depWindDir','arrWindDir','depWindKt','arrWindKt','depVrbFrom','arrVrbFrom','depVrbTo','arrVrbTo','depWindGust','arrWindGust','depOat','arrOat','depToda','arrLda','depQfu','arrQfu']
+    .forEach(id=>{
+      $('#'+id).addEventListener('input',()=>updateWindDisplay(id.startsWith('dep')?'dep':'arr'));
+      $('#'+id).addEventListener('blur',()=>{
+        if(id.includes('Vrb')){ validateVrb(id.startsWith('dep')?'dep':'arr'); }
+        if(id.endsWith('WindDir')){
+          const el=document.getElementById(id);
+          const t=el.value.trim().toUpperCase();
+          if(t && t!=='VRB'){ let n=parseInt(t.replace(/\D/g,''),10); if(!isNaN(n)){ n=Math.max(1,Math.min(360,n)); el.value=pad3(n);} }
         }
-      }
-      if(id.includes('Vrb')) validateVrbInputs(side);
-      updateWindDisplay(side);
+        updateWindDisplay(id.startsWith('dep')?'dep':'arr');
+      });
     });
-  });
 
-  /* ===================== RÈGLE “LE PLUS CONTRAIGNANT” (vent moyen vs secteur) ===================== */
+  /* ===================== RÈGLE “LE PLUS CONTRAIGNANT” (perfs) ===================== */
+  function sectorHasAngle(from,to,pred){
+    const step=5;
+    let a=from%360, b=to%360;
+    const span=((b-a+360)%360);
+    for(let t=0;t<=span;t+=step){
+      const d=(a+t)%360;
+      if(pred(d)) return true;
+    }
+    return false;
+  }
   function worstBetweenMeanAndSector(qfu, meanDirOrVRB, kt, gust, sectorFrom, sectorTo){
     const V=Math.max(0,kt|0), G=Math.max(V,gust|0);
     if(qfu===null) return {headwindForFactor:0, explain:'QFU manquant'};
@@ -735,100 +686,34 @@
       const xw = Math.abs(speed * Math.sin(toRad(d)));
       return {d, hwSigned, xw, dir, speed};
     }
-
-    const candidates=[]; // on choisira le plus défavorable pour la distance (headwind minimal)
-
-    // A) Vent moyen (si non VRB)
+    const candidates=[];
     const t=(meanDirOrVRB||'').trim().toUpperCase();
     if(t && t!=='VRB'){
       let n=parseInt(t.replace(/\D/g,''),10);
       if(!isNaN(n)){ n=Math.max(1,Math.min(360,n));
         const ang=Math.abs(((n-q+540)%360)-180);
-        const sp = (ang>90)? G : V; // si composante arrière → on regarde la rafale
-        candidates.push({src:'moyen', ...comps(n,sp), note:(ang>90?`moyen ${pad3(n)}°: angle ${Math.round(ang)}° → rafale/max (${G} kt)`: `moyen ${pad3(n)}°: angle ${Math.round(ang)}° → vitesse moyenne (${V} kt)`)});
+        const sp = (ang>90)? G : V;
+        candidates.push({src:'moyen', ...comps(n,sp)});
       }
     }
-
-    // B) Secteur (si saisi) — on applique ta règle
     if(sectorFrom && sectorTo){
       const from=sectorFrom%360, to=sectorTo%360;
-      // génère bords + angle proche de 180 (arrière) et proche de 90 (max travers)
-      const dirs=[from,to, (from+(((to-from+360)%360)/2))%360, (q+180)%360, (q+90)%360, (q+270)%360];
+      const dirs=[from,to,(from+(((to-from+360)%360)/2))%360,(q+180)%360,(q+90)%360,(q+270)%360];
       const uniq=[...new Set(dirs)];
-      // détermine si un angle arrière est possible dans le secteur
       const sectorHasTail = sectorHasAngle(from,to, a=> Math.abs(((a-q+540)%360)-180) > 90);
       uniq.forEach(d=>{
         const ang=Math.abs(((d-q+540)%360)-180);
-        const sp = sectorHasTail ? G : V; // si arrière possible → on utilise rafale/max
-        candidates.push({src:'secteur', ...comps(d,sp), note:(sectorHasTail?`secteur ${pad3(from)}V${pad3(to)}: passage arrière possible → rafale/max (${G} kt) sur ${pad3(d)}°`:`secteur ${pad3(from)}V${pad3(to)}: pas d’arrière → bord défavorable (${pad3(d)}°) à vitesse min (${V} kt)`)});
+        const sp = sectorHasTail ? G : V;
+        candidates.push({src:'secteur', ...comps(d,sp)});
       });
     }
-
     if(candidates.length===0){
-      // VRB sans secteur : cas arrière théorique à 180° avec rafale
       const c=comps((q+180)%360, G);
-      return {headwindForFactor:c.hwSigned, explain:`VRB sans secteur : cas arrière à 180° → rafale/max (${G} kt)`};
+      return {headwindForFactor:c.hwSigned, explain:`VRB sans secteur : cas arrière à 180°`};
     }
-
-    // Choix le plus contraignant = headwind minimal (le plus négatif = plus de vent arrière)
     let worst=candidates[0];
     candidates.forEach(c=>{ if(c.hwSigned < worst.hwSigned) worst=c; });
-
-    return {headwindForFactor:worst.hwSigned, explain:worst.note};
-  }
-
-  function sectorHasAngle(from,to,pred){
-    // parcourt l’arc court from→to
-    const step=5; // résolution suffisante
-    let a=from%360, b=to%360;
-    const span=((b-a+360)%360);
-    for(let t=0;t<=span;t+=step){
-      const d=(a+t)%360;
-      if(pred(d)) return true;
-    }
-    return false;
-  }
-
-  /* ===================== INTERPOLATIONS ===================== */
-  function interpTemp(rowTemps,arr,oat){
-    const xs=[rowTemps.minus20,rowTemps.isa,rowTemps.plus20],ys=arr;
-    if(oat<=xs[0])return ys[0]; if(oat>=xs[2])return ys[2];
-    if(oat<=xs[1])return lerp(xs[0],ys[0],xs[1],ys[1],oat);
-    return lerp(xs[1],ys[1],xs[2],ys[2],oat);
-  }
-  function interpTO_DR400(altFt,oat,massKg,surface,kind){
-    const low=altFt<=0?0:altFt>=8000?8000:(altFt<=4000?0:4000);
-    const high=altFt<=0?0:altFt>=8000?8000:(altFt<=4000?4000:8000);
-    const alpha=clamp01((massKg-700)/(900-700));
-    const valAt=alt=>{const t=TO_DR400[alt]; const v700=interpTemp(t.temps,t[surface].kg700[kind],oat); const v900=interpTemp(t.temps,t[surface].kg900[kind],oat); return lerp(0,v700,1,v900,alpha);};
-    if(low===high)return valAt(low); return lerp(low,valAt(low),high,valAt(high),altFt);
-  }
-  function interpLDG_DR400(altFt,oat,massKg,mode,kind){
-    const low=altFt<=0?0:altFt>=8000?8000:(altFt<=4000?0:4000);
-    const high=altFt<=0?0:altFt>=8000?8000:(altFt<=4000?4000:8000);
-    const alpha=clamp01((massKg-700)/(900-700));
-    const valAt=alt=>{const t=LDG_DR400[alt]; const v700=interpTemp(t.temps,t[mode].kg700[kind],oat); const v900=interpTemp(t.temps,t[mode].kg900[kind],oat); return lerp(0,v700,1,v900,alpha);};
-    if(low===high)return valAt(low); return lerp(low,valAt(low),high,valAt(high),altFt);
-  }
-  function interpGridDR300(surface,kind,altFt,oat,massKg){
-    const surf=TO_DR300[surface], temps=DR300_TEMPS, alts=surf.alts;
-    function interpRow(row){const ys=row,x=oat;
-      if(x<=temps[0])return ys[0]; if(x>=temps[3])return ys[3];
-      if(x<=temps[1])return lerp(temps[0],ys[0],temps[1],ys[1],x);
-      if(x<=temps[2])return lerp(temps[1],ys[1],temps[2],ys[2],x);
-      return lerp(temps[2],ys[2],temps[3],ys[3],x);
-    }
-    let a0=alts[0], a1=alts[alts.length-1];
-    for(let i=0;i<alts.length-1;i++){
-      if(altFt<=alts[0]){a0=a1=alts[0];break;}
-      if(altFt>=alts[alts.length-1]){a0=a1=alts[alts.length-1];break;}
-      if(altFt>=alts[i] && altFt<=alts[i+1]){a0=alts[i];a1=alts[i+1];break;}
-    }
-    const idx0=alts.indexOf(a0), idx1=alts.indexOf(a1);
-    const v0=interpRow(surf[kind][idx0]);
-    const v1=interpRow(surf[kind][idx1]);
-    let val=(a0===a1)?v0:lerp(a0,v0,a1,v1,altFt);
-    return val*TO_DR300.massScale(massKg);
+    return {headwindForFactor:worst.hwSigned, explain:'Règle vent appliquée (plus contraignant).'};
   }
 
   /* ===================== FACTEUR VENT PERFS ===================== */
@@ -844,24 +729,35 @@
     }
   }
 
-  /* ===================== CALCUL BOUTONS ===================== */
+  /* ===================== CALCULS ===================== */
   function setChip(el,state){el.className='chip '+(state==='ok'?'ok':state==='bad'?'bad':'neutral');el.textContent=state==='ok'?'OK':'KO'}
 
+  function ensureValidBeforeCompute(side){
+    // Bloque si secteur VRB invalide
+    const ok = validateVrb(side);
+    if(!ok){
+      alert('Vérifier secteur variable vent');
+      return false;
+    }
+    return true;
+  }
+
   function computeDepPerf(){
+    if(!ensureValidBeforeCompute('dep')) return;
+
     const qfu=normQFU($('#depQfu').value);
     if(qfu===null){
       setChip($('#toChip'),'neutral'); $('#toKpi').className='kpi';
       ['toBasePass','toBaseRoll','toWindF','toSpat','toExtra','toRes'].forEach(id=>$('#'+id).textContent='—');
-      $('#toExplain').textContent='';
-      return;
+      $('#toExplain').textContent=''; return;
     }
     const depAlt=+($('#depAlt')?.value||0), depOat=+($('#depOat').value||0),
           depExtra=+($('#depExtraTO').value||1), depTow=+($('#depTow').value||900),
           depToda=+($('#depToda').value||0), safety=Math.max(0,+($('#safety').value||30));
-    // “plus contraignant” entre vent moyen et secteur (règle demandée)
+
     const meanDir=$('#depWindDir').value;
     const kt=+($('#depWindKt').value||0), gust=+($('#depWindGust').value||0);
-    const sf=parseAngleLoose($('#depVrbFrom').value), st=parseAngleLoose($('#depVrbTo').value);
+    const sf=parseInt($('#depVrbFrom').value||'0',10), st=parseInt($('#depVrbTo').value||'0',10);
     const w=worstBetweenMeanAndSector(qfu, meanDir, kt, gust, sf, st);
 
     let baseTO_pass, baseTO_roll;
@@ -890,23 +786,25 @@
     setChip($('#toChip'),stTO); $('#toKpi').className='kpi '+(stTO==='ok'?'ok':stTO==='bad'?'bad':'');
     $('#toKpiVal').textContent=toMargin+' m';
 
-    $('#toExplain').textContent = `Règle vent : ${w.explain || '—'}. Facteur vent = ${depWindF.toFixed(2)}× (composante utilisée ${Math.round(w.headwindForFactor||0)} kt). Surface=${depSurface==='hard'?'Dur':'Herbe'} · Carénages=${withSpats?'Avec':'Sans'} · Élévation ${depAlt} ft.`;
+    $('#toExplain').textContent = `Élévation ${depAlt} ft. ${w.explain || '—'} Facteur vent ${depWindF.toFixed(2)}× (composante utilisée ${Math.round(w.headwindForFactor||0)} kt). Surface=${depSurface==='hard'?'Dur':'Herbe'} · Carénages=${withSpats?'Avec':'Sans'}.`;
   }
 
   function computeArrPerf(){
+    if(!ensureValidBeforeCompute('arr')) return;
+
     const qfu=normQFU($('#arrQfu').value);
     if(qfu===null){
       setChip($('#ldgChip'),'neutral'); $('#ldgKpi').className='kpi';
       ['ldgBasePass','ldgBaseRoll','ldgWindF','ldgExtra','ldgRes'].forEach(id=>$('#'+id).textContent='—');
-      $('#ldgExplain').textContent='';
-      return;
+      $('#ldgExplain').textContent=''; return;
     }
     const arrAlt=+($('#arrAlt')?.value||0), arrOat=+($('#arrOat').value||0),
           arrExtra=+($('#arrExtraLDG').value||1), arrLdw=+($('#arrLdw').value||900),
           arrLda=+($('#arrLda').value||0), safety=Math.max(0,+($('#safety').value||30));
+
     const meanDir=$('#arrWindDir').value;
     const kt=+($('#arrWindKt').value||0), gust=+($('#arrWindGust').value||0);
-    const sf=parseAngleLoose($('#arrVrbFrom').value), st=parseAngleLoose($('#arrVrbTo').value);
+    const sf=parseInt($('#arrVrbFrom').value||'0',10), st=parseInt($('#arrVrbTo').value||'0',10);
     const w=worstBetweenMeanAndSector(qfu, meanDir, kt, gust, sf, st);
 
     const baseLDG_pass=interpLDG_DR400(arrAlt,arrOat,arrLdw,landingMode,'pass');
@@ -926,13 +824,13 @@
     setChip($('#ldgChip'),stLDG); $('#ldgKpi').className='kpi '+(stLDG==='ok'?'ok':stLDG==='bad'?'bad':'');
     $('#ldgKpiVal').textContent=ldgMargin+' m';
 
-    $('#ldgExplain').textContent = `Règle vent : ${w.explain || '—'}. Facteur vent = ${arrWindF.toFixed(2)}× (composante utilisée ${Math.round(w.headwindForFactor||0)} kt). Type de freinage=${landingMode==='moderate'?'Freinage modéré':'Sans frein herbe'} · Élévation ${arrAlt} ft.`;
+    $('#ldgExplain').textContent = `Élévation ${arrAlt} ft. ${w.explain || '—'} Facteur vent ${arrWindF.toFixed(2)}× (composante utilisée ${Math.round(w.headwindForFactor||0)} kt). Type de freinage=${landingMode==='moderate'?'Freinage modéré':'Sans frein herbe'}.`;
   }
 
   document.getElementById('btnCalcDep').addEventListener('click', computeDepPerf);
   document.getElementById('btnCalcArr').addEventListener('click', computeArrPerf);
 
-  /* ===================== IMPRESSION (raccourci) ===================== */
+  /* ===================== IMPRESSION ===================== */
   function buildRawReport(){
     const safety=Math.max(0,+($('#safety').value||30));
     const aircraft=$('#aircraftSel').value;
@@ -968,7 +866,7 @@
       `Développé par Hugo DERUELLE avec l'aide de l'IA`,
     ].join('\n');
   }
-  window.addEventListener('beforeprint', ()=>{document.getElementById('rawPre').textContent = buildRawReport();});
+  document.getElementById('btnPrint').addEventListener('click',()=>{ const w=window; const pre=document.getElementById('rawPre'); pre.textContent=buildRawReport(); w.print(); });
 
   // init
   (function init(){
