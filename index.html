@@ -350,8 +350,8 @@
   </div>
 
   <div class="muted" style="margin-top:12px;font-size:11px; text-align:center">
-    <div>Source : Manuel de vol respectif de chaque avion - Aéroclub de Beauvais-Tillé</div>
-    <div>Développé par Hugo DERUELLE avec l'aide de l'IA</div>
+    <!-- crédits supprimés pour l'impression -->
+    <div> </div>
   </div>
 </div>
 
@@ -373,168 +373,176 @@
       roll: [[380,420,470,515],[420,470,515,575],[455,510,570,625],[510,575,635,695]],
       pass: [[595,660,735,805],[675,745,820,895],[760,850,935,1025],[845,940,1040,1135]],
     },
-    massScale: m => Math.min(1, m/1000)
+    massScale: function(m){ return Math.min(1, m/1000); }
   };
 
   /* ===================== UTILITAIRES ===================== */
-  const $=s=>document.querySelector(s);
-  const lerp=(x0,y0,x1,y1,x)=> y0 + (y1-y0)*((x-x0)/(x1-x0||1));
-  const pad3=n=>String(Math.round(n)).padStart(3,'0');
-  const clamp01=v=>Math.max(0,Math.min(1,v));
-  const toRad=d=>d*Math.PI/180, cosd=d=>Math.cos(toRad(d)), sind=d=>Math.sin(toRad(d));
+  var $=function(s){return document.querySelector(s)};
+  function lerp(x0,y0,x1,y1,x){ return y0 + (y1-y0)*((x-x0)/(x1-x0 || 1)); }
+  function pad3(n){ return String(Math.round(n)).padStart(3,'0'); }
+  function clamp01(v){ return Math.max(0,Math.min(1,v)); }
+  function toRad(d){ return d*Math.PI/180; }
+  function cosd(d){ return Math.cos(toRad(d)); }
+  function sind(d){ return Math.sin(toRad(d)); }
 
   /* ===================== ÉTAT / UI ===================== */
-  let landingMode='moderate', withSpats=true, profile='DR400', depSurface='hard';
-  let lastDepMetarRaw='—', lastArrMetarRaw='—';
+  var landingMode='moderate', withSpats=true, profile='DR400', depSurface='hard';
+  var lastDepMetarRaw='—', lastArrMetarRaw='—';
 
-  const propByAircraft={'F-GCAL (120cv)':'Sensenich','F-BXEK (120cv)':'Sensenich','F-BTKG (120cv)':'Sensenich','F-BTXS (120cv)':'Sensenich','F-BTBS (120cv)':'Mac Cauley','F-BTBJ (108cv)':'Mac Cauley'};
-  $('#aircraftSel').addEventListener('change', ()=>{
-    const ac=$('#aircraftSel').value;
+  var propByAircraft={'F-GCAL (120cv)':'Sensenich','F-BXEK (120cv)':'Sensenich','F-BTKG (120cv)':'Sensenich','F-BTXS (120cv)':'Sensenich','F-BTBS (120cv)':'Mac Cauley','F-BTBJ (108cv)':'Mac Cauley'};
+  $('#aircraftSel').addEventListener('change', function(){
+    var ac=$('#aircraftSel').value;
     $('#propeller').value=propByAircraft[ac]||'';
-    profile=(ac.startsWith('F-BTKG')||ac.startsWith('F-BTXS'))?'DR300':'DR400';
+    profile=(ac.indexOf('F-BTKG')===0 || ac.indexOf('F-BTXS')===0)?'DR300':'DR400';
     updateWindDisplay('dep'); updateWindDisplay('arr');
   });
 
   // carénages / surfaces / freinage
-  $('#spatsWith').onclick=()=>{withSpats=true;$('#spatsWith').classList.add('on');$('#spatsWithout').classList.remove('on');};
-  $('#spatsWithout').onclick=()=>{withSpats=false;$('#spatsWithout').classList.add('on');$('#spatsWith').classList.remove('on');};
-  $('#depSurfHard').onclick=()=>{depSurface='hard';$('#depSurfHard').classList.add('on');$('#depSurfGrass').classList.remove('on');};
-  $('#depSurfGrass').onclick=()=>{depSurface='grass';$('#depSurfGrass').classList.add('on');$('#depSurfHard').classList.remove('on');};
-  $('#arrModerate').onclick=()=>{landingMode='moderate';$('#arrModerate').classList.add('on');$('#arrNoBrake').classList.remove('on');};
-  $('#arrNoBrake').onclick=()=>{landingMode='nobrake_grass';$('#arrNoBrake').classList.add('on');$('#arrModerate').classList.remove('on');};
+  $('#spatsWith').onclick=function(){withSpats=true;$('#spatsWith').classList.add('on');$('#spatsWithout').classList.remove('on');};
+  $('#spatsWithout').onclick=function(){withSpats=false;$('#spatsWithout').classList.add('on');$('#spatsWith').classList.remove('on');};
+  $('#depSurfHard').onclick=function(){depSurface='hard';$('#depSurfHard').classList.add('on');$('#depSurfGrass').classList.remove('on');};
+  $('#depSurfGrass').onclick=function(){depSurface='grass';$('#depSurfGrass').classList.add('on');$('#depSurfHard').classList.remove('on');};
+  $('#arrModerate').onclick=function(){landingMode='moderate';$('#arrModerate').classList.add('on');$('#arrNoBrake').classList.remove('on');};
+  $('#arrNoBrake').onclick=function(){landingMode='nobrake_grass';$('#arrNoBrake').classList.add('on');$('#arrModerate').classList.remove('on');};
 
   // safety
   function updateResLabels(){
-    const s = Math.max(0, parseFloat($('#safety').value||'0')||0);
+    var s = Math.max(0, parseFloat($('#safety').value||'0')||0);
     $('#safety').value = String(s);
   }
   $('#safety').addEventListener('input', updateResLabels); updateResLabels();
 
-  function sanitizeIcao(el){el.value=(el.value||'').toUpperCase().replace(/[^A-Z]/g,'').slice(0,4)}
-  ['depIcao','arrIcao'].forEach(id=>{ const el=$('#'+id); el.addEventListener('input',()=>sanitizeIcao(el)); el.addEventListener('blur',()=>sanitizeIcao(el)); });
+  function sanitizeIcao(el){ el.value=(el.value||'').toUpperCase().replace(/[^A-Z]/g,'').slice(0,4) }
+  ;['depIcao','arrIcao'].forEach(function(id){
+    var el=$('#'+id);
+    el.addEventListener('input',function(){sanitizeIcao(el)});
+    el.addEventListener('blur',function(){sanitizeIcao(el)});
+  });
 
   // QFU
-  function normQFU(val){ let n=parseInt(String(val).replace(/\D/g,''),10); if(isNaN(n)) return null; n=Math.max(1,Math.min(360,n)); return n; }
+  function normQFU(val){ var n=parseInt(String(val).replace(/\D/g,''),10); if(isNaN(n)) return null; n=Math.max(1,Math.min(360,n)); return n; }
   function display3(n){ return n===null?'':pad3(n); }
-  ['depQfu','arrQfu'].forEach(id=>{
-    const el=$('#'+id);
-    el.addEventListener('blur',()=>{ const n=normQFU(el.value); el.value=display3(n); updateWindDisplay(id.startsWith('dep')?'dep':'arr'); });
-    el.addEventListener('input',()=>{ updateWindDisplay(id.startsWith('dep')?'dep':'arr'); });
+  ;['depQfu','arrQfu'].forEach(function(id){
+    var el=$('#'+id);
+    el.addEventListener('blur',function(){ var n=normQFU(el.value); el.value=display3(n); updateWindDisplay(id.indexOf('dep')===0?'dep':'arr'); });
+    el.addEventListener('input',function(){ updateWindDisplay(id.indexOf('dep')===0?'dep':'arr'); });
   });
 
   // TODA/LDA
-  $('#depToda').addEventListener('input',()=>{ let s=$('#depToda').value.replace(/\D/g,''); if(s==='') return; let v=parseInt(s,10); if(!isFinite(v)||v<0)v=0; $('#depToda').value=String(v); });
-  $('#arrLda').addEventListener('input',()=>{ let s=$('#arrLda').value.replace(/\D/g,'').slice(0,4); $('#arrLda').value=s; });
+  $('#depToda').addEventListener('input',function(){ var s=$('#depToda').value.replace(/\D/g,''); if(s==='') return; var v=parseInt(s,10); if(!isFinite(v)||v<0)v=0; $('#depToda').value=String(v); });
+  $('#arrLda').addEventListener('input',function(){ var s=$('#arrLda').value.replace(/\D/g,'').slice(0,4); $('#arrLda').value=s; });
 
   /* ===================== METAR (AVWX) ===================== */
-  const AVWX_TOKEN='q45JCSdkFjeZqHUyvawV2iaFm80CYmlPP6kC3XS8VNs';
-  async function fetchJson(url){
-    const resp = await fetch(url, { headers:{ Authorization:'Bearer '+AVWX_TOKEN, Accept:'application/json' } });
-    if(!resp.ok) throw new Error('HTTP '+resp.status);
-    return await resp.json();
+  var AVWX_TOKEN='q45JCSdkFjeZqHUyvawV2iaFm80CYmlPP6kC3XS8VNs';
+  function fetchJson(url){
+    return fetch(url, { headers:{ Authorization:'Bearer '+AVWX_TOKEN, Accept:'application/json' } })
+      .then(function(resp){ if(!resp.ok) throw new Error('HTTP '+resp.status); return resp.json(); });
   }
-  async function fetchMetar(icao){ return fetchJson(`https://avwx.rest/api/metar/${icao}`); }
-  async function fetchStation(icao){ return fetchJson(`https://avwx.rest/api/station/${icao}`); }
-  async function fetchNearestMetarByCoords(lat, lon){
-    const ll = `${Number(lat).toFixed(5)},${Number(lon).toFixed(5)}`;
-    return fetchJson(`https://avwx.rest/api/metar/${ll}?nearest=true`);
+  function fetchMetar(icao){ return fetchJson('https://avwx.rest/api/metar/'+icao); }
+  function fetchStation(icao){ return fetchJson('https://avwx.rest/api/station/'+icao); }
+  function fetchNearestMetarByCoords(lat, lon){
+    var ll = Number(lat).toFixed(5)+','+Number(lon).toFixed(5);
+    return fetchJson('https://avwx.rest/api/metar/'+ll+'?nearest=true');
   }
 
-  function parseSectorFromRaw(raw){ const m = raw && raw.match(/(\d{3})V(\d{3})/); return m ? {from:parseInt(m[1],10), to:parseInt(m[2],10)} : null; }
+  function parseSectorFromRaw(raw){
+    var m = raw && raw.match(/(\d{3})V(\d{3})/);
+    return m ? {from:parseInt(m[1],10), to:parseInt(m[2],10)} : null;
+  }
   function parseVarSector(data){
-    const from=data?.variable_direction?.from, to=data?.variable_direction?.to;
-    if(typeof from==='number' && typeof to==='number') return {from, to};
-    return parseSectorFromRaw(data?.raw);
+    var from = data && data.variable_direction && typeof data.variable_direction.from==='number' ? data.variable_direction.from : null;
+    var to   = data && data.variable_direction && typeof data.variable_direction.to==='number' ? data.variable_direction.to : null;
+    if(typeof from==='number' && typeof to==='number') return {from:from, to:to};
+    return parseSectorFromRaw(data && data.raw);
   }
 
   function applyMetar(side, data){
-    const dirRepr=(data?.wind_direction?.repr ?? '').toUpperCase();
-    const dirVal =(data?.wind_direction?.value ?? null);
-    const spdVal =Math.max(0,Math.round(data?.wind_speed?.value ?? 0));
-    const gustVal=Math.max(0,Math.round(data?.wind_gust?.value ?? 0));
-    const oatVal =Math.round(data?.temperature?.value ?? 15);
-    const sector=parseVarSector(data);
+    var dirRepr = (data && data.wind_direction && data.wind_direction.repr ? String(data.wind_direction.repr) : '').toUpperCase();
+    var dirVal  = data && data.wind_direction && typeof data.wind_direction.value==='number' ? data.wind_direction.value : null;
+    var spdVal  = Math.max(0, Math.round(data && data.wind_speed && typeof data.wind_speed.value==='number' ? data.wind_speed.value : 0));
+    var gustVal = Math.max(0, Math.round(data && data.wind_gust && typeof data.wind_gust.value==='number' ? data.wind_gust.value : 0));
+    var oatVal  = Math.round(data && data.temperature && typeof data.temperature.value==='number' ? data.temperature.value : 15);
+    var sector  = parseVarSector(data);
 
-    const dirEl=$('#'+side+'WindDir');
+    var dirEl=document.getElementById(side+'WindDir');
     if(dirRepr==='VRB'){dirEl.value='VRB';}
     else if(dirVal!==null){dirEl.value=pad3(dirVal);}
 
-    $('#'+side+'WindKt').value=String(spdVal);
-    $('#'+side+'WindGust').value=String(gustVal||0);
-    $('#'+side+'Oat').value=String(oatVal);
+    document.getElementById(side+'WindKt').value=String(spdVal);
+    document.getElementById(side+'WindGust').value=String(gustVal||0);
+    document.getElementById(side+'Oat').value=String(oatVal);
 
     if(sector){
-      $('#'+side+'VrbFrom').value=pad3(sector.from);
-      $('#'+side+'VrbTo').value=pad3(sector.to);
+      document.getElementById(side+'VrbFrom').value=pad3(sector.from);
+      document.getElementById(side+'VrbTo').value=pad3(sector.to);
     } else {
-      $('#'+side+'VrbFrom').value=''; $('#'+side+'VrbTo').value='';
+      document.getElementById(side+'VrbFrom').value='';
+      document.getElementById(side+'VrbTo').value='';
     }
 
-    if(side==='dep') lastDepMetarRaw = data?.raw || '—';
-    else lastArrMetarRaw = data?.raw || '—';
+    if(side==='dep') lastDepMetarRaw = (data && data.raw) ? data.raw : '—';
+    else lastArrMetarRaw = (data && data.raw) ? data.raw : '—';
 
     updateWindDisplay(side);
   }
 
   async function loadMetarFor(side){
-    const icao = ($('#'+side+'Icao').value||'').toUpperCase();
-    const msgEl = document.getElementById(side==='dep'?'depMetarMsg':'arrMetarMsg');
+    var icao = (document.getElementById(side+'Icao').value||'').toUpperCase();
+    var msgEl = document.getElementById(side==='dep'?'depMetarMsg':'arrMetarMsg');
     msgEl.textContent = 'Chargement METAR…';
 
     try{
-      const station = await fetchStation(icao);
-      const elevFt = station?.elevation_ft;
-      const altInput = document.getElementById(side+'Alt');
+      var station = await fetchStation(icao);
+      var elevFt = station && typeof station.elevation_ft==='number' ? station.elevation_ft : null;
+      var altInput = document.getElementById(side+'Alt');
       if (typeof elevFt === 'number' && elevFt > 0 && altInput) { altInput.value = String(Math.round(elevFt)); }
 
-      let metar, usedIcao = icao, isNearest = false, distTxt = '';
+      var metar, usedIcao = icao, isNearest = false, distTxt = '';
       try{ metar = await fetchMetar(icao); }
       catch(_e){
-        if(typeof station?.latitude === 'number' && typeof station?.longitude === 'number'){
+        if(station && typeof station.latitude==='number' && typeof station.longitude==='number'){
           metar = await fetchNearestMetarByCoords(station.latitude, station.longitude);
           isNearest = true;
-          usedIcao = metar?.station || metar?.icao || usedIcao;
-          const d = metar?.meta?.distance, u = metar?.meta?.units;
-          if(typeof d === 'number' && u){ distTxt = ` (~${d} ${u})`; }
+          usedIcao = (metar && (metar.station || metar.icao)) ? (metar.station || metar.icao) : usedIcao;
+          var d = metar && metar.meta ? metar.meta.distance : null;
+          var u = metar && metar.meta ? metar.meta.units : '';
+          if(typeof d === 'number' && u){ distTxt = ' (~'+d+' '+u+')'; }
         }else{ throw _e; }
       }
 
       applyMetar(side, metar);
-      const raw = metar?.raw || '—';
+      var raw = metar && metar.raw ? metar.raw : '—';
       msgEl.textContent = isNearest
-        ? `METAR chargé (proche : ${usedIcao}${distTxt}) : ${raw}`
-        : `METAR chargé : ${raw}`;
+        ? 'METAR chargé (proche : '+usedIcao+distTxt+') : '+raw
+        : 'METAR chargé : '+raw;
 
       updateWindDisplay(side);
     }catch(e){
-      msgEl.textContent = 'METAR indisponible ('+(e.message||'erreur')+')';
+      msgEl.textContent = 'METAR indisponible ('+((e && e.message) || 'erreur')+')';
     }
   }
-  $('#btnDepMetar').addEventListener('click',()=>loadMetarFor('dep'));
-  $('#btnArrMetar').addEventListener('click',()=>loadMetarFor('arr'));
+  document.getElementById('btnDepMetar').addEventListener('click',function(){loadMetarFor('dep')});
+  document.getElementById('btnArrMetar').addEventListener('click',function(){loadMetarFor('arr')});
 
-  /* ===================== VRB : format & validation (seule règle : multiples de 10, 010…360) ===================== */
-  const MULTI10 = v => v%10===0;
+  /* ===================== VRB (seule règle : multiples de 10, 010…360) ===================== */
+  function MULTI10(v){ return v%10===0; }
   function format3(el){
-    let v=(el.value||'').replace(/\D/g,'');
+    var v=(el.value||'').replace(/\D/g,'');
     if(!v){ el.value=''; return null; }
-    let n=parseInt(v,10);
+    var n=parseInt(v,10);
     if(!isFinite(n)) { el.value=''; return null; }
     n = Math.max(1, Math.min(360, n));
     el.value = pad3(n);
     return n;
   }
   function validateVrb(side){
-    const fEl = $('#'+side+'VrbFrom'), tEl = $('#'+side+'VrbTo');
+    var fEl = document.getElementById(side+'VrbFrom'), tEl = document.getElementById(side+'VrbTo');
     fEl.classList.remove('invalid'); tEl.classList.remove('invalid');
 
-    // Si rien saisi → OK
     if(!fEl.value && !tEl.value) return true;
 
-    const f = format3(fEl), t = format3(tEl);
-    let ok = true;
-
-    // doivent exister et être multiples de 10
+    var f = format3(fEl), t = format3(tEl);
+    var ok = true;
     if(!f || !t) ok=false;
     if(ok && (!MULTI10(f) || !MULTI10(t))) ok=false;
 
@@ -544,45 +552,48 @@
 
   /* ===================== COMPOSANTES & affichage ===================== */
   function dirForDisplay(dirField, sector){
-    const t=(dirField||'').trim().toUpperCase();
+    var t=(dirField||'').trim().toUpperCase();
     if(t==='VRB'){
-      const f = format3(document.getElementById(sector.fromId));
-      const to = format3(document.getElementById(sector.toId));
+      var f = format3(document.getElementById(sector.fromId));
+      var to = format3(document.getElementById(sector.toId));
       if(!f || !to) return null;
-      let a=f, b=to;
-      let diff=((b-a+540)%360)-180;
-      let mid=(a+diff/2+360)%360;
+      var a=f, b=to;
+      var diff=((b-a+540)%360)-180;
+      var mid=(a+diff/2+360)%360;
       if(mid===0) mid=360;
       return mid;
     }
     if(!t) return null;
-    let n=parseInt(t.replace(/\D/g,''),10);
+    var n=parseInt(t.replace(/\D/g,''),10);
     if(isNaN(n)) return null;
     n=Math.max(1,Math.min(360,n));
     return n;
   }
   function compsFrom(qfuDisp, dirDisp, kt){
     if(qfuDisp===null || dirDisp===null) return null;
-    const q = (qfuDisp%360);
-    const d = (dirDisp%360);
-    const ang=Math.abs(((d - q + 540) % 360) - 180);
-    const hwSigned = kt * cosd(ang);
-    const xw = Math.abs(kt * sind(ang));
-    return { face: Math.max(0, hwSigned), tail: Math.max(0, -hwSigned), xw, ang };
+    var q = (qfuDisp%360);
+    var d = (dirDisp%360);
+    var ang=Math.abs(((d - q + 540) % 360) - 180);
+    var hwSigned = kt * cosd(ang);
+    var xw = Math.abs(kt * sind(ang));
+    return { face: Math.max(0, hwSigned), tail: Math.max(0, -hwSigned), xw: xw, ang: ang };
   }
 
   function inSectorShortArc(angle, from, to){
-    const span=((to-from+360)%360);
-    const rel=((angle-from+360)%360);
+    var span=((to-from+360)%360);
+    var rel=((angle-from+360)%360);
     return rel<=span;
   }
   function worstXwindInSector(qfu, from, to, speed){
-    const cand=[from%360, to%360, (qfu+90)%360, (qfu+270)%360];
-    let max=0;
-    for(const dir of [...new Set(cand)]){
+    var cand=[from%360, to%360, (qfu+90)%360, (qfu+270)%360];
+    var seen={}, arr=[], i;
+    for(i=0;i<cand.length;i++){ if(!seen[cand[i]]){seen[cand[i]]=1; arr.push(cand[i]);} }
+    var max=0;
+    for(i=0;i<arr.length;i++){
+      var dir=arr[i];
       if(inSectorShortArc(dir, from%360, to%360)){
-        const ang=Math.abs(((dir - (qfu%360) + 540)%360)-180);
-        const xw=Math.abs(speed*sind(ang));
+        var ang=Math.abs(((dir - (qfu%360) + 540)%360)-180);
+        var xw=Math.abs(speed*sind(ang));
         if(xw>max) max=xw;
       }
     }
@@ -590,7 +601,7 @@
   }
 
   function crosswindLimitColor(side, xwForColor){
-    const card = document.getElementById(side+'XwCard');
+    var card = document.getElementById(side+'XwCard');
     card.classList.remove('warn-yellow','warn-red');
     if(typeof xwForColor==='number'){
       if(xwForColor>=22){ card.classList.add('warn-red'); }
@@ -599,133 +610,139 @@
   }
 
   function updateCrosswindCell(side, qfu, dirDisp, kt){
-    const xwSpan = document.getElementById(side+'Xw');
-    const gust = parseInt($('#'+side+'WindGust').value||'0',10) || 0;
-    const G = Math.max(kt, gust);
+    var xwElem = document.getElementById(side+'Xw');
+    var gust = parseInt(document.getElementById(side+'WindGust').value||'0',10) || 0;
+    var G = Math.max(kt, gust);
 
-    const fEl=$('#'+side+'VrbFrom'), tEl=$('#'+side+'VrbTo');
-    const hasSector = !!(fEl.value.trim() && tEl.value.trim()) && validateVrb(side);
+    var fEl=document.getElementById(side+'VrbFrom'), tEl=document.getElementById(side+'VrbTo');
+    var hasSector = !!(fEl.value.trim() && tEl.value.trim()) && validateVrb(side);
 
     if(!qfu || !dirDisp || !kt){
-      xwSpan.textContent='—';
+      xwElem.textContent='—';
       crosswindLimitColor(side, null);
       return;
     }
 
-    const mean = compsFrom(qfu, dirDisp, kt);
-    const meanX = Math.round(mean.xw);
+    var mean = compsFrom(qfu, dirDisp, kt);
+    var meanX = Math.round(mean.xw);
 
     if(hasSector){
-      const f = parseInt(fEl.value,10), t = parseInt(tEl.value,10);
-      const worstX = Math.round(worstXwindInSector(qfu, f, t, G));
-      xwSpan.innerHTML = `${meanX} kt\n${worstX} kt sur ${pad3(f)}V${pad3(t)}`;
+      var f = parseInt(fEl.value,10), t = parseInt(tEl.value,10);
+      var worstX = Math.round(worstXwindInSector(qfu, f, t, G));
+      xwElem.innerHTML = meanX+' kt\n'+worstX+' kt sur '+pad3(f)+'V'+pad3(t);
       crosswindLimitColor(side, worstX);
     }else{
-      xwSpan.textContent = `${meanX} kt`;
+      xwElem.textContent = meanX+' kt';
       crosswindLimitColor(side, meanX);
     }
   }
 
   function updateWindDisplay(side){
-    const qfu = normQFU($('#'+side+'Qfu').value);
-    const dirStr=$('#'+side+'WindDir').value||'';
-    const kt=parseInt($('#'+side+'WindKt').value||'0',10)||0;
-    const dirDisp = dirForDisplay(dirStr, {fromId:side+'VrbFrom', toId:side+'VrbTo'});
+    var qfu = normQFU(document.getElementById(side+'Qfu').value);
+    var dirStr=(document.getElementById(side+'WindDir').value||'');
+    var kt=parseInt(document.getElementById(side+'WindKt').value||'0',10)||0;
+    var dirDisp = dirForDisplay(dirStr, {fromId:side+'VrbFrom', toId:side+'VrbTo'});
 
     if(qfu===null || dirDisp===null || !kt){
-      $('#'+side+'HwFace').textContent='—';
-      $('#'+side+'Xw').textContent='—';
-      $('#'+side+'Tw').textContent='—';
+      document.getElementById(side+'HwFace').textContent='—';
+      document.getElementById(side+'Xw').textContent='—';
+      document.getElementById(side+'Tw').textContent='—';
       crosswindLimitColor(side,null);
-      if(side==='dep'){ $('#todaMini').textContent=$('#depToda').value?$('#depToda').value+' m':'—'; }
-      else{ $('#ldaMini').textContent=($('#arrLda').value?$('#arrLda').value+' m':'—'); }
+      if(side==='dep'){ document.getElementById('todaMini').textContent=document.getElementById('depToda').value?document.getElementById('depToda').value+' m':'—'; }
+      else{ document.getElementById('ldaMini').textContent=(document.getElementById('arrLda').value?document.getElementById('arrLda').value+' m':'—'); }
       return;
     }
 
-    const c = compsFrom(qfu, dirDisp, kt);
-    $('#'+side+'HwFace').textContent = Math.round(c.face);
-    $('#'+side+'Tw').textContent     = Math.round(c.tail);
+    var c = compsFrom(qfu, dirDisp, kt);
+    document.getElementById(side+'HwFace').textContent = Math.round(c.face);
+    document.getElementById(side+'Tw').textContent     = Math.round(c.tail);
 
     updateCrosswindCell(side, qfu, dirDisp, kt);
 
-    if(side==='dep'){ $('#todaMini').textContent=$('#depToda').value?$('#depToda').value+' m':'—'; }
-    else{ $('#ldaMini').textContent=($('#arrLda').value?$('#arrLda').value+' m':'—'); }
+    if(side==='dep'){ document.getElementById('todaMini').textContent=document.getElementById('depToda').value?document.getElementById('depToda').value+' m':'—'; }
+    else{ document.getElementById('ldaMini').textContent=(document.getElementById('arrLda').value?document.getElementById('arrLda').value+' m':'—'); }
   }
 
-  ['depWindDir','arrWindDir','depWindKt','arrWindKt','depVrbFrom','arrVrbFrom','depVrbTo','arrVrbTo','depWindGust','arrWindGust','depOat','arrOat','depToda','arrLda','depQfu','arrQfu']
-    .forEach(id=>{
-      $('#'+id).addEventListener('input',()=>updateWindDisplay(id.startsWith('dep')?'dep':'arr'));
-      $('#'+id).addEventListener('blur',()=>{
-        if(id.includes('Vrb')){ validateVrb(id.startsWith('dep')?'dep':'arr'); }
-        if(id.endsWith('WindDir')){
-          const el=document.getElementById(id);
-          const t=el.value.trim().toUpperCase();
-          if(t && t!=='VRB'){ let n=parseInt(t.replace(/\D/g,''),10); if(!isNaN(n)){ n=Math.max(1,Math.min(360,n)); el.value=pad3(n);} }
+  ;['depWindDir','arrWindDir','depWindKt','arrWindKt','depVrbFrom','arrVrbFrom','depVrbTo','arrVrbTo','depWindGust','arrWindGust','depOat','arrOat','depToda','arrLda','depQfu','arrQfu']
+    .forEach(function(id){
+      document.getElementById(id).addEventListener('input',function(){updateWindDisplay(id.indexOf('dep')===0?'dep':'arr')});
+      document.getElementById(id).addEventListener('blur',function(){
+        if(id.indexOf('Vrb')>-1){ validateVrb(id.indexOf('dep')===0?'dep':'arr'); }
+        if(id.slice(-7)==='WindDir'){
+          var el=document.getElementById(id);
+          var t=el.value.trim().toUpperCase();
+          if(t && t!=='VRB'){ var n=parseInt(t.replace(/\D/g,''),10); if(!isNaN(n)){ n=Math.max(1,Math.min(360,n)); el.value=pad3(n);} }
         }
-        updateWindDisplay(id.startsWith('dep')?'dep':'arr');
+        updateWindDisplay(id.indexOf('dep')===0?'dep':'arr');
       });
     });
 
   /* ===================== Vent contraignant pour perfs ===================== */
   function sectorHasAngle(from,to,pred){
-    const step=5;
-    let a=from%360, b=to%360;
-    const span=((b-a+360)%360);
-    for(let t=0;t<=span;t+=step){
-      const d=(a+t)%360;
+    var step=5, a=from%360, b=to%360;
+    var span=((b-a+360)%360);
+    for(var t=0;t<=span;t+=step){
+      var d=(a+t)%360;
       if(pred(d)) return true;
     }
     return false;
   }
   function worstBetweenMeanAndSector(qfu, meanDirOrVRB, kt, gust, sectorFrom, sectorTo){
-    const V=Math.max(0,kt|0), G=Math.max(V,gust|0);
+    var V=Math.max(0,kt|0), G=Math.max(V,gust|0);
     if(qfu===null) return {headwindForFactor:0, explain:'QFU manquant'};
-    const q=(qfu%360);
+    var q=(qfu%360);
     function comps(dir, speed){
-      const d = Math.abs(((dir-q+540)%360)-180);
-      const hwSigned = speed * Math.cos(toRad(d));
-      const xw = Math.abs(speed * Math.sin(toRad(d)));
-      return {d, hwSigned, xw, dir, speed};
+      var d = Math.abs(((dir-q+540)%360)-180);
+      var hwSigned = speed * Math.cos(toRad(d));
+      var xw = Math.abs(speed * Math.sin(toRad(d)));
+      return {d:d, hwSigned:hwSigned, xw:xw, dir:dir, speed:speed};
     }
-    const candidates=[];
-    const t=(meanDirOrVRB||'').trim().toUpperCase();
+    var candidates=[];
+    var t=(meanDirOrVRB||'').trim().toUpperCase();
     if(t && t!=='VRB'){
-      let n=parseInt(t.replace(/\D/g,''),10);
+      var n=parseInt(t.replace(/\D/g,''),10);
       if(!isNaN(n)){ n=Math.max(1,Math.min(360,n));
-        const ang=Math.abs(((n-q+540)%360)-180);
-        const sp = (ang>90)? G : V;
-        candidates.push({src:'moyen', ...comps(n,sp)});
+        var ang=Math.abs(((n-q+540)%360)-180);
+        var sp = (ang>90)? G : V;
+        candidates.push({src:'moyen', val:comps(n,sp)});
       }
     }
     if(sectorFrom && sectorTo){
-      const from=sectorFrom%360, to=sectorTo%360;
-      const dirs=[from,to,(from+(((to-from+360)%360)/2))%360,(q+180)%360,(q+90)%360,(q+270)%360];
-      const uniq=[...new Set(dirs)];
-      const hasTail = sectorHasAngle(from,to, a=> Math.abs(((a-q+540)%360)-180) > 90);
-      uniq.forEach(d=>{
-        const ang=Math.abs(((d-q+540)%360)-180);
-        const sp = hasTail ? G : V;
-        candidates.push({src:'secteur', ...comps(d,sp)});
-      });
+      var from=sectorFrom%360, to=sectorTo%360;
+      var dirs=[from,to,(from+(((to-from+360)%360)/2))%360,(q+180)%360,(q+90)%360,(q+270)%360];
+      var seen={}, uniq=[], i;
+      for(i=0;i<dirs.length;i++){ if(!seen[dirs[i]]){seen[dirs[i]]=1; uniq.push(dirs[i]);} }
+      var hasTail = sectorHasAngle(from,to, function(a){ return Math.abs(((a-q+540)%360)-180) > 90; });
+      for(i=0;i<uniq.length;i++){
+        var d=uniq[i];
+        var ang=Math.abs(((d-q+540)%360)-180);
+        var sp = hasTail ? G : V;
+        candidates.push({src:'secteur', val:comps(d,sp)});
+      }
     }
     if(candidates.length===0){
-      const c=comps((q+180)%360, G);
-      return {headwindForFactor:c.hwSigned, explain:`VRB sans secteur : cas arrière à 180°`};
+      var c=comps((q+180)%360, G);
+      return {headwindForFactor:c.hwSigned, explain:'VRB sans secteur : cas arrière à 180°'};
     }
-    let worst=candidates[0];
-    candidates.forEach(c=>{ if(c.hwSigned < worst.hwSigned) worst=c; });
+    var worst=candidates[0].val;
+    for(var j=1;j<candidates.length;j++){
+      if(candidates[j].val.hwSigned < worst.hwSigned) worst=candidates[j].val;
+    }
     return {headwindForFactor:worst.hwSigned, explain:'Règle vent appliquée (plus contraignant).'};
   }
 
   /* ===================== Facteurs perfs ===================== */
   function windDistanceFactor(head){
     if(head>=0){
-      const pts=[{x:0,y:1.00},{x:10,y:0.78},{x:20,y:0.63},{x:30,y:0.52}],x=Math.max(0,Math.min(30,head));
-      if(x===0)return 1;
-      for(let i=0;i<pts.length-1;i++){const p0=pts[i],p1=pts[i+1];if(x>=p0.x&&x<=p1.x)return p0.y+(p1.y-p0.y)*((x-p0.x)/(p1.x-p0.x))}
-      return pts[pts.length-1].y; // compat navigateurs (pas de .at)
+      var pts=[{x:0,y:1.00},{x:10,y:0.78},{x:20,y:0.63},{x:30,y:0.52}],x=Math.max(0,Math.min(30,head));
+      if(x===0) return 1;
+      for(var i=0;i<pts.length-1;i++){
+        var p0=pts[i],p1=pts[i+1];
+        if(x>=p0.x&&x<=p1.x) return p0.y+(p1.y-p0.y)*((x-p0.x)/(p1.x-p0.x));
+      }
+      return pts[pts.length-1].y;
     }else{
-      const tw=Math.abs(head),steps=Math.ceil(tw/2);
+      var tw=Math.abs(head),steps=Math.ceil(tw/2);
       return 1+0.10*steps;
     }
   }
@@ -734,7 +751,7 @@
   function setChip(el,state){el.className='chip '+(state==='ok'?'ok':state==='bad'?'bad':'neutral');el.textContent=state==='ok'?'OK':'KO'}
 
   function ensureValidBeforeCompute(side){
-    const ok = validateVrb(side);
+    var ok = validateVrb(side);
     if(!ok){
       alert('Vérifier secteur variable vent');
       return false;
@@ -743,65 +760,76 @@
   }
 
   function interpTemp(rowTemps,arr,oat){
-    const xs=[rowTemps.minus20,rowTemps.isa,rowTemps.plus20],ys=arr;
+    var xs=[rowTemps.minus20,rowTemps.isa,rowTemps.plus20],ys=arr;
     if(oat<=xs[0])return ys[0]; if(oat>=xs[2])return ys[2];
     if(oat<=xs[1])return lerp(xs[0],ys[0],xs[1],ys[1],oat);
     return lerp(xs[1],ys[1],xs[2],ys[2],oat);
   }
   function interpTO_DR400(altFt,oat,massKg,surface,kind){
-    const low=altFt<=0?0:altFt>=8000?8000:(altFt<=4000?0:4000);
-    const high=altFt<=0?0:altFt>=8000?8000:(altFt<=4000?4000:8000);
-    const alpha=clamp01((massKg-700)/(900-700));
-    const valAt=alt=>{const t=TO_DR400[alt]; const v700=interpTemp(t.temps,t[surface].kg700[kind],oat); const v900=interpTemp(t.temps,t[surface].kg900[kind],oat); return lerp(0,v700,1,v900,alpha);};
+    var low=altFt<=0?0:altFt>=8000?8000:(altFt<=4000?0:4000);
+    var high=altFt<=0?0:altFt>=8000?8000:(altFt<=4000?4000:8000);
+    var alpha=clamp01((massKg-700)/(900-700));
+    function valAt(alt){
+      var t=TO_DR400[alt];
+      var v700=interpTemp(t.temps,t[surface].kg700[kind],oat);
+      var v900=interpTemp(t.temps,t[surface].kg900[kind],oat);
+      return lerp(0,v700,1,v900,alpha);
+    }
     if(low===high)return valAt(low); return lerp(low,valAt(low),high,valAt(high),altFt);
   }
   function interpLDG_DR400(altFt,oat,massKg,mode,kind){
-    const low=altFt<=0?0:altFt>=8000?8000:(altFt<=4000?0:4000);
-    const high=altFt<=0?0:altFt>=8000?8000:(altFt<=4000?4000:8000);
-    const alpha=clamp01((massKg-700)/(900-700));
-    const valAt=alt=>{const t=LDG_DR400[alt]; const v700=interpTemp(t.temps,t[mode].kg700[kind],oat); const v900=interpTemp(t.temps,t[mode].kg900[kind],oat); return lerp(0,v700,1,v900,alpha);};
+    var low=altFt<=0?0:altFt>=8000?8000:(altFt<=4000?0:4000);
+    var high=altFt<=0?0:altFt>=8000?8000:(altFt<=4000?4000:8000);
+    var alpha=clamp01((massKg-700)/(900-700));
+    function valAt(alt){
+      var t=LDG_DR400[alt];
+      var v700=interpTemp(t.temps,t[mode].kg700[kind],oat);
+      var v900=interpTemp(t.temps,t[mode].kg900[kind],oat);
+      return lerp(0,v700,1,v900,alpha);
+    }
     if(low===high)return valAt(low); return lerp(low,valAt(low),high,valAt(high),altFt);
   }
   function interpGridDR300(surface,kind,altFt,oat,massKg){
-    const surf=TO_DR300[surface], temps=DR300_TEMPS, alts=surf.alts;
-    function interpRow(row){const ys=row,x=oat;
+    var surf=TO_DR300[surface], temps=DR300_TEMPS, alts=surf.alts;
+    function interpRow(row){
+      var ys=row,x=oat;
       if(x<=temps[0])return ys[0]; if(x>=temps[3])return ys[3];
       if(x<=temps[1])return lerp(temps[0],ys[0],temps[1],ys[1],x);
       if(x<=temps[2])return lerp(temps[1],ys[1],temps[2],ys[2],x);
       return lerp(temps[2],ys[2],temps[3],ys[3],x);
     }
-    let a0=alts[0], a1=alts[alts.length-1];
-    for(let i=0;i<alts.length-1;i++){
+    var a0=alts[0], a1=alts[alts.length-1];
+    for(var i=0;i<alts.length-1;i++){
       if(altFt<=alts[0]){a0=a1=alts[0];break;}
       if(altFt>=alts[alts.length-1]){a0=a1=alts[alts.length-1];break;}
       if(altFt>=alts[i] && altFt<=alts[i+1]){a0=alts[i];a1=alts[i+1];break;}
     }
-    const idx0=alts.indexOf(a0), idx1=alts.indexOf(a1);
-    const v0=interpRow(surf[kind][idx0]);
-    const v1=interpRow(surf[kind][idx1]);
-    let val=(a0===a1)?v0:lerp(a0,v0,a1,v1,altFt);
+    var idx0=alts.indexOf(a0), idx1=alts.indexOf(a1);
+    var v0=interpRow(surf[kind][idx0]);
+    var v1=interpRow(surf[kind][idx1]);
+    var val=(a0===a1)?v0:lerp(a0,v0,a1,v1,altFt);
     return val*TO_DR300.massScale(massKg);
   }
 
   function computeDepPerf(){
     if(!ensureValidBeforeCompute('dep')) return;
 
-    const qfu=normQFU($('#depQfu').value);
+    var qfu=normQFU(document.getElementById('depQfu').value);
     if(qfu===null){
-      setChip($('#toChip'),'neutral'); $('#toKpi').className='kpi';
-      ['toBasePass','toBaseRoll','toWindF','toSpat','toExtra','toRes'].forEach(id=>$('#'+id).textContent='—');
-      $('#toExplain').textContent=''; return;
+      setChip(document.getElementById('toChip'),'neutral'); document.getElementById('toKpi').className='kpi';
+      ['toBasePass','toBaseRoll','toWindF','toSpat','toExtra','toRes'].forEach(function(id){document.getElementById(id).textContent='—'});
+      document.getElementById('toExplain').textContent=''; return;
     }
-    const depAlt=+($('#depAlt')?.value||0), depOat=+($('#depOat').value||0),
-          depExtra=+($('#depExtraTO').value||1), depTow=+($('#depTow').value||900),
-          depToda=+($('#depToda').value||0), safety=Math.max(0,+($('#safety').value||30));
+    var depAlt=+(document.getElementById('depAlt').value||0), depOat=+(document.getElementById('depOat').value||0),
+        depExtra=+(document.getElementById('depExtraTO').value||1), depTow=+(document.getElementById('depTow').value||900),
+        depToda=+(document.getElementById('depToda').value||0), safety=Math.max(0,+(document.getElementById('safety').value||30));
 
-    const meanDir=$('#depWindDir').value;
-    const kt=+($('#depWindKt').value||0), gust=+($('#depWindGust').value||0);
-    const sf=parseInt($('#depVrbFrom').value||'0',10), st=parseInt($('#depVrbTo').value||'0',10);
-    const w=worstBetweenMeanAndSector(qfu, meanDir, kt, gust, sf, st);
+    var meanDir=document.getElementById('depWindDir').value;
+    var kt=+(document.getElementById('depWindKt').value||0), gust=+(document.getElementById('depWindGust').value||0);
+    var sf=parseInt(document.getElementById('depVrbFrom').value||'0',10), st=parseInt(document.getElementById('depVrbTo').value||'0',10);
+    var w=worstBetweenMeanAndSector(qfu, meanDir, kt, gust, sf, st);
 
-    let baseTO_pass, baseTO_roll;
+    var baseTO_pass, baseTO_roll;
     if(profile==='DR300'){
       baseTO_pass=interpGridDR300(depSurface,'pass',depAlt,depOat,depTow);
       baseTO_roll=interpGridDR300(depSurface,'roll',depAlt,depOat,depTow);
@@ -810,93 +838,102 @@
       baseTO_roll=interpTO_DR400(depAlt,depOat,depTow,depSurface,'roll');
     }
 
-    const depWindF=windDistanceFactor(w.headwindForFactor||0);
-    const spatsF=withSpats?1.00:1.03;
-    const toCalc=Math.round(baseTO_pass*depWindF*depExtra*spatsF);
-    const toMargin=Math.round(toCalc*(1+safety/100));
+    var depWindF=windDistanceFactor(w.headwindForFactor||0);
+    var spatsF=withSpats?1.00:1.03;
+    var toCalc=Math.round(baseTO_pass*depWindF*depExtra*spatsF);
+    var toMargin=Math.round(toCalc*(1+safety/100));
 
-    $('#toBasePass').textContent=Math.round(baseTO_pass)+' m';
-    $('#toBaseRoll').textContent=Math.round(baseTO_roll)+' m';
-    $('#toWindF').textContent=depWindF.toFixed(2)+'×';
-    $('#toSpat').textContent=`${spatsF.toFixed(2)}×`+(spatsF===1?' (carénages présents)':' (sans carénages)');
-    $('#toExtra').textContent=depExtra.toFixed(2)+'×';
-    $('#toRes').textContent=toCalc+' m';
-    $('#todaMini').textContent=$('#depToda').value?$('#depToda').value+' m':'—';
+    document.getElementById('toBasePass').textContent=Math.round(baseTO_pass)+' m';
+    document.getElementById('toBaseRoll').textContent=Math.round(baseTO_roll)+' m';
+    document.getElementById('toWindF').textContent=depWindF.toFixed(2)+'×';
+    document.getElementById('toSpat').textContent=(spatsF.toFixed(2)+'×')+(spatsF===1?' (carénages présents)':' (sans carénages)');
+    document.getElementById('toExtra').textContent=depExtra.toFixed(2)+'×';
+    document.getElementById('toRes').textContent=toCalc+' m';
+    document.getElementById('todaMini').textContent=document.getElementById('depToda').value?document.getElementById('depToda').value+' m':'—';
 
-    const stTO=(depToda? (toMargin<=depToda?'ok':'bad'):'neutral');
-    setChip($('#toChip'),stTO); $('#toKpi').className='kpi '+(stTO==='ok'?'ok':stTO==='bad'?'bad':'');
-    $('#toKpiVal').textContent=toMargin+' m';
+    var stTO=(depToda? (toMargin<=depToda?'ok':'bad'):'neutral');
+    setChip(document.getElementById('toChip'),stTO); document.getElementById('toKpi').className='kpi '+(stTO==='ok'?'ok':stTO==='bad'?'bad':'');
+    document.getElementById('toKpiVal').textContent=toMargin+' m';
 
-    $('#toExplain').textContent = `Élévation ${depAlt} ft. ${w.explain || '—'} Facteur vent ${depWindF.toFixed(2)}× (composante utilisée ${Math.round(w.headwindForFactor||0)} kt). Surface=${depSurface==='hard'?'Dur':'Herbe'} · Carénages=${withSpats?'Avec':'Sans'}.`;
+    document.getElementById('toExplain').textContent = 'Élévation '+depAlt+' ft. '+(w.explain || '—')+' Facteur vent '+depWindF.toFixed(2)+'× (composante utilisée '+Math.round(w.headwindForFactor||0)+' kt). Surface='+(depSurface==='hard'?'Dur':'Herbe')+' · Carénages='+(withSpats?'Avec':'Sans')+'.';
   }
 
   function computeArrPerf(){
     if(!ensureValidBeforeCompute('arr')) return;
 
-    const qfu=normQFU($('#arrQfu').value);
+    var qfu=normQFU(document.getElementById('arrQfu').value);
     if(qfu===null){
-      setChip($('#ldgChip'),'neutral'); $('#ldgKpi').className='kpi';
-      ['ldgBasePass','ldgBaseRoll','ldgWindF','ldgExtra','ldgRes'].forEach(id=>$('#'+id).textContent='—');
-      $('#ldgExplain').textContent=''; return;
+      setChip(document.getElementById('ldgChip'),'neutral'); document.getElementById('ldgKpi').className='kpi';
+      ['ldgBasePass','ldgBaseRoll','ldgWindF','ldgExtra','ldgRes'].forEach(function(id){document.getElementById(id).textContent='—'});
+      document.getElementById('ldgExplain').textContent=''; return;
     }
-    const arrAlt=+($('#arrAlt')?.value||0), arrOat=+($('#arrOat').value||0),
-          arrExtra=+($('#arrExtraLDG').value||1), arrLdw=+($('#arrLdw').value||900),
-          arrLda=+($('#arrLda').value||0), safety=Math.max(0,+($('#safety').value||30));
+    var arrAlt=+(document.getElementById('arrAlt').value||0), arrOat=+(document.getElementById('arrOat').value||0),
+        arrExtra=+(document.getElementById('arrExtraLDG').value||1), arrLdw=+(document.getElementById('arrLdw').value||900),
+        arrLda=+(document.getElementById('arrLda').value||0), safety=Math.max(0,+(document.getElementById('safety').value||30));
 
-    const meanDir=$('#arrWindDir').value;
-    const kt=+($('#arrWindKt').value||0), gust=+($('#arrWindGust').value||0);
-    const sf=parseInt($('#arrVrbFrom').value||'0',10), st=parseInt($('#arrVrbTo').value||'0',10);
-    const w=worstBetweenMeanAndSector(qfu, meanDir, kt, gust, sf, st);
+    var meanDir=document.getElementById('arrWindDir').value;
+    var kt=+(document.getElementById('arrWindKt').value||0), gust=+(document.getElementById('arrWindGust').value||0);
+    var sf=parseInt(document.getElementById('arrVrbFrom').value||'0',10), st=parseInt(document.getElementById('arrVrbTo').value||'0',10);
+    var w=worstBetweenMeanAndSector(qfu, meanDir, kt, gust, sf, st);
 
-    const baseLDG_pass=interpLDG_DR400(arrAlt,arrOat,arrLdw,landingMode,'pass');
-    const baseLDG_roll=interpLDG_DR400(arrAlt,arrOat,arrLdw,landingMode,'roll');
-    const arrWindF=windDistanceFactor(w.headwindForFactor||0);
-    const ldgCalc=Math.round(baseLDG_pass*arrWindF*arrExtra);
-    const ldgMargin=Math.round(ldgCalc*(1+safety/100));
+    var baseLDG_pass=interpLDG_DR400(arrAlt,arrOat,arrLdw,landingMode,'pass');
+    var baseLDG_roll=interpLDG_DR400(arrAlt,arrOat,arrLdw,landingMode,'roll');
+    var arrWindF=windDistanceFactor(w.headwindForFactor||0);
+    var ldgCalc=Math.round(baseLDG_pass*arrWindF*arrExtra);
+    var ldgMargin=Math.round(ldgCalc*(1+safety/100));
 
-    $('#ldgBasePass').textContent=Math.round(baseLDG_pass)+' m';
-    $('#ldgBaseRoll').textContent=Math.round(baseLDG_roll)+' m';
-    $('#ldgWindF').textContent=arrWindF.toFixed(2)+'×';
-    $('#ldgExtra').textContent=arrExtra.toFixed(2)+'×';
-    $('#ldgRes').textContent=ldgCalc+' m';
-    $('#ldaMini').textContent=$('#arrLda').value?$('#arrLda').value+' m':'—';
+    document.getElementById('ldgBasePass').textContent=Math.round(baseLDG_pass)+' m';
+    document.getElementById('ldgBaseRoll').textContent=Math.round(baseLDG_roll)+' m';
+    document.getElementById('ldgWindF').textContent=arrWindF.toFixed(2)+'×';
+    document.getElementById('ldgExtra').textContent=arrExtra.toFixed(2)+'×';
+    document.getElementById('ldgRes').textContent=ldgCalc+' m';
+    document.getElementById('ldaMini').textContent=document.getElementById('arrLda').value?document.getElementById('arrLda').value+' m':'—';
 
-    const stLDG=(arrLda? (ldgMargin<=arrLda?'ok':'bad'):'neutral');
-    setChip($('#ldgChip'),stLDG); $('#ldgKpi').className='kpi '+(stLDG==='ok'?'ok':stLDG==='bad'?'bad':'');
-    $('#ldgKpiVal').textContent=ldgMargin+' m';
+    var stLDG=(arrLda? (ldgMargin<=arrLda?'ok':'bad'):'neutral');
+    setChip(document.getElementById('ldgChip'),stLDG); document.getElementById('ldgKpi').className='kpi '+(stLDG==='ok'?'ok':stLDG==='bad'?'bad':'');
+    document.getElementById('ldgKpiVal').textContent=ldgMargin+' m';
 
-    $('#ldgExplain').textContent = `Élévation ${arrAlt} ft. ${w.explain || '—'} Facteur vent ${arrWindF.toFixed(2)}× (composante utilisée ${Math.round(w.headwindForFactor||0)} kt). Type de freinage=${landingMode==='moderate'?'Freinage modéré':'Sans frein herbe'}.`;
+    document.getElementById('ldgExplain').textContent = 'Élévation '+arrAlt+' ft. '+(w.explain || '—')+' Facteur vent '+arrWindF.toFixed(2)+'× (composante utilisée '+Math.round(w.headwindForFactor||0)+' kt). Type de freinage='+(landingMode==='moderate'?'Freinage modéré':'Sans frein herbe')+'.';
   }
 
   document.getElementById('btnCalcDep').addEventListener('click', computeDepPerf);
   document.getElementById('btnCalcArr').addEventListener('click', computeArrPerf);
 
-  /* ===================== Impression (rapport brut) ===================== */
-  function twoCols(label, value, width=22){
-    const l = (label+':').padEnd(width,' ');
-    return `${l}${value}`;
+  /* ===================== Impression (rapport brut + perfs) ===================== */
+  function twoCols(label, value, width){
+    if(typeof width==='undefined') width=22;
+    var l = (label+':').padEnd(width,' ');
+    return l+value;
   }
   function nowStamp(){
-    const d = new Date();
-    const dd = String(d.getDate()).padStart(2,'0');
-    const mm = String(d.getMonth()+1).padStart(2,'0');
-    const yyyy = d.getFullYear();
-    const hh = String(d.getHours()).padStart(2,'0');
-    const mi = String(d.getMinutes()).padStart(2,'0');
-    return `Imprimé le ${dd}/${mm}/${yyyy} à ${hh}:${mi}`;
+    var d = new Date();
+    var dd = String(d.getDate()).padStart(2,'0');
+    var mm = String(d.getMonth()+1).padStart(2,'0');
+    var yyyy = d.getFullYear();
+    var hh = String(d.getHours()).padStart(2,'0');
+    var mi = String(d.getMinutes()).padStart(2,'0');
+    return 'Imprimé le '+dd+'/'+mm+'/'+yyyy+' à '+hh+':'+mi;
   }
+  function getText(id){ var el=document.getElementById(id); return el?el.textContent:'—'; }
   function buildRawReport(){
-    const safety=Math.max(0,+($('#safety').value||30));
-    const aircraft=$('#aircraftSel').value;
-    const prop=$('#propeller').value;
-    const spats=$('#spatsWith').classList.contains('on')?'Avec carénages':'Sans carénages (+3% TO)';
-    const D={ icao:($('#depIcao').value||'').toUpperCase(), qfu:display3(normQFU($('#depQfu').value)||0),
-              toda:$('#depToda').value||'—', alt:$('#depAlt').value||'—', oat:$('#depOat').value||'—',
-              wdir:($('#depWindDir').value||'').toUpperCase(), wkt:$('#depWindKt').value||'0', wg:$('#depWindGust').value||'0' };
-    const A={ icao:($('#arrIcao').value||'').toUpperCase(), qfu:display3(normQFU($('#arrQfu').value)||0),
-              lda:$('#arrLda').value||'—', alt:$('#arrAlt').value||'—', oat:$('#arrOat').value||'—',
-              wdir:($('#arrWindDir').value||'').toUpperCase(), wkt:$('#arrWindKt').value||'0', wg:$('#arrWindGust').value||'0' };
-    const lines = [];
+    var safety=Math.max(0,+(document.getElementById('safety').value||30));
+    var aircraft=document.getElementById('aircraftSel').value;
+    var prop=document.getElementById('propeller').value;
+    var spats=document.getElementById('spatsWith').classList.contains('on')?'Avec carénages':'Sans carénages (+3% TO)';
+
+    var D={ icao:(document.getElementById('depIcao').value||'').toUpperCase(), qfu:display3(normQFU(document.getElementById('depQfu').value)||0),
+            toda:document.getElementById('depToda').value||'—', alt:document.getElementById('depAlt').value||'—', oat:document.getElementById('depOat').value||'—',
+            wdir:(document.getElementById('depWindDir').value||'').toUpperCase(), wkt:document.getElementById('depWindKt').value||'0', wg:document.getElementById('depWindGust').value||'0' };
+
+    var A={ icao:(document.getElementById('arrIcao').value||'').toUpperCase(), qfu:display3(normQFU(document.getElementById('arrQfu').value)||0),
+            lda:document.getElementById('arrLda').value||'—', alt:document.getElementById('arrAlt').value||'—', oat:document.getElementById('arrOat').value||'—',
+            wdir:(document.getElementById('arrWindDir').value||'').toUpperCase(), wkt:document.getElementById('arrWindKt').value||'0', wg:document.getElementById('arrWindGust').value||'0' };
+
+    // Perfs affichées
+    var TO={ req:getText('toKpiVal'), basePass:getText('toBasePass'), baseRoll:getText('toBaseRoll'), windF:getText('toWindF'), spat:getText('toSpat'), extra:getText('toExtra'), res:getText('toRes'), todaMin:getText('todaMini'), explain:getText('toExplain') };
+    var LDG={ req:getText('ldgKpiVal'), basePass:getText('ldgBasePass'), baseRoll:getText('ldgBaseRoll'), windF:getText('ldgWindF'), extra:getText('ldgExtra'), res:getText('ldgRes'), ldaMin:getText('ldaMini'), explain:getText('ldgExplain') };
+
+    var lines = [];
     lines.push('CALCULCATEUR DE PERFORMANCES');
     lines.push(nowStamp());
     lines.push('');
@@ -910,29 +947,47 @@
     lines.push('[Départ]');
     lines.push(twoCols('ICAO', D.icao) + '   ' + twoCols('QFU', D.qfu));
     lines.push(twoCols('Élévation', D.alt+' ft') + '   ' + twoCols('OAT', D.oat+' °C'));
-    lines.push(twoCols('Vent', `${D.wdir}/${D.wkt} kt (G${D.wg})`));
-    lines.push(twoCols('TODA', `${D.toda} m`));
+    lines.push(twoCols('Vent', D.wdir+'/'+D.wkt+' kt (G'+D.wg+')'));
+    lines.push(twoCols('TODA', D.toda+' m'));
     lines.push(twoCols('METAR', lastDepMetarRaw));
+    lines.push('');
+    lines.push('[Décollage — Résultats]');
+    lines.push(twoCols('Requis (marge incluse)', TO.req));
+    lines.push(twoCols('TODA dispo', TO.todaMin));
+    // Deux colonnes “roulement/pass 15m”
+    var colA = twoCols('Roulement (sans marge)', TO.baseRoll, 28);
+    var colB = twoCols('Passage 15 m (sans marge)', TO.basePass, 32);
+    lines.push(colA + '   ' + colB);
+    lines.push(twoCols('Facteur vent', TO.windF) + '   ' + twoCols('Carénages', TO.spat));
+    lines.push(twoCols('Facteur supplémentaire', TO.extra) + '   ' + twoCols('Résultat (sans marge)', TO.res));
+    lines.push(twoCols('Explications', TO.explain, 28));
     lines.push('');
     lines.push('[Arrivée]');
     lines.push(twoCols('ICAO', A.icao) + '   ' + twoCols('QFU', A.qfu));
     lines.push(twoCols('Élévation', A.alt+' ft') + '   ' + twoCols('OAT', A.oat+' °C'));
-    lines.push(twoCols('Vent', `${A.wdir}/${A.wkt} kt (G${A.wg})`));
-    lines.push(twoCols('LDA', `${A.lda} m`));
+    lines.push(twoCols('Vent', A.wdir+'/'+A.wkt+' kt (G'+A.wg+')'));
+    lines.push(twoCols('LDA', A.lda+' m'));
     lines.push(twoCols('METAR', lastArrMetarRaw));
     lines.push('');
-    lines.push('Source : Manuel de vol respectif de chaque avion - Aéroclub de Beauvais-Tillé');
-    lines.push("Développé par Hugo DERUELLE avec l'aide de l'IA");
+    lines.push('[Atterrissage — Résultats]');
+    lines.push(twoCols('Requis (marge incluse)', LDG.req));
+    lines.push(twoCols('LDA dispo', LDG.ldaMin));
+    var colC = twoCols('Roulement (sans marge)', LDG.baseRoll, 28);
+    var colD = twoCols('Passage 15 m (sans marge)', LDG.basePass, 32);
+    lines.push(colC + '   ' + colD);
+    lines.push(twoCols('Facteur vent', LDG.windF) + '   ' + twoCols('Facteur supplémentaire', LDG.extra));
+    lines.push(twoCols('Résultat (sans marge)', LDG.res));
+    lines.push(twoCols('Explications', LDG.explain, 28));
     return lines.join('\n');
   }
-  document.getElementById('btnPrint').addEventListener('click',()=>{
+  document.getElementById('btnPrint').addEventListener('click',function(){
     document.getElementById('rawPre').textContent = buildRawReport();
     window.print();
   });
 
   // init
   (function init(){
-    const ac=$('#aircraftSel').value; $('#propeller').value=propByAircraft[ac]||'';
+    var ac=$('#aircraftSel').value; $('#propeller').value=propByAircraft[ac]||'';
     updateWindDisplay('dep'); updateWindDisplay('arr'); updateResLabels();
   })();
 </script>
