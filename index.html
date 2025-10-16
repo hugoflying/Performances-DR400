@@ -24,14 +24,13 @@
 
     .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
 
-    /* UI controls uniformisés (iOS/Android/PC) */
     input, select, button.btn{
       width:100%;
       border:1px solid var(--line);
       border-radius:12px;
       background:#fff;
       padding:10px 12px;
-      min-height:44px;              /* hauteur uniforme */
+      min-height:44px;
       line-height:1.2;
       -webkit-appearance:none;
       appearance:none;
@@ -80,34 +79,22 @@
     .warn-red{background:var(--warn-red-bg)!important;border-color:var(--warn-red-border)!important}
     .invalid{border-color:var(--bad)!important}
 
-    /* ===== Disposition responsive par zones ===== */
+    /* Grille principale (mobile = 1 col | tablette/PC = 2x2) */
     .gridAll{
-      display:grid;
-      gap:16px;
-      grid-template-columns:1fr;
-      grid-template-areas:
-        "dep"
-        "depperf"
-        "arr"
-        "arrperf";
+      display:grid; gap:16px; grid-template-columns:1fr;
+      grid-template-areas:"dep" "depperf" "arr" "arrperf";
     }
     #cardDep{grid-area:dep}
     #cardDepPerf{grid-area:depperf}
     #cardArr{grid-area:arr}
     #cardArrPerf{grid-area:arrperf}
-
-    /* Tablette (iPad mini ≥768px) et PC : 2 colonnes avec rangées Départ/Arrivée puis Perfs */
     @media(min-width:768px){
       .gridAll{
         grid-template-columns:1fr 1fr;
-        grid-template-areas:
-          "dep arr"
-          "depperf arrperf";
+        grid-template-areas:"dep arr" "depperf arrperf";
       }
     }
-    /* on garde la même à ≥1200px; la grille reste 2x2 propre */
 
-    /* Impression : on n'imprime que le bloc brut */
     #printRaw{display:none}
     @media print{
       #appRoot{display:none!important}
@@ -148,7 +135,6 @@
     </div>
   </section>
 
-  <!-- ===== Grille principale à 4 cartes, réordonnée selon viewport ===== -->
   <div class="gridAll" style="margin-top:12px">
     <!-- Départ -->
     <section class="card" id="cardDep">
@@ -417,7 +403,7 @@
   $('#arrModerate').onclick=()=>{landingMode='moderate';$('#arrModerate').classList.add('on');$('#arrNoBrake').classList.remove('on');};
   $('#arrNoBrake').onclick=()=>{landingMode='nobrake_grass';$('#arrNoBrake').classList.add('on');$('#arrModerate').classList.remove('on');};
 
-  // Sécuriser safety >= 0
+  // safety
   function updateResLabels(){
     const s = Math.max(0, parseFloat($('#safety').value||'0')||0);
     $('#safety').value = String(s);
@@ -427,7 +413,7 @@
   function sanitizeIcao(el){el.value=(el.value||'').toUpperCase().replace(/[^A-Z]/g,'').slice(0,4)}
   ['depIcao','arrIcao'].forEach(id=>{ const el=$('#'+id); el.addEventListener('input',()=>sanitizeIcao(el)); el.addEventListener('blur',()=>sanitizeIcao(el)); });
 
-  // QFU format 001–360
+  // QFU
   function normQFU(val){ let n=parseInt(String(val).replace(/\D/g,''),10); if(isNaN(n)) return null; n=Math.max(1,Math.min(360,n)); return n; }
   function display3(n){ return n===null?'':pad3(n); }
   ['depQfu','arrQfu'].forEach(id=>{
@@ -442,7 +428,6 @@
 
   /* ===================== METAR (AVWX) ===================== */
   const AVWX_TOKEN='q45JCSdkFjeZqHUyvawV2iaFm80CYmlPP6kC3XS8VNs';
-
   async function fetchJson(url){
     const resp = await fetch(url, { headers:{ Authorization:'Bearer '+AVWX_TOKEN, Accept:'application/json' } });
     if(!resp.ok) throw new Error('HTTP '+resp.status);
@@ -485,7 +470,6 @@
       $('#'+side+'VrbFrom').value=''; $('#'+side+'VrbTo').value='';
     }
 
-    // mémorise METAR brut pour impression
     if(side==='dep') lastDepMetarRaw = data?.raw || '—';
     else lastArrMetarRaw = data?.raw || '—';
 
@@ -529,7 +513,7 @@
   $('#btnDepMetar').addEventListener('click',()=>loadMetarFor('dep'));
   $('#btnArrMetar').addEventListener('click',()=>loadMetarFor('arr'));
 
-  /* ===================== VRB : format & validation ===================== */
+  /* ===================== VRB : format & validation (seule règle : multiples de 10, 010…360) ===================== */
   const MULTI10 = v => v%10===0;
   function format3(el){
     let v=(el.value||'').replace(/\D/g,'');
@@ -540,23 +524,20 @@
     el.value = pad3(n);
     return n;
   }
-  function vrbSpan(from,to){ return ((to-from+360)%360); } // 0..359 arc direct
-
   function validateVrb(side){
     const fEl = $('#'+side+'VrbFrom'), tEl = $('#'+side+'VrbTo');
-    const kt = parseInt($('#'+side+'WindKt').value||'0',10) || 0;
-    let ok = true;
     fEl.classList.remove('invalid'); tEl.classList.remove('invalid');
 
-    if(!fEl.value && !tEl.value) return true; // rien saisi → OK
+    // Si rien saisi → OK
+    if(!fEl.value && !tEl.value) return true;
 
     const f = format3(fEl), t = format3(tEl);
-    if(!f || !t){ ok=false; }
-    if(ok && (!MULTI10(f) || !MULTI10(t))){ ok=false; }
-    if(ok){
-      const span = vrbSpan(f,t);
-      if(!(span >= 60 && span < 180 && kt > 3)){ ok=false; }
-    }
+    let ok = true;
+
+    // doivent exister et être multiples de 10
+    if(!f || !t) ok=false;
+    if(ok && (!MULTI10(f) || !MULTI10(t))) ok=false;
+
     if(!ok){ fEl.classList.add('invalid'); tEl.classList.add('invalid'); }
     return ok;
   }
@@ -671,7 +652,6 @@
     else{ $('#ldaMini').textContent=($('#arrLda').value?$('#arrLda').value+' m':'—'); }
   }
 
-  // Entrées qui déclenchent mise à jour
   ['depWindDir','arrWindDir','depWindKt','arrWindKt','depVrbFrom','arrVrbFrom','depVrbTo','arrVrbTo','depWindGust','arrWindGust','depOat','arrOat','depToda','arrLda','depQfu','arrQfu']
     .forEach(id=>{
       $('#'+id).addEventListener('input',()=>updateWindDisplay(id.startsWith('dep')?'dep':'arr'));
@@ -743,7 +723,7 @@
       const pts=[{x:0,y:1.00},{x:10,y:0.78},{x:20,y:0.63},{x:30,y:0.52}],x=Math.max(0,Math.min(30,head));
       if(x===0)return 1;
       for(let i=0;i<pts.length-1;i++){const p0=pts[i],p1=pts[i+1];if(x>=p0.x&&x<=p1.x)return p0.y+(p1.y-p0.y)*((x-p0.x)/(p1.x-p0.x))}
-      return pts.at(-1).y;
+      return pts[pts.length-1].y; // compat navigateurs (pas de .at)
     }else{
       const tw=Math.abs(head),steps=Math.ceil(tw/2);
       return 1+0.10*steps;
@@ -760,6 +740,47 @@
       return false;
     }
     return true;
+  }
+
+  function interpTemp(rowTemps,arr,oat){
+    const xs=[rowTemps.minus20,rowTemps.isa,rowTemps.plus20],ys=arr;
+    if(oat<=xs[0])return ys[0]; if(oat>=xs[2])return ys[2];
+    if(oat<=xs[1])return lerp(xs[0],ys[0],xs[1],ys[1],oat);
+    return lerp(xs[1],ys[1],xs[2],ys[2],oat);
+  }
+  function interpTO_DR400(altFt,oat,massKg,surface,kind){
+    const low=altFt<=0?0:altFt>=8000?8000:(altFt<=4000?0:4000);
+    const high=altFt<=0?0:altFt>=8000?8000:(altFt<=4000?4000:8000);
+    const alpha=clamp01((massKg-700)/(900-700));
+    const valAt=alt=>{const t=TO_DR400[alt]; const v700=interpTemp(t.temps,t[surface].kg700[kind],oat); const v900=interpTemp(t.temps,t[surface].kg900[kind],oat); return lerp(0,v700,1,v900,alpha);};
+    if(low===high)return valAt(low); return lerp(low,valAt(low),high,valAt(high),altFt);
+  }
+  function interpLDG_DR400(altFt,oat,massKg,mode,kind){
+    const low=altFt<=0?0:altFt>=8000?8000:(altFt<=4000?0:4000);
+    const high=altFt<=0?0:altFt>=8000?8000:(altFt<=4000?4000:8000);
+    const alpha=clamp01((massKg-700)/(900-700));
+    const valAt=alt=>{const t=LDG_DR400[alt]; const v700=interpTemp(t.temps,t[mode].kg700[kind],oat); const v900=interpTemp(t.temps,t[mode].kg900[kind],oat); return lerp(0,v700,1,v900,alpha);};
+    if(low===high)return valAt(low); return lerp(low,valAt(low),high,valAt(high),altFt);
+  }
+  function interpGridDR300(surface,kind,altFt,oat,massKg){
+    const surf=TO_DR300[surface], temps=DR300_TEMPS, alts=surf.alts;
+    function interpRow(row){const ys=row,x=oat;
+      if(x<=temps[0])return ys[0]; if(x>=temps[3])return ys[3];
+      if(x<=temps[1])return lerp(temps[0],ys[0],temps[1],ys[1],x);
+      if(x<=temps[2])return lerp(temps[1],ys[1],temps[2],ys[2],x);
+      return lerp(temps[2],ys[2],temps[3],ys[3],x);
+    }
+    let a0=alts[0], a1=alts[alts.length-1];
+    for(let i=0;i<alts.length-1;i++){
+      if(altFt<=alts[0]){a0=a1=alts[0];break;}
+      if(altFt>=alts[alts.length-1]){a0=a1=alts[alts.length-1];break;}
+      if(altFt>=alts[i] && altFt<=alts[i+1]){a0=alts[i];a1=alts[i+1];break;}
+    }
+    const idx0=alts.indexOf(a0), idx1=alts.indexOf(a1);
+    const v0=interpRow(surf[kind][idx0]);
+    const v1=interpRow(surf[kind][idx1]);
+    let val=(a0===a1)?v0:lerp(a0,v0,a1,v1,altFt);
+    return val*TO_DR300.massScale(massKg);
   }
 
   function computeDepPerf(){
@@ -864,35 +885,17 @@
     const mi = String(d.getMinutes()).padStart(2,'0');
     return `Imprimé le ${dd}/${mm}/${yyyy} à ${hh}:${mi}`;
   }
-
   function buildRawReport(){
     const safety=Math.max(0,+($('#safety').value||30));
     const aircraft=$('#aircraftSel').value;
     const prop=$('#propeller').value;
     const spats=$('#spatsWith').classList.contains('on')?'Avec carénages':'Sans carénages (+3% TO)';
-
-    const D={
-      icao:($('#depIcao').value||'').toUpperCase(),
-      qfu:display3(normQFU($('#depQfu').value)||0),
-      toda:$('#depToda').value||'—',
-      alt:$('#depAlt').value||'—',
-      oat:$('#depOat').value||'—',
-      wdir:($('#depWindDir').value||'').toUpperCase(),
-      wkt:$('#depWindKt').value||'0',
-      wg:$('#depWindGust').value||'0'
-    };
-    const A={
-      icao:($('#arrIcao').value||'').toUpperCase(),
-      qfu:display3(normQFU($('#arrQfu').value)||0),
-      lda:$('#arrLda').value||'—',
-      alt:$('#arrAlt').value||'—',
-      oat:$('#arrOat').value||'—',
-      wdir:($('#arrWindDir').value||'').toUpperCase(),
-      wkt:$('#arrWindKt').value||'0',
-      wg:$('#arrWindGust').value||'0'
-    };
-
-    // petit tableau brut
+    const D={ icao:($('#depIcao').value||'').toUpperCase(), qfu:display3(normQFU($('#depQfu').value)||0),
+              toda:$('#depToda').value||'—', alt:$('#depAlt').value||'—', oat:$('#depOat').value||'—',
+              wdir:($('#depWindDir').value||'').toUpperCase(), wkt:$('#depWindKt').value||'0', wg:$('#depWindGust').value||'0' };
+    const A={ icao:($('#arrIcao').value||'').toUpperCase(), qfu:display3(normQFU($('#arrQfu').value)||0),
+              lda:$('#arrLda').value||'—', alt:$('#arrAlt').value||'—', oat:$('#arrOat').value||'—',
+              wdir:($('#arrWindDir').value||'').toUpperCase(), wkt:$('#arrWindKt').value||'0', wg:$('#arrWindGust').value||'0' };
     const lines = [];
     lines.push('CALCULCATEUR DE PERFORMANCES');
     lines.push(nowStamp());
@@ -920,10 +923,8 @@
     lines.push('');
     lines.push('Source : Manuel de vol respectif de chaque avion - Aéroclub de Beauvais-Tillé');
     lines.push("Développé par Hugo DERUELLE avec l'aide de l'IA");
-
     return lines.join('\n');
   }
-
   document.getElementById('btnPrint').addEventListener('click',()=>{
     document.getElementById('rawPre').textContent = buildRawReport();
     window.print();
