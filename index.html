@@ -85,7 +85,7 @@
     .warn-red{background:var(--warn-red-bg)!important;border-color:var(--warn-red-border)!important}
     .invalid{border-color:var(--bad)!important}
 
-    /* Grille principale (mobile = 1 col | tablette/PC = 2x2) */
+    /* Grille principale */
     .gridAll{
       display:grid; gap:16px; grid-template-columns:1fr;
       grid-template-areas:"dep" "depperf" "arr" "arrperf";
@@ -157,7 +157,7 @@
       </label>
       <!-- Ligne 2 : alignement print -->
       <label>Marge sécurité (%)
-        <input id="safety" type="number" value="30" min="0"/>
+        <input id="safety" type="number" inputmode="numeric" value="30" min="0"/>
       </label>
       <label>&nbsp;
         <button id="btnPrint" class="btn grey">Imprimer</button>
@@ -174,7 +174,7 @@
           <input id="depIcao" inputmode="latin" maxlength="4" placeholder="LFxx" />
         </label>
         <label style="flex:0.6">Élévation (ft)
-          <input id="depAlt" type="number" min="0" step="10" value="0" />
+          <input id="depAlt" type="number" inputmode="numeric" min="0" step="10" value="0" />
         </label>
         <button id="btnDepMetar" class="btn metar" style="flex:0.4">Charger METAR</button>
       </div>
@@ -182,10 +182,10 @@
 
       <div class="grid2" style="margin-top:10px">
         <label>QFU départ (°)
-          <input id="depQfu" type="text" placeholder="001–360"/>
+          <input id="depQfu" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="001–360"/>
         </label>
         <label>TODA (m)
-          <input id="depToda" type="text" inputmode="numeric" />
+          <input id="depToda" type="text" inputmode="numeric" pattern="[0-9]*" />
         </label>
       </div>
 
@@ -194,23 +194,23 @@
           <input id="depWindDir" list="dirOptions" type="text" inputmode="latin" placeholder="VRB ou 000" value="000" />
         </label>
         <label>Vent — Vitesse (kt)
-          <input id="depWindKt" type="number" min="0" step="1" value="0"/>
+          <input id="depWindKt" type="number" inputmode="numeric" min="0" step="1" value="0"/>
         </label>
         <label>Rafales (kt)
-          <input id="depWindGust" type="number" min="0" step="1" value="0"/>
+          <input id="depWindGust" type="number" inputmode="numeric" min="0" step="1" value="0"/>
         </label>
       </div>
 
       <div class="grid2" style="margin-top:10px">
         <label>Secteur VRB (optionnel)
           <div class="vrbFlex" style="display:flex;gap:8px;align-items:center">
-            <input id="depVrbFrom" type="text" inputmode="numeric" placeholder="FROM"/>
+            <input id="depVrbFrom" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="FROM"/>
             <span class="vrbSep" style="font-weight:700;color:#6b7280">V</span>
-            <input id="depVrbTo" type="text" inputmode="numeric" placeholder="TO"/>
+            <input id="depVrbTo" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="TO"/>
           </div>
         </label>
         <label>OAT (°C)
-          <input id="depOat" type="number" value="15"/>
+          <input id="depOat" type="number" inputmode="numeric" value="15"/>
         </label>
       </div>
 
@@ -242,10 +242,10 @@
 
       <div class="grid2" style="margin-top:12px">
         <label>Masse au décollage (kg)
-          <input id="depTow" type="number" value="900"/>
+          <input id="depTow" type="number" inputmode="numeric" value="900"/>
         </label>
         <label>Facteur suppl. décollage
-          <input id="depExtraTO" type="number" step="0.01" value="1.00"/>
+          <input id="depExtraTO" type="number" inputmode="numeric" step="0.01" value="1.00"/>
         </label>
       </div>
 
@@ -284,7 +284,7 @@
           <input id="arrIcao" inputmode="latin" maxlength="4" placeholder="LFxx" />
         </label>
         <label style="flex:0.6">Élévation (ft)
-          <input id="arrAlt" type="number" min="0" step="10" value="0" />
+          <input id="arrAlt" type="number" inputmode="numeric" min="0" step="10" value="0" />
         </label>
         <button id="btnArrMetar" class="btn metar" style="flex:0.4">Charger METAR</button>
       </div>
@@ -292,10 +292,10 @@
 
       <div class="grid2" style="margin-top:10px">
         <label>QFU arrivée (°)
-          <input id="arrQfu" type="text" placeholder="001–360"/>
+          <input id="arrQfu" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="001–360"/>
         </label>
         <label>LDA (m)
-          <input id="arrLda" type="text" inputmode="numeric" />
+          <input id="arrLda" type="text" inputmode="numeric" pattern="[0-9]*" />
         </label>
       </div>
 
@@ -304,23 +304,23 @@
           <input id="arrWindDir" list="dirOptions" type="text" inputmode="latin" placeholder="VRB ou 000" value="000" />
         </label>
         <label>Vent — Vitesse (kt)
-          <input id="arrWindKt" type="number" min="0" step="1" value="0"/>
+          <input id="arrWindKt" type="number" inputmode="numeric" min="0" step="1" value="0"/>
         </label>
         <label>Rafales (kt)
-          <input id="arrWindGust" type="number" min="0" step="1" value="0"/>
+          <input id="arrWindGust" type="number" inputmode="numeric" min="0" step="1" value="0"/>
         </label>
       </div>
 
       <div class="grid2" style="margin-top:10px">
         <label>Secteur VRB (optionnel)
           <div class="vrbFlex" style="display:flex;gap:8px;align-items:center">
-            <input id="arrVrbFrom" type="text" inputmode="numeric" placeholder="FROM"/>
+            <input id="arrVrbFrom" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="FROM"/>
             <span class="vrbSep" style="font-weight:700;color:#6b7280">V</span>
-            <input id="arrVrbTo" type="text" inputmode="numeric" placeholder="TO"/>
+            <input id="arrVrbTo" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="TO"/>
           </div>
         </label>
         <label>OAT (°C)
-          <input id="arrOat" type="number" value="15"/>
+          <input id="arrOat" type="number" inputmode="numeric" value="15"/>
         </label>
       </div>
 
@@ -345,10 +345,10 @@
 
       <div class="grid2" style="margin-top:12px">
         <label>Masse à l'atterrissage (kg)
-          <input id="arrLdw" type="number" value="900"/>
+          <input id="arrLdw" type="number" inputmode="numeric" value="900"/>
         </label>
         <label>Facteur suppl. atterrissage
-          <input id="arrExtraLDG" type="number" step="0.01" value="1.00"/>
+          <input id="arrExtraLDG" type="number" inputmode="numeric" step="0.01" value="1.00"/>
         </label>
       </div>
 
@@ -379,8 +379,10 @@
     </section>
   </div>
 
+  <!-- Crédits (web seulement) -->
   <div class="muted" style="margin-top:12px;font-size:11px; text-align:center">
-    <div> </div>
+    <div>Source : Manuel de vol respectif de chaque avion - Aéroclub de Beauvais-Tillé</div>
+    <div>Développé par Hugo DERUELLE avec l'aide de l'IA</div>
   </div>
 </div>
 
@@ -693,7 +695,7 @@
     else{ document.getElementById('ldaMini').textContent=(document.getElementById('arrLda').value?document.getElementById('arrLda').value+' m':'—'); }
   }
 
-  ;['depWindDir','arrWindDir','depWindKt','arrWindKt','depVrbFrom','arrVrbFrom','depVrbTo','arrVrbTo','depWindGust','arrWindGust','depOat','arrOat','depToda','arrLda','depQfu','arrQfu']
+  ;['depWindDir','arrWindDir','depWindKt','arrWindKt','depVrbFrom','arrVrbFrom','depVrbTo','arrVrbTo','depWindGust','arrWindGust','depOat','arrOat','depToda','arrLda','depQfu','arrQfu','depAlt','arrAlt','depTow','arrLdw','depExtraTO','arrExtraLDG']
     .forEach(function(id){
       document.getElementById(id).addEventListener('input',function(){updateWindDisplay(id.indexOf('dep')===0?'dep':'arr')});
       document.getElementById(id).addEventListener('blur',function(){
@@ -885,7 +887,7 @@
     setChip(document.getElementById('toChip'),stTO); document.getElementById('toKpi').className='kpi '+(stTO==='ok'?'ok':stTO==='bad'?'bad':'');
     document.getElementById('toKpiVal').textContent=toMargin+' m';
 
-    document.getElementById('toExplain').textContent = ''; // plus d’explication
+    document.getElementById('toExplain').textContent = '';
   }
 
   function computeArrPerf(){
@@ -923,13 +925,13 @@
     setChip(document.getElementById('ldgChip'),stLDG); document.getElementById('ldgKpi').className='kpi '+(stLDG==='ok'?'ok':stLDG==='bad'?'bad':'');
     document.getElementById('ldgKpiVal').textContent=ldgMargin+' m';
 
-    document.getElementById('ldgExplain').textContent = ''; // plus d’explication
+    document.getElementById('ldgExplain').textContent = '';
   }
 
   document.getElementById('btnCalcDep').addEventListener('click', computeDepPerf);
   document.getElementById('btnCalcArr').addEventListener('click', computeArrPerf);
 
-  /* ===================== Impression — 2 pages propres ===================== */
+  /* ===================== Impression — 2 pages propres + xwind séparé ===================== */
   function nowStamp(){
     var d = new Date();
     var dd = String(d.getDate()).padStart(2,'0');
@@ -940,7 +942,35 @@
     return 'Imprimé le '+dd+'/'+mm+'/'+yyyy+' à '+hh+':'+mi;
   }
 
-  function sectionTerrainHTML(title, side){
+  function buildCompsFor(side){
+    var qfu = normQFU(document.getElementById(side+'Qfu').value);
+    var dirStr=(document.getElementById(side+'WindDir').value||'');
+    var kt=parseInt(document.getElementById(side+'WindKt').value||'0',10)||0;
+    var gust=parseInt(document.getElementById(side+'WindGust').value||'0',10)||0;
+    var dirDisp = dirForDisplay(dirStr, {fromId:side+'VrbFrom', toId:side+'VrbTo'});
+    var fEl=document.getElementById(side+'VrbFrom'), tEl=document.getElementById(side+'VrbTo');
+    var hasSector = !!(fEl.value.trim() && tEl.value.trim()) && validateVrb(side);
+
+    if(qfu===null || dirDisp===null || !kt){
+      return {face:'—', tail:'—', meanX:'—', worstX:null, worstLabel:''};
+    }
+    var comp = compsFrom(qfu, dirDisp, kt);
+    var meanX = Math.round(comp.xw);
+    var face = Math.round(comp.face);
+    var tail = Math.round(comp.tail);
+
+    var out = {face:face, tail:tail, meanX:meanX, worstX:null, worstLabel:''};
+    if(hasSector){
+      var f = parseInt(fEl.value,10), t = parseInt(tEl.value,10);
+      var G = Math.max(kt, gust);
+      var worst = Math.round(worstXwindInSector(qfu, f, t, G));
+      out.worstX = worst;
+      out.worstLabel = pad3(f)+'V'+pad3(t);
+    }
+    return out;
+  }
+
+  function sectionTerrainHTML(title, side, comps){
     var icao=(document.getElementById(side+'Icao').value||'').toUpperCase();
     var qfu=(document.getElementById(side+'Qfu').value||'').padStart(3,'0');
     var alt=document.getElementById(side+'Alt').value||'—';
@@ -950,10 +980,13 @@
     var dir=(document.getElementById(side+'WindDir').value||'').toUpperCase();
     var spd=document.getElementById(side+'WindKt').value||'0';
     var gst=document.getElementById(side+'WindGust').value||'0';
-    var hw=document.getElementById(side+'HwFace').textContent||'—';
-    var xw=(document.getElementById(side+'Xw').textContent||'—').replace(/\s+/g,' ');
-    var tw=document.getElementById(side+'Tw').textContent||'—';
     var metar = side==='dep' ? (window.lastDepMetarRaw||'—') : (window.lastArrMetarRaw||'—');
+
+    // Composantes lisibles (séparées)
+    var xwindBlock = `Travers moyen : ${comps.meanX} kt`;
+    if(comps.worstX!==null){
+      xwindBlock += `\nTravers max secteur ${comps.worstLabel} : ${comps.worstX} kt`;
+    }
 
     return `
       <div class="section">
@@ -972,7 +1005,8 @@
           </div>
           <div>
             <div class="k">Composantes</div>
-            <div class="v">Face ${hw} kt · Travers ${xw} · Arrière ${tw} kt</div>
+            <div class="v">Face ${comps.face} kt · Arrière ${comps.tail} kt</div>
+            <div class="v" style="margin-top:4px; white-space:pre-line">${xwindBlock}</div>
           </div>
         </div>
         <div style="margin-top:6px">
@@ -1021,6 +1055,9 @@
     var spats=document.getElementById('spatsWith').classList.contains('on')?'Avec carénages':'Sans carénages (+3% TO)';
     var profileTxt = window.profile;
 
+    var compsDep = buildCompsFor('dep');
+    var compsArr = buildCompsFor('arr');
+
     const page1 = `
       <div class="page">
         <div class="section">
@@ -1039,14 +1076,14 @@
           </div>
         </div>
 
-        ${sectionTerrainHTML('Terrain de départ', 'dep')}
+        ${sectionTerrainHTML('Terrain de départ', 'dep', compsDep)}
         ${sectionPerfHTML('Décollage — Résultats', 'dep')}
       </div>
     `;
 
     const page2 = `
       <div class="page">
-        ${sectionTerrainHTML('Terrain d’arrivée', 'arr')}
+        ${sectionTerrainHTML('Terrain d’arrivée', 'arr', compsArr)}
         ${sectionPerfHTML('Atterrissage — Résultats', 'arr')}
       </div>
     `;
