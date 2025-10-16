@@ -11,18 +11,22 @@
       --line:#d1d5db; --primary:#0b3b86; --primaryText:#ffffff; --green:#16a34a;
       --warn-yellow-bg:#fff7ed; --warn-yellow-border:#fbbf24;
       --warn-red-bg:#fef2f2; --warn-red-border:#ef4444;
-      --banner:#081a4f;
+      --banner:#081a4f; --btnGrey:#f3f4f6;
     }
     *{box-sizing:border-box}
     html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue","Noto Sans",Arial}
 
-    .banner{background:var(--primary);color:var(--primaryText);padding:14px 16px;margin:0 0 12px 0}
+    .banner{
+      background:var(--primary);color:var(--primaryText);
+      padding:14px 16px;margin:0 0 12px 0;border-radius:16px;
+    }
     .banner h1{font-size:clamp(22px,3.5vw,30px);margin:0;text-align:center;letter-spacing:.02em}
 
     h2{font-size:18px;margin:0 0 .6rem 0}
     .container{max-width:1200px;margin:0 auto;padding:16px}
 
     .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+    .card>h2{ text-align:center } /* titres centrés */
 
     input, select, button.btn{
       width:100%;
@@ -32,12 +36,14 @@
       padding:10px 12px;
       min-height:44px;
       line-height:1.2;
-      -webkit-appearance:none;
-      appearance:none;
+      -webkit-appearance:none; appearance:none;
+      font:inherit;
     }
     select{background-image:none}
     .btn{cursor:pointer}
     .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+    .btn.grey{background:var(--btnGrey);border-color:var(--line);color:var(--ink)}
+    .btn.metar{font-weight:700} /* "Charger METAR" en gras */
     .btn.toggle.on{background:var(--primary);color:#fff;border-color:var(--primary)}
     .btn.toggle.on.grass{background:var(--green)!important;border-color:var(--green)!important;color:#fff!important}
     .btn.block{display:block;width:100%;text-align:center}
@@ -95,11 +101,17 @@
       }
     }
 
+    /* Impression : A4, texte brut lisible et enveloppant */
     #printRaw{display:none}
     @media print{
+      @page { size: A4; margin: 12mm; }
       #appRoot{display:none!important}
-      #printRaw{display:block!important;padding:16mm;color:#000}
-      #rawPre{white-space:pre;font:12pt/1.35 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+      #printRaw{display:block!important;padding:0;color:#000}
+      #rawPre{
+        white-space:pre-wrap; /* wrap long METAR */
+        word-wrap:break-word;
+        font:11pt/1.35 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+      }
       body{background:#fff}
     }
   </style>
@@ -113,6 +125,7 @@
   <section class="card" style="margin-top:4px">
     <h2>Paramètres généraux</h2>
     <div class="grid2">
+      <!-- Ligne 1 -->
       <label>Avion
         <select id="aircraftSel">
           <option value="F-GCAL (120cv)">F-GCAL (120cv)</option>
@@ -126,11 +139,12 @@
       <label>Hélice
         <input id="propeller" value="Sensenich" readonly />
       </label>
-      <div class="inline">
-        <label style="flex:1">Marge sécurité (%)
-          <input id="safety" type="number" value="30" min="0"/>
-        </label>
-        <button id="btnPrint" class="btn" style="flex:0 0 150px">Imprimer</button>
+      <!-- Ligne 2 : même largeur/hauteur que la ligne 1 -->
+      <label>Marge sécurité (%)
+        <input id="safety" type="number" value="30" min="0"/>
+      </label>
+      <div>
+        <button id="btnPrint" class="btn grey">Imprimer</button>
       </div>
     </div>
   </section>
@@ -138,7 +152,7 @@
   <div class="gridAll" style="margin-top:12px">
     <!-- Départ -->
     <section class="card" id="cardDep">
-      <h2 class="center">Terrain de départ</h2>
+      <h2>Terrain de départ</h2>
       <div class="inline">
         <label style="flex:0.6">ICAO départ
           <input id="depIcao" inputmode="latin" maxlength="4" placeholder="LFxx" />
@@ -146,7 +160,7 @@
         <label style="flex:0.6">Élévation (ft)
           <input id="depAlt" type="number" min="0" step="10" value="0" />
         </label>
-        <button id="btnDepMetar" class="btn" style="flex:0.4">Charger METAR</button>
+        <button id="btnDepMetar" class="btn metar" style="flex:0.4">Charger METAR</button>
       </div>
       <div id="depMetarMsg" class="muted note"></div>
 
@@ -225,7 +239,7 @@
     <!-- Décollage : performances -->
     <section class="card" id="cardDepPerf">
       <div class="header">
-        <h2 class="center" style="width:100%">Décollage : performances calculées</h2>
+        <h2 style="width:100%; text-align:center">Décollage : performances calculées</h2>
         <span id="toChip" class="chip neutral">—</span>
       </div>
       <div id="toKpi" class="kpi">
@@ -248,7 +262,7 @@
 
     <!-- Arrivée -->
     <section class="card" id="cardArr">
-      <h2 class="center">Terrain d'arrivée</h2>
+      <h2>Terrain d'arrivée</h2>
       <div class="inline">
         <label style="flex:0.6">ICAO arrivée
           <input id="arrIcao" inputmode="latin" maxlength="4" placeholder="LFxx" />
@@ -256,7 +270,7 @@
         <label style="flex:0.6">Élévation (ft)
           <input id="arrAlt" type="number" min="0" step="10" value="0" />
         </label>
-        <button id="btnArrMetar" class="btn" style="flex:0.4">Charger METAR</button>
+        <button id="btnArrMetar" class="btn metar" style="flex:0.4">Charger METAR</button>
       </div>
       <div id="arrMetarMsg" class="muted note"></div>
 
@@ -328,7 +342,7 @@
     <!-- Atterrissage : performances -->
     <section class="card" id="cardArrPerf">
       <div class="header">
-        <h2 class="center" style="width:100%">Atterrissage : performances calculées</h2>
+        <h2 style="width:100%; text-align:center">Atterrissage : performances calculées</h2>
         <span id="ldgChip" class="chip neutral">—</span>
       </div>
       <div id="ldgKpi" class="kpi">
@@ -350,7 +364,7 @@
   </div>
 
   <div class="muted" style="margin-top:12px;font-size:11px; text-align:center">
-    <!-- crédits supprimés pour l'impression -->
+    <!-- crédits masqués à l’impression -->
     <div> </div>
   </div>
 </div>
@@ -360,7 +374,7 @@
 <section id="printRaw"><pre id="rawPre"></pre></section>
 
 <script>
-  /* ===================== DONNÉES (inchangé) ===================== */
+  /* ===================== DONNÉES ===================== */
   const TO_DR400={0:{temps:{minus20:-5,isa:15,plus20:35},hard:{kg700:{roll:[130,145,165],pass:[285,315,345]},kg900:{roll:[225,235,285],pass:[480,535,590]}},grass:{kg700:{roll:[165,185,215],pass:[320,355,395]},kg900:{roll:[315,360,410],pass:[570,640,715]}}},4000:{temps:{minus20:-13,isa:7,plus20:27},hard:{kg700:{roll:[175,195,220],pass:[375,415,460]},kg900:{roll:[305,345,390],pass:[645,720,800]}},grass:{kg700:{roll:[230,265,300],pass:[430,485,540]},kg900:{roll:[460,530,615],pass:[800,905,1025]}}},8000:{temps:{minus20:-21,isa:-1,plus20:19},hard:{kg700:{roll:[235,265,300],pass:[500,560,620]},kg900:{roll:[425,475,535],pass:[890,1000,1125]}},grass:{kg700:{roll:[330,380,440],pass:[595,675,760]},kg900:{roll:[700,820,960],pass:[1165,1350,1550]}}}};
   const LDG_DR400={0:{temps:{minus20:-5,isa:15,plus20:35},moderate:{kg700:{roll:[145,155,165],pass:[365,385,400]},kg900:{roll:[185,200,210],pass:[435,460,485]}},nobrake_grass:{kg700:{roll:[215,230,250],pass:[435,460,485]},kg900:{roll:[280,300,325],pass:[530,560,590]} }},4000:{temps:{minus20:-13,isa:7,plus20:27},moderate:{kg700:{roll:[160,175,185],pass:[395,420,440]},kg900:{roll:[205,225,240],pass:[475,505,535]}},nobrake_grass:{kg700:{roll:[240,260,285],pass:[475,505,530]},kg900:{roll:[310,335,360],pass:[580,615,655]}}},8000:{temps:{minus20:-21,isa:-1,plus20:19},moderate:{kg700:{roll:[180,195,210],pass:[430,460,485]},kg900:{roll:[235,250,270],pass:[525,555,590]}},nobrake_grass:{kg700:{roll:[275,290,315],pass:[525,555,590]},kg900:{roll:[350,375,405],pass:[640,680,725]}}}};
   const DR300_TEMPS=[0,15,30,45];
@@ -524,7 +538,7 @@
   document.getElementById('btnDepMetar').addEventListener('click',function(){loadMetarFor('dep')});
   document.getElementById('btnArrMetar').addEventListener('click',function(){loadMetarFor('arr')});
 
-  /* ===================== VRB (seule règle : multiples de 10, 010…360) ===================== */
+  /* ===================== VRB : uniquement multiples de 10 (010…360) ===================== */
   function MULTI10(v){ return v%10===0; }
   function format3(el){
     var v=(el.value||'').replace(/\D/g,'');
@@ -899,12 +913,10 @@
   document.getElementById('btnCalcDep').addEventListener('click', computeDepPerf);
   document.getElementById('btnCalcArr').addEventListener('click', computeArrPerf);
 
-  /* ===================== Impression (rapport brut + perfs) ===================== */
-  function twoCols(label, value, width){
-    if(typeof width==='undefined') width=22;
-    var l = (label+':').padEnd(width,' ');
-    return l+value;
-  }
+  /* ===================== Impression — rapport clair A4 ===================== */
+  function title(t){ return '=== '+t+' ==='; }
+  function line(){ return '—'.repeat(72); }
+  function kv(k,v){ return (k+':').padEnd(24,' ') + v; }
   function nowStamp(){
     var d = new Date();
     var dd = String(d.getDate()).padStart(2,'0');
@@ -914,7 +926,8 @@
     var mi = String(d.getMinutes()).padStart(2,'0');
     return 'Imprimé le '+dd+'/'+mm+'/'+yyyy+' à '+hh+':'+mi;
   }
-  function getText(id){ var el=document.getElementById(id); return el?el.textContent:'—'; }
+  function getText(id){ var el=document.getElementById(id); return el?el.textContent.trim():'—'; }
+
   function buildRawReport(){
     var safety=Math.max(0,+(document.getElementById('safety').value||30));
     var aircraft=document.getElementById('aircraftSel').value;
@@ -923,63 +936,69 @@
 
     var D={ icao:(document.getElementById('depIcao').value||'').toUpperCase(), qfu:display3(normQFU(document.getElementById('depQfu').value)||0),
             toda:document.getElementById('depToda').value||'—', alt:document.getElementById('depAlt').value||'—', oat:document.getElementById('depOat').value||'—',
-            wdir:(document.getElementById('depWindDir').value||'').toUpperCase(), wkt:document.getElementById('depWindKt').value||'0', wg:document.getElementById('depWindGust').value||'0' };
+            wdir:(document.getElementById('depWindDir').value||'').toUpperCase(), wkt:document.getElementById('depWindKt').value||'0', wg:document.getElementById('depWindGust').value||'0',
+            xw:getText('depXw').replace(/\s+/g,' '), hw:getText('depHwFace'), tw:getText('depTw') };
 
     var A={ icao:(document.getElementById('arrIcao').value||'').toUpperCase(), qfu:display3(normQFU(document.getElementById('arrQfu').value)||0),
             lda:document.getElementById('arrLda').value||'—', alt:document.getElementById('arrAlt').value||'—', oat:document.getElementById('arrOat').value||'—',
-            wdir:(document.getElementById('arrWindDir').value||'').toUpperCase(), wkt:document.getElementById('arrWindKt').value||'0', wg:document.getElementById('arrWindGust').value||'0' };
+            wdir:(document.getElementById('arrWindDir').value||'').toUpperCase(), wkt:document.getElementById('arrWindKt').value||'0', wg:document.getElementById('arrWindGust').value||'0',
+            xw:getText('arrXw').replace(/\s+/g,' '), hw:getText('arrHwFace'), tw:getText('arrTw') };
 
-    // Perfs affichées
     var TO={ req:getText('toKpiVal'), basePass:getText('toBasePass'), baseRoll:getText('toBaseRoll'), windF:getText('toWindF'), spat:getText('toSpat'), extra:getText('toExtra'), res:getText('toRes'), todaMin:getText('todaMini'), explain:getText('toExplain') };
     var LDG={ req:getText('ldgKpiVal'), basePass:getText('ldgBasePass'), baseRoll:getText('ldgBaseRoll'), windF:getText('ldgWindF'), extra:getText('ldgExtra'), res:getText('ldgRes'), ldaMin:getText('ldaMini'), explain:getText('ldgExplain') };
 
-    var lines = [];
-    lines.push('CALCULCATEUR DE PERFORMANCES');
-    lines.push(nowStamp());
-    lines.push('');
-    lines.push('[Paramètres généraux]');
-    lines.push(twoCols('Avion', aircraft));
-    lines.push(twoCols('Hélice', prop));
-    lines.push(twoCols('Profil', profile));
-    lines.push(twoCols('Marge sécurité', safety+' %'));
-    lines.push(twoCols('Carénages', spats));
-    lines.push('');
-    lines.push('[Départ]');
-    lines.push(twoCols('ICAO', D.icao) + '   ' + twoCols('QFU', D.qfu));
-    lines.push(twoCols('Élévation', D.alt+' ft') + '   ' + twoCols('OAT', D.oat+' °C'));
-    lines.push(twoCols('Vent', D.wdir+'/'+D.wkt+' kt (G'+D.wg+')'));
-    lines.push(twoCols('TODA', D.toda+' m'));
-    lines.push(twoCols('METAR', lastDepMetarRaw));
-    lines.push('');
-    lines.push('[Décollage — Résultats]');
-    lines.push(twoCols('Requis (marge incluse)', TO.req));
-    lines.push(twoCols('TODA dispo', TO.todaMin));
-    // Deux colonnes “roulement/pass 15m”
-    var colA = twoCols('Roulement (sans marge)', TO.baseRoll, 28);
-    var colB = twoCols('Passage 15 m (sans marge)', TO.basePass, 32);
-    lines.push(colA + '   ' + colB);
-    lines.push(twoCols('Facteur vent', TO.windF) + '   ' + twoCols('Carénages', TO.spat));
-    lines.push(twoCols('Facteur supplémentaire', TO.extra) + '   ' + twoCols('Résultat (sans marge)', TO.res));
-    lines.push(twoCols('Explications', TO.explain, 28));
-    lines.push('');
-    lines.push('[Arrivée]');
-    lines.push(twoCols('ICAO', A.icao) + '   ' + twoCols('QFU', A.qfu));
-    lines.push(twoCols('Élévation', A.alt+' ft') + '   ' + twoCols('OAT', A.oat+' °C'));
-    lines.push(twoCols('Vent', A.wdir+'/'+A.wkt+' kt (G'+A.wg+')'));
-    lines.push(twoCols('LDA', A.lda+' m'));
-    lines.push(twoCols('METAR', lastArrMetarRaw));
-    lines.push('');
-    lines.push('[Atterrissage — Résultats]');
-    lines.push(twoCols('Requis (marge incluse)', LDG.req));
-    lines.push(twoCols('LDA dispo', LDG.ldaMin));
-    var colC = twoCols('Roulement (sans marge)', LDG.baseRoll, 28);
-    var colD = twoCols('Passage 15 m (sans marge)', LDG.basePass, 32);
-    lines.push(colC + '   ' + colD);
-    lines.push(twoCols('Facteur vent', LDG.windF) + '   ' + twoCols('Facteur supplémentaire', LDG.extra));
-    lines.push(twoCols('Résultat (sans marge)', LDG.res));
-    lines.push(twoCols('Explications', LDG.explain, 28));
-    return lines.join('\n');
+    var out=[];
+    out.push('CALCULCATEUR DE PERFORMANCES');
+    out.push(nowStamp());
+    out.push(line());
+    out.push(title('Paramètres généraux'));
+    out.push(kv('Avion', aircraft));
+    out.push(kv('Hélice', prop));
+    out.push(kv('Profil', profile));
+    out.push(kv('Marge sécurité', safety+' %'));
+    out.push(kv('Carénages', spats));
+    out.push('');
+    out.push(title('Terrain de départ'));
+    out.push(kv('ICAO / QFU', D.icao+' / '+D.qfu+'°'));
+    out.push(kv('Élévation', D.alt+' ft'));
+    out.push(kv('OAT', D.oat+' °C'));
+    out.push(kv('Vent', D.wdir+' / '+D.wkt+' kt (G'+D.wg+')'));
+    out.push(kv('Composantes', 'Face '+D.hw+' kt · Travers '+D.xw+' · Arrière '+D.tw+' kt'));
+    out.push(kv('TODA', D.toda+' m'));
+    out.push(kv('METAR brut', (window.lastDepMetarRaw||'—')));
+    out.push('');
+    out.push(title('Décollage — Résultats'));
+    out.push(kv('Requis (marge incluse)', TO.req));
+    out.push(kv('TODA dispo', TO.todaMin));
+    out.push(kv('Roulement (sans marge)', TO.baseRoll));
+    out.push(kv('Passage 15 m (sans marge)', TO.basePass));
+    out.push(kv('Facteur vent', TO.windF));
+    out.push(kv('Carénages', TO.spat));
+    out.push(kv('Facteur supplémentaire', TO.extra));
+    out.push(kv('Résultat (sans marge)', TO.res));
+    out.push(kv('Explications', TO.explain));
+    out.push(line());
+    out.push(title('Terrain d’arrivée'));
+    out.push(kv('ICAO / QFU', A.icao+' / '+A.qfu+'°'));
+    out.push(kv('Élévation', A.alt+' ft'));
+    out.push(kv('OAT', A.oat+' °C'));
+    out.push(kv('Vent', A.wdir+' / '+A.wkt+' kt (G'+A.wg+')'));
+    out.push(kv('Composantes', 'Face '+A.hw+' kt · Travers '+A.xw+' · Arrière '+A.tw+' kt'));
+    out.push(kv('LDA', A.lda+' m'));
+    out.push(kv('METAR brut', (window.lastArrMetarRaw||'—')));
+    out.push('');
+    out.push(title('Atterrissage — Résultats'));
+    out.push(kv('Requis (marge incluse)', LDG.req));
+    out.push(kv('LDA dispo', LDG.ldaMin));
+    out.push(kv('Roulement (sans marge)', LDG.baseRoll));
+    out.push(kv('Passage 15 m (sans marge)', LDG.basePass));
+    out.push(kv('Facteur vent', LDG.windF));
+    out.push(kv('Facteur supplémentaire', LDG.extra));
+    out.push(kv('Résultat (sans marge)', LDG.res));
+    out.push(kv('Explications', LDG.explain));
+    return out.join('\n');
   }
+
   document.getElementById('btnPrint').addEventListener('click',function(){
     document.getElementById('rawPre').textContent = buildRawReport();
     window.print();
