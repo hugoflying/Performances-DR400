@@ -43,7 +43,7 @@
     .btn{cursor:pointer}
     .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
     .btn.grey{background:var(--btnGrey);border-color:var(--line);color:var(--ink)}
-    .btn.metar{font-weight:700} /* "Charger METAR" en gras */
+    .btn.metar{font-weight:700; font-size:.95em;} /* gras + un poil plus petit */
     .btn.toggle.on{background:var(--primary);color:#fff;border-color:var(--primary)}
     .btn.toggle.on.grass{background:var(--green)!important;border-color:var(--green)!important;color:#fff!important}
     .btn.block{display:block;width:100%;text-align:center}
@@ -101,17 +101,21 @@
       }
     }
 
-    /* Impression : A4, texte brut lisible et enveloppant */
+    /* Impression */
     #printRaw{display:none}
+    .mono{white-space:pre-wrap; word-wrap:break-word;
+      font:11pt/1.35 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+      color:#000;
+    }
+    .mono .b{font-weight:700}
+    .mono .title{
+      background:#000; color:#fff; padding:6px 10px; border-radius:10px;
+      display:inline-block; margin:2mm 0 2mm 0; font-weight:700;
+    }
     @media print{
       @page { size: A4; margin: 12mm; }
       #appRoot{display:none!important}
-      #printRaw{display:block!important;padding:0;color:#000}
-      #rawPre{
-        white-space:pre-wrap; /* wrap long METAR */
-        word-wrap:break-word;
-        font:11pt/1.35 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
-      }
+      #printRaw{display:block!important;padding:0}
       body{background:#fff}
     }
   </style>
@@ -139,13 +143,13 @@
       <label>Hélice
         <input id="propeller" value="Sensenich" readonly />
       </label>
-      <!-- Ligne 2 : même largeur/hauteur que la ligne 1 -->
+      <!-- Ligne 2 : bouton imprimé dans un label vide pour l'alignement -->
       <label>Marge sécurité (%)
         <input id="safety" type="number" value="30" min="0"/>
       </label>
-      <div>
+      <label>&nbsp;
         <button id="btnPrint" class="btn grey">Imprimer</button>
-      </div>
+      </label>
     </div>
   </section>
 
@@ -364,14 +368,14 @@
   </div>
 
   <div class="muted" style="margin-top:12px;font-size:11px; text-align:center">
-    <!-- crédits masqués à l’impression -->
     <div> </div>
   </div>
 </div>
 
 <datalist id="dirOptions"><option value="VRB"></option></datalist>
 
-<section id="printRaw"><pre id="rawPre"></pre></section>
+<!-- Impression -->
+<section id="printRaw"><div id="rawPre" class="mono"></div></section>
 
 <script>
   /* ===================== DONNÉES ===================== */
@@ -538,7 +542,7 @@
   document.getElementById('btnDepMetar').addEventListener('click',function(){loadMetarFor('dep')});
   document.getElementById('btnArrMetar').addEventListener('click',function(){loadMetarFor('arr')});
 
-  /* ===================== VRB : uniquement multiples de 10 (010…360) ===================== */
+  /* ===================== VRB : seulement multiples de 10 (010…360) ===================== */
   function MULTI10(v){ return v%10===0; }
   function format3(el){
     var v=(el.value||'').replace(/\D/g,'');
@@ -869,7 +873,7 @@
     setChip(document.getElementById('toChip'),stTO); document.getElementById('toKpi').className='kpi '+(stTO==='ok'?'ok':stTO==='bad'?'bad':'');
     document.getElementById('toKpiVal').textContent=toMargin+' m';
 
-    document.getElementById('toExplain').textContent = 'Élévation '+depAlt+' ft. '+(w.explain || '—')+' Facteur vent '+depWindF.toFixed(2)+'× (composante utilisée '+Math.round(w.headwindForFactor||0)+' kt). Surface='+(depSurface==='hard'?'Dur':'Herbe')+' · Carénages='+(withSpats?'Avec':'Sans')+'.';
+    document.getElementById('toExplain').textContent = 'Élévation '+depAlt+' ft. Surface='+(depSurface==='hard'?'Dur':'Herbe')+' · Carénages='+(withSpats?'Avec':'Sans')+'.';
   }
 
   function computeArrPerf(){
@@ -907,16 +911,13 @@
     setChip(document.getElementById('ldgChip'),stLDG); document.getElementById('ldgKpi').className='kpi '+(stLDG==='ok'?'ok':stLDG==='bad'?'bad':'');
     document.getElementById('ldgKpiVal').textContent=ldgMargin+' m';
 
-    document.getElementById('ldgExplain').textContent = 'Élévation '+arrAlt+' ft. '+(w.explain || '—')+' Facteur vent '+arrWindF.toFixed(2)+'× (composante utilisée '+Math.round(w.headwindForFactor||0)+' kt). Type de freinage='+(landingMode==='moderate'?'Freinage modéré':'Sans frein herbe')+'.';
+    document.getElementById('ldgExplain').textContent = 'Élévation '+arrAlt+' ft. Type de freinage='+(landingMode==='moderate'?'Freinage modéré':'Sans frein herbe')+'.';
   }
 
   document.getElementById('btnCalcDep').addEventListener('click', computeDepPerf);
   document.getElementById('btnCalcArr').addEventListener('click', computeArrPerf);
 
-  /* ===================== Impression — rapport clair A4 ===================== */
-  function title(t){ return '=== '+t+' ==='; }
-  function line(){ return '—'.repeat(72); }
-  function kv(k,v){ return (k+':').padEnd(24,' ') + v; }
+  /* ===================== Impression — tableaux ASCII & valeurs clés en gras ===================== */
   function nowStamp(){
     var d = new Date();
     var dd = String(d.getDate()).padStart(2,'0');
@@ -926,81 +927,128 @@
     var mi = String(d.getMinutes()).padStart(2,'0');
     return 'Imprimé le '+dd+'/'+mm+'/'+yyyy+' à '+hh+':'+mi;
   }
-  function getText(id){ var el=document.getElementById(id); return el?el.textContent.trim():'—'; }
+  function pad(str, w){ str=String(str); return (str.length>w)?str.slice(0,w):str.padEnd(w,' '); }
+  function rowKV(k,v,wk, wv){ return '| '+pad(k,wk)+' | '+pad(v,wv)+' |'; }
+  function sep(wk,wv){ return '+'+'-'.repeat(wk+2)+'+'+'-'.repeat(wv+2)+'+'; }
 
-  function buildRawReport(){
+  function buildTerrainTable(title, data){
+    var wk=18, wv=48;
+    var out=[];
+    out.push('<span class="title">'+title+'</span>\n');
+    out.push(sep(wk,wv));
+    out.push(rowKV('ICAO / QFU', data.icao+' / '+data.qfu+'°', wk, wv));
+    out.push(sep(wk,wv));
+    out.push(rowKV('Élévation', data.alt+' ft', wk, wv));
+    out.push(rowKV('OAT', data.oat+' °C', wk, wv));
+    out.push(rowKV(data.lenLabel, data.lenVal+' m', wk, wv));
+    out.push(sep(wk,wv));
+    out.push(rowKV('Vent', data.wind, wk, wv));
+    out.push(rowKV('Composantes', 'Face '+data.hw+' kt · Travers '+data.xw+' · Arrière '+data.tw+' kt', wk, wv));
+    out.push(sep(wk,wv));
+    out.push(rowKV('METAR brut', '', wk, wv));
+    out.push(sep(wk,wv));
+    out.push(data.metar?data.metar.replace(/</g,'&lt;'):'—');
+    out.push('\n');
+    return out.join('\n');
+  }
+
+  function buildPerfTable(title, perf, availLabel){
+    var wk=26, wv=40;
+    var out=[];
+    out.push('<span class="title">'+title+'</span>\n');
+    out.push(sep(wk,wv));
+    out.push(rowKV('Requis (marge incluse)', '<span class="b">'+perf.req+'</span>', wk, wv));
+    out.push(rowKV(availLabel, perf.avail, wk, wv));
+    out.push(sep(wk,wv));
+    out.push(rowKV('Roulement (sans marge)', perf.roll, wk, wv));
+    out.push(rowKV('Passage 15 m (sans marge)', perf.pass, wk, wv));
+    out.push(rowKV('Facteur vent', perf.windF, wk, wv));
+    if(perf.spat) out.push(rowKV('Carénages', perf.spat, wk, wv));
+    out.push(rowKV('Facteur supplémentaire', perf.extra, wk, wv));
+    out.push(rowKV('Résultat (sans marge)', perf.res, wk, wv));
+    out.push(sep(wk,wv));
+    out.push('\n');
+    return out.join('\n');
+  }
+
+  function buildRawReportHTML(){
     var safety=Math.max(0,+(document.getElementById('safety').value||30));
     var aircraft=document.getElementById('aircraftSel').value;
     var prop=document.getElementById('propeller').value;
     var spats=document.getElementById('spatsWith').classList.contains('on')?'Avec carénages':'Sans carénages (+3% TO)';
 
-    var D={ icao:(document.getElementById('depIcao').value||'').toUpperCase(), qfu:display3(normQFU(document.getElementById('depQfu').value)||0),
-            toda:document.getElementById('depToda').value||'—', alt:document.getElementById('depAlt').value||'—', oat:document.getElementById('depOat').value||'—',
-            wdir:(document.getElementById('depWindDir').value||'').toUpperCase(), wkt:document.getElementById('depWindKt').value||'0', wg:document.getElementById('depWindGust').value||'0',
-            xw:getText('depXw').replace(/\s+/g,' '), hw:getText('depHwFace'), tw:getText('depTw') };
+    var D={ icao:(document.getElementById('depIcao').value||'').toUpperCase(), qfu:(document.getElementById('depQfu').value||'').padStart(3,'0'),
+            lenLabel:'TODA', lenVal:document.getElementById('depToda').value||'—', alt:document.getElementById('depAlt').value||'—', oat:document.getElementById('depOat').value||'—',
+            wind:(document.getElementById('depWindDir').value||'').toUpperCase()+' / '+(document.getElementById('depWindKt').value||'0')+' kt (G'+(document.getElementById('depWindGust').value||'0')+')',
+            xw:(document.getElementById('depXw').textContent||'—').replace(/\s+/g,' '), hw:document.getElementById('depHwFace').textContent||'—', tw:document.getElementById('depTw').textContent||'—',
+            metar:(window.lastDepMetarRaw||'—')
+          };
 
-    var A={ icao:(document.getElementById('arrIcao').value||'').toUpperCase(), qfu:display3(normQFU(document.getElementById('arrQfu').value)||0),
-            lda:document.getElementById('arrLda').value||'—', alt:document.getElementById('arrAlt').value||'—', oat:document.getElementById('arrOat').value||'—',
-            wdir:(document.getElementById('arrWindDir').value||'').toUpperCase(), wkt:document.getElementById('arrWindKt').value||'0', wg:document.getElementById('arrWindGust').value||'0',
-            xw:getText('arrXw').replace(/\s+/g,' '), hw:getText('arrHwFace'), tw:getText('arrTw') };
+    var A={ icao:(document.getElementById('arrIcao').value||'').toUpperCase(), qfu:(document.getElementById('arrQfu').value||'').padStart(3,'0'),
+            lenLabel:'LDA', lenVal:document.getElementById('arrLda').value||'—', alt:document.getElementById('arrAlt').value||'—', oat:document.getElementById('arrOat').value||'—',
+            wind:(document.getElementById('arrWindDir').value||'').toUpperCase()+' / '+(document.getElementById('arrWindKt').value||'0')+' kt (G'+(document.getElementById('arrWindGust').value||'0')+')',
+            xw:(document.getElementById('arrXw').textContent||'—').replace(/\s+/g,' '), hw:document.getElementById('arrHwFace').textContent||'—', tw:document.getElementById('arrTw').textContent||'—',
+            metar:(window.lastArrMetarRaw||'—')
+          };
 
-    var TO={ req:getText('toKpiVal'), basePass:getText('toBasePass'), baseRoll:getText('toBaseRoll'), windF:getText('toWindF'), spat:getText('toSpat'), extra:getText('toExtra'), res:getText('toRes'), todaMin:getText('todaMini'), explain:getText('toExplain') };
-    var LDG={ req:getText('ldgKpiVal'), basePass:getText('ldgBasePass'), baseRoll:getText('ldgBaseRoll'), windF:getText('ldgWindF'), extra:getText('ldgExtra'), res:getText('ldgRes'), ldaMin:getText('ldaMini'), explain:getText('ldgExplain') };
+    var TO={ req:document.getElementById('toKpiVal').textContent||'—',
+             avail:document.getElementById('todaMini').textContent||'—',
+             roll:document.getElementById('toBaseRoll').textContent||'—',
+             pass:document.getElementById('toBasePass').textContent||'—',
+             windF:document.getElementById('toWindF').textContent||'—',
+             spat:document.getElementById('toSpat').textContent||'',
+             extra:document.getElementById('toExtra').textContent||'—',
+             res:document.getElementById('toRes').textContent||'—'
+           };
 
-    var out=[];
-    out.push('CALCULCATEUR DE PERFORMANCES');
-    out.push(nowStamp());
-    out.push(line());
-    out.push(title('Paramètres généraux'));
-    out.push(kv('Avion', aircraft));
-    out.push(kv('Hélice', prop));
-    out.push(kv('Profil', profile));
-    out.push(kv('Marge sécurité', safety+' %'));
-    out.push(kv('Carénages', spats));
-    out.push('');
-    out.push(title('Terrain de départ'));
-    out.push(kv('ICAO / QFU', D.icao+' / '+D.qfu+'°'));
-    out.push(kv('Élévation', D.alt+' ft'));
-    out.push(kv('OAT', D.oat+' °C'));
-    out.push(kv('Vent', D.wdir+' / '+D.wkt+' kt (G'+D.wg+')'));
-    out.push(kv('Composantes', 'Face '+D.hw+' kt · Travers '+D.xw+' · Arrière '+D.tw+' kt'));
-    out.push(kv('TODA', D.toda+' m'));
-    out.push(kv('METAR brut', (window.lastDepMetarRaw||'—')));
-    out.push('');
-    out.push(title('Décollage — Résultats'));
-    out.push(kv('Requis (marge incluse)', TO.req));
-    out.push(kv('TODA dispo', TO.todaMin));
-    out.push(kv('Roulement (sans marge)', TO.baseRoll));
-    out.push(kv('Passage 15 m (sans marge)', TO.basePass));
-    out.push(kv('Facteur vent', TO.windF));
-    out.push(kv('Carénages', TO.spat));
-    out.push(kv('Facteur supplémentaire', TO.extra));
-    out.push(kv('Résultat (sans marge)', TO.res));
-    out.push(kv('Explications', TO.explain));
-    out.push(line());
-    out.push(title('Terrain d’arrivée'));
-    out.push(kv('ICAO / QFU', A.icao+' / '+A.qfu+'°'));
-    out.push(kv('Élévation', A.alt+' ft'));
-    out.push(kv('OAT', A.oat+' °C'));
-    out.push(kv('Vent', A.wdir+' / '+A.wkt+' kt (G'+A.wg+')'));
-    out.push(kv('Composantes', 'Face '+A.hw+' kt · Travers '+A.xw+' · Arrière '+A.tw+' kt'));
-    out.push(kv('LDA', A.lda+' m'));
-    out.push(kv('METAR brut', (window.lastArrMetarRaw||'—')));
-    out.push('');
-    out.push(title('Atterrissage — Résultats'));
-    out.push(kv('Requis (marge incluse)', LDG.req));
-    out.push(kv('LDA dispo', LDG.ldaMin));
-    out.push(kv('Roulement (sans marge)', LDG.baseRoll));
-    out.push(kv('Passage 15 m (sans marge)', LDG.basePass));
-    out.push(kv('Facteur vent', LDG.windF));
-    out.push(kv('Facteur supplémentaire', LDG.extra));
-    out.push(kv('Résultat (sans marge)', LDG.res));
-    out.push(kv('Explications', LDG.explain));
-    return out.join('\n');
+    var LDG={ req:document.getElementById('ldgKpiVal').textContent||'—',
+              avail:document.getElementById('ldaMini').textContent||'—',
+              roll:document.getElementById('ldgBaseRoll').textContent||'—',
+              pass:document.getElementById('ldgBasePass').textContent||'—',
+              windF:document.getElementById('ldgWindF').textContent||'—',
+              extra:document.getElementById('ldgExtra').textContent||'—',
+              res:document.getElementById('ldgRes').textContent||'—'
+            };
+
+    var top=[];
+    top.push('<span class="title">CALCULCATEUR DE PERFORMANCES</span>');
+    top.push(nowStamp());
+    top.push('');
+    top.push('PARAMÈTRES GÉNÉRAUX');
+    top.push(sep(24,52));
+    top.push(rowKV('Avion', aircraft, 24, 52));
+    top.push(rowKV('Hélice', prop, 24, 52));
+    top.push(rowKV('Profil', profile, 24, 52));
+    top.push(rowKV('Marge sécurité', safety+' %', 24, 52));
+    top.push(rowKV('Carénages', spats, 24, 52));
+    top.push(sep(24,52));
+    top.push('');
+
+    var depBlock = buildTerrainTable('Terrain de départ', {
+      icao:D.icao, qfu:D.qfu, alt:D.alt, oat:D.oat,
+      lenLabel:D.lenLabel, lenVal:D.lenVal,
+      wind:D.wind, hw:D.hw, xw:D.xw, tw:D.tw, metar:D.metar
+    });
+
+    var depPerf = buildPerfTable('Décollage — Résultats', {
+      req:TO.req, avail:TO.avail, roll:TO.roll, pass:TO.pass, windF:TO.windF, spat:TO.spat, extra:TO.extra, res:TO.res
+    }, 'TODA dispo');
+
+    var arrBlock = buildTerrainTable('Terrain d’arrivée', {
+      icao:A.icao, qfu:A.qfu, alt:A.alt, oat:A.oat,
+      lenLabel:A.lenLabel, lenVal:A.lenVal,
+      wind:A.wind, hw:A.hw, xw:A.xw, tw:A.tw, metar:A.metar
+    });
+
+    var arrPerf = buildPerfTable('Atterrissage — Résultats', {
+      req:LDG.req, avail:LDG.avail, roll:LDG.roll, pass:LDG.pass, windF:LDG.windF, extra:LDG.extra, res:LDG.res
+    }, 'LDA dispo');
+
+    return top.join('\n') + '\n' + depBlock + depPerf + arrBlock + arrPerf;
   }
 
   document.getElementById('btnPrint').addEventListener('click',function(){
-    document.getElementById('rawPre').textContent = buildRawReport();
+    document.getElementById('rawPre').innerHTML = buildRawReportHTML();
     window.print();
   });
 
